@@ -1,11 +1,12 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_r1vb6"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_4kua0"]
 
 [resource]
-script = ExtResource("1_r1vb6")
+script = ExtResource("1_4kua0")
 id = &"aw_boss_ashbrand"
 display_name = "Ashbrand"
+ai = 0
 max_health = 7000.0
 move_speed = 104.0
 contact_damage = 19.8
@@ -14,11 +15,18 @@ xp_value = 60
 credit_value = 60
 radius = 46.0
 mass = 12.0
+charge_interval = 3.0
+charge_speed_mult = 3.2
+shoot_interval = 2.4
 projectile_speed = 320.0
 projectile_damage = 16.0
+split_into_id = &""
+split_count = 2
+orbit_radius = 200.0
 color = Color(1, 0.36, 0.12, 1)
 color_secondary = Color(0.22, 0.05, 0.01, 1)
 shape = 2
+spin_speed = 0.0
 is_boss = true
 can_be_elite = false
 boss_title = "ASHBRAND WAKES"

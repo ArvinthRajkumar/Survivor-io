@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_3lb8u"]
+
+[resource]
+script = ExtResource("1_3lb8u")
+id = &"chakram"
+display_name = "Chakram"
+category = 0
+behavior = 9
+max_level = 5
+order = -6
+starting_weapon = true
+description = "A thrown ring that cuts on the way out and again on the way back."
+tooltip = "Returns to you, hitting twice per throw."
+level_notes = PackedStringArray("+11 damage, faster throws", "+11 damage, +1 ring", "+11 damage, faster throws", "+11 damage, +1 ring")
+damage = 20.0
+cooldown = 0.9
+area = 1.0
+count = 1
+projectile_speed = 620.0
+duration = 1.6
+knockback = 130.0
+pierce = 6
+hit_interval = 0.35
+aim = 0
+motion = 3
+on_hit = 0
+projectile_shape = 9
+spread = 0.5
+effect_radius = 120.0
+effect_value = 0.55
+damage_per_level = 11.0
+cooldown_mult_per_level = 0.94
+area_per_level = 0.1
+duration_per_level = 0.0
+count_at_levels = PackedInt32Array(3, 5)
+stat_multipliers = {}
+stat_flats = {}
+color = Color(0.75, 0.85, 1, 1)
+color_secondary = Color(1, 0.8, 0.45, 1)
+art = &"chakram"
+rarity = 2
+weight = 1.0

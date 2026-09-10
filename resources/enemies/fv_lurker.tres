@@ -1,21 +1,33 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_l7xrs"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_qus1s"]
 
 [resource]
-script = ExtResource("1_l7xrs")
+script = ExtResource("1_qus1s")
 id = &"fv_lurker"
 display_name = "Coil Lurker"
 ai = 5
 max_health = 51.0
 move_speed = 211.0
 contact_damage = 8.8
+knockback_resist = 0.0
 xp_value = 3
 credit_value = 3
 radius = 26.0
-mass = 1.1818181818181819
+mass = 1.18182
+charge_interval = 3.0
+charge_speed_mult = 3.2
+shoot_interval = 2.4
+projectile_speed = 260.0
+projectile_damage = 7.0
+split_into_id = &""
+split_count = 2
 orbit_radius = 190.0
 color = Color(0.65, 0.45, 1, 1)
 color_secondary = Color(0.12, 0.06, 0.26, 1)
 shape = 4
+spin_speed = 0.0
+is_boss = false
+can_be_elite = true
+boss_title = ""
 boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

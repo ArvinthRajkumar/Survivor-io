@@ -1,18 +1,24 @@
-[gd_resource type="Resource" script_class="HeroData" format=3]
+[gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_7diwp"]
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_t842o"]
 
 [resource]
-script = ExtResource("1_7diwp")
+script = ExtResource("1_t842o")
 id = &"nova"
 display_name = "Nova"
 role = "Plasma Engineer"
 description = "Keeps the grid alive by overclocking anything with a power cell. Fast cycles, thin plating."
 max_health = 110.0
 move_speed = 330.0
+armor = 0.0
+damage_mult = 1.0
 cooldown_mult = 0.94
+area_mult = 1.0
 pickup_radius = 70.0
 crit_chance = 0.08
+crit_damage = 1.6
+luck = 0.0
+starting_power_id = &"katana"
 passive_id = &"overclock"
 passive_name = "Overclock"
 passive_description = "Weapons cycle 12% faster and cover slightly more ground."
@@ -20,7 +26,16 @@ ultimate_id = &"plasma_drones"
 ultimate_name = "Drone Halo"
 ultimate_description = "Summons five plasma drones that orbit and shred anything they touch."
 ultimate_cooldown = 42.0
+ultimate_duration = 8.0
+accent = Color(0.35, 0.9, 1, 1)
 accent_secondary = Color(0.6, 1, 0.85, 1)
+portrait_shape = 2
 unlocked_by_default = true
 unlock_credit_cost = 0
 unlock_research_cost = 0
+max_rank = 5
+rank_cost_credits = 700
+rank_cost_research = 6
+rank_cost_growth = 1.8
+rank_health_bonus = 0.06
+rank_damage_bonus = 0.05

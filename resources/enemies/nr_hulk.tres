@@ -1,11 +1,12 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_tgrun"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_5wsjc"]
 
 [resource]
-script = ExtResource("1_tgrun")
+script = ExtResource("1_5wsjc")
 id = &"nr_hulk"
 display_name = "Rebar Hulk"
+ai = 0
 max_health = 140.0
 move_speed = 118.0
 contact_damage = 11.0
@@ -13,8 +14,20 @@ knockback_resist = 0.55
 xp_value = 6
 credit_value = 6
 radius = 40.0
-mass = 1.8181818181818181
+mass = 1.81818
+charge_interval = 3.0
+charge_speed_mult = 3.2
+shoot_interval = 2.4
+projectile_speed = 260.0
+projectile_damage = 7.0
+split_into_id = &""
+split_count = 2
+orbit_radius = 200.0
 color = Color(0.6, 0.7, 0.85, 1)
 color_secondary = Color(0.1, 0.14, 0.22, 1)
 shape = 2
+spin_speed = 0.0
+is_boss = false
+can_be_elite = true
+boss_title = ""
 boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

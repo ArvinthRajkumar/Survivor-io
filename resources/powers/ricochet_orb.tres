@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_xpu31"]
+
+[resource]
+script = ExtResource("1_xpu31")
+id = &"ricochet_orb"
+display_name = "Ricochet Orb"
+category = 0
+behavior = 9
+max_level = 5
+order = 11
+starting_weapon = false
+description = "An orb that refuses to leave, bouncing off the edges of the field."
+tooltip = "Bounces around the arena for a long time."
+level_notes = PackedStringArray("+9 damage, lasts longer", "+9 damage, +1 orb", "+9 damage, lasts longer", "+9 damage, +1 orb")
+damage = 18.0
+cooldown = 1.6
+area = 1.0
+count = 1
+projectile_speed = 520.0
+duration = 4.5
+knockback = 100.0
+pierce = 3
+hit_interval = 0.4
+aim = 3
+motion = 4
+on_hit = 0
+projectile_shape = 5
+spread = 0.0
+effect_radius = 120.0
+effect_value = 0.55
+damage_per_level = 9.0
+cooldown_mult_per_level = 0.95
+area_per_level = 0.1
+duration_per_level = 0.6
+count_at_levels = PackedInt32Array(3, 5)
+stat_multipliers = {}
+stat_flats = {}
+color = Color(0.7, 0.6, 1, 1)
+color_secondary = Color(0.95, 0.9, 1, 1)
+art = &"ricochet_orb"
+rarity = 1
+weight = 1.0

@@ -46,6 +46,10 @@ func _process(delta: float) -> void:
 			GameManager.goto_level_select()
 		"lab":
 			GameManager.goto_meta()
+		"weapon":
+			GameManager.goto_weapon_select()
+		"hardcore":
+			GameManager.goto_hardcore_select()
 		"settings":
 			get_tree().change_scene_to_file("res://scenes/menus/Settings.tscn")
 		"game":

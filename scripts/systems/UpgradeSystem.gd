@@ -60,7 +60,15 @@ static func _contains(offers: Array[Dictionary], offer: Dictionary) -> bool:
 
 static func _build_pool(loadout: PowerLoadout) -> Array[Dictionary]:
 	var pool: Array[Dictionary] = []
-	for data in ContentDB.power_list:
+	# The weapon the player carried in is not in power_list - weapons are picked
+	# before the run, not offered during it - but it still levels like anything
+	# else, so it is added back here. Only the one being carried: the seven left
+	# on the table stay out.
+	var candidates: Array[PowerData] = ContentDB.power_list.duplicate()
+	var weapon := ContentDB.get_power(loadout.innate_id)
+	if weapon != null and loadout.has(weapon.id):
+		candidates.append(weapon)
+	for data in candidates:
 		if not loadout.can_offer(data):
 			continue
 		var owned := loadout.has(data.id)

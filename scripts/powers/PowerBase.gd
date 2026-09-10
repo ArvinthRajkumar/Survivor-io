@@ -101,7 +101,12 @@ func get_area() -> float:
 
 
 func get_count() -> int:
-	return maxi(1, data.count_at(level))
+	# projectile_count_bonus is fractional so a passive can grant half a
+	# projectile per level and pay out every second one.
+	var bonus := 0
+	if stats != null:
+		bonus = int(floor(stats.get_stat(&"projectile_count_bonus")))
+	return maxi(1, data.count_at(level) + bonus)
 
 
 func get_speed() -> float:

@@ -99,6 +99,7 @@ func _connect_signals() -> void:
 	revive_prompt.connect("revive_declined", _on_revive_declined)
 	hud.connect("pause_pressed", _on_pause_pressed)
 	hud.connect("joystick_moved", _on_joystick_moved)
+	GameManager.shake_requested.connect(shake)
 
 
 func _process(delta: float) -> void:

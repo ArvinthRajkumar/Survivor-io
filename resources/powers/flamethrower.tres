@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_8x3d5"]
+
+[resource]
+script = ExtResource("1_8x3d5")
+id = &"flamethrower"
+display_name = "Flamethrower"
+category = 0
+behavior = 13
+max_level = 5
+order = -8
+starting_weapon = true
+description = "A short cone of burning air that keeps burning after it passes."
+tooltip = "Close range cone. Leaves the ground on fire."
+level_notes = PackedStringArray("+4.2 damage, wider cone, fire lasts longer", "+4.2 damage, wider cone, fire lasts longer", "+4.2 damage, wider cone, fire lasts longer", "+4.2 damage, and the fire burns for its full duration")
+damage = 7.0
+cooldown = 0.42
+area = 1.0
+count = 1
+projectile_speed = 600.0
+duration = 1.1
+knockback = 0.0
+pierce = 0
+hit_interval = 0.22
+aim = 0
+motion = 0
+on_hit = 0
+projectile_shape = 0
+spread = 0.0
+effect_radius = 120.0
+effect_value = 0.55
+damage_per_level = 4.2
+cooldown_mult_per_level = 0.96
+area_per_level = 0.14
+duration_per_level = 0.12
+count_at_levels = PackedInt32Array()
+stat_multipliers = {}
+stat_flats = {}
+color = Color(1, 0.52, 0.22, 1)
+color_secondary = Color(1, 0.86, 0.36, 1)
+art = &"flamethrower"
+rarity = 1
+weight = 1.0

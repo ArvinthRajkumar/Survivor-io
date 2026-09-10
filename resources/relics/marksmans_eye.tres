@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="RelicData" format=3]
+[gd_resource type="Resource" script_class="RelicData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_173a2"]
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_i43fq"]
 
 [resource]
-script = ExtResource("1_173a2")
+script = ExtResource("1_i43fq")
 id = &"marksmans_eye"
 display_name = "Marksman's Eye"
 description = "+10% critical chance and +40% critical damage."
@@ -18,3 +18,6 @@ stat_multipliers = {
 stat_flats = {
 "crit_chance": 0.1
 }
+stat_penalties = {}
+special = &""
+special_value = 0.0

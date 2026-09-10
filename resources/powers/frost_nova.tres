@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_3ny3b"]
+
+[resource]
+script = ExtResource("1_3ny3b")
+id = &"frost_nova"
+display_name = "Frost Nova"
+category = 0
+behavior = 10
+max_level = 5
+order = 13
+starting_weapon = false
+description = "A ring of cold that leaves whatever it touches crawling."
+tooltip = "Radial pulse. Slows everything it hits."
+level_notes = PackedStringArray("+8 damage, wider ring", "+8 damage, the slow lasts longer", "+8 damage, wider ring", "+8 damage, the slow lasts longer")
+damage = 15.0
+cooldown = 1.5
+area = 1.0
+count = 1
+projectile_speed = 600.0
+duration = 2.0
+knockback = 60.0
+pierce = 0
+hit_interval = 0.25
+aim = 0
+motion = 0
+on_hit = 0
+projectile_shape = 4
+spread = 0.0
+effect_radius = 120.0
+effect_value = 0.45
+damage_per_level = 8.0
+cooldown_mult_per_level = 0.93
+area_per_level = 0.14
+duration_per_level = 0.2
+count_at_levels = PackedInt32Array()
+stat_multipliers = {}
+stat_flats = {}
+color = Color(0.6, 0.88, 1, 1)
+color_secondary = Color(0.9, 0.98, 1, 1)
+art = &"frost_nova"
+rarity = 1
+weight = 1.0

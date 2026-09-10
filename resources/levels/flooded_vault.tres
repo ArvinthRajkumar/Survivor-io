@@ -1,33 +1,40 @@
-[gd_resource type="Resource" script_class="LevelData" format=3]
+[gd_resource type="Resource" script_class="LevelData" load_steps=19 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_orbry"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_leech.tres" id="2_7fdfc"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_drifter.tres" id="3_p6cwv"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_lurker.tres" id="4_l1buh"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_sporeling.tres" id="5_trvxo"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_warden.tres" id="6_p0t8x"]
-[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_rofc4"]
-[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_kvx7u"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_ng4xn"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_leech.tres" id="2_sm0by"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_drifter.tres" id="3_3frjv"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_lurker.tres" id="4_5woc2"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_sporeling.tres" id="5_yel88"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_warden.tres" id="6_leqva"]
+[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_wek2l"]
+[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_24ap6"]
 
-[sub_resource type="Resource" id="Resource_wmwls"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_1fksg"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_leech"
+start_time = 0.0
 end_time = 240.0
 batch_size = 5
 interval = 1.6
 interval_end_scale = 0.5
+formation = 0
+elite_chance = 0.0
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_62o2d"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_eqpgd"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_drifter"
 start_time = 40.0
 end_time = 400.0
+batch_size = 4
 interval = 2.2
 interval_end_scale = 0.48
 formation = 2
+elite_chance = 0.0
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_a2y60"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_2jib8"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_lurker"
 start_time = 110.0
 end_time = 520.0
@@ -36,29 +43,34 @@ interval = 3.4
 interval_end_scale = 0.5
 formation = 1
 elite_chance = 0.05
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_3ocbd"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_2gkns"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_leech"
 start_time = 150.0
 end_time = 720.0
 batch_size = 8
 interval = 1.4
 interval_end_scale = 0.4
+formation = 0
 elite_chance = 0.04
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_rq0bp"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_wfa41"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_sporeling"
 start_time = 200.0
 end_time = 720.0
 batch_size = 2
 interval = 5.0
 interval_end_scale = 0.5
+formation = 0
 elite_chance = 0.09
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_mitoi"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_ml50o"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_warden"
 start_time = 260.0
 end_time = 720.0
@@ -67,9 +79,10 @@ interval = 4.6
 interval_end_scale = 0.5
 formation = 2
 elite_chance = 0.08
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_cfqqk"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_0y2xk"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_drifter"
 start_time = 320.0
 end_time = 720.0
@@ -78,9 +91,10 @@ interval = 1.9
 interval_end_scale = 0.42
 formation = 1
 elite_chance = 0.07
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_4r2ow"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_2lk6p"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_lurker"
 start_time = 400.0
 end_time = 720.0
@@ -89,19 +103,22 @@ interval = 2.8
 interval_end_scale = 0.45
 formation = 1
 elite_chance = 0.12
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_dvq18"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_8lg6x"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_sporeling"
 start_time = 480.0
 end_time = 720.0
+batch_size = 4
 interval = 3.6
 interval_end_scale = 0.45
 formation = 4
 elite_chance = 0.15
+one_shot = false
 
-[sub_resource type="Resource" id="Resource_smi6x"]
-script = ExtResource("8_kvx7u")
+[sub_resource type="Resource" id="Resource_6y5vy"]
+script = ExtResource("8_24ap6")
 enemy_id = &"fv_warden"
 start_time = 600.0
 end_time = 600.0
@@ -113,7 +130,7 @@ elite_chance = 0.35
 one_shot = true
 
 [resource]
-script = ExtResource("7_rofc4")
+script = ExtResource("7_wek2l")
 id = &"flooded_vault"
 display_name = "Flooded Vault"
 description = "A research vault two hundred metres under. Whatever was contained here is loose."
@@ -127,20 +144,26 @@ difficulty_scale = 1.38
 health_growth_per_minute = 0.19
 damage_growth_per_minute = 0.09
 endless_interval = 1.45
-enemy_pool = Array[ExtResource("1_orbry")]([ExtResource("2_7fdfc"), ExtResource("3_p6cwv"), ExtResource("4_l1buh"), ExtResource("5_trvxo"), ExtResource("6_p0t8x")])
-waves = Array[ExtResource("8_kvx7u")]([SubResource("Resource_wmwls"), SubResource("Resource_62o2d"), SubResource("Resource_a2y60"), SubResource("Resource_3ocbd"), SubResource("Resource_rq0bp"), SubResource("Resource_mitoi"), SubResource("Resource_cfqqk"), SubResource("Resource_4r2ow"), SubResource("Resource_dvq18"), SubResource("Resource_smi6x")])
+endless_batch = 6
+endless_elite_chance = 0.08
+enemy_pool = Array[ExtResource("1_ng4xn")]([ExtResource("2_sm0by"), ExtResource("3_3frjv"), ExtResource("4_5woc2"), ExtResource("5_yel88"), ExtResource("6_leqva")])
+waves = Array[ExtResource("8_24ap6")]([SubResource("Resource_1fksg"), SubResource("Resource_eqpgd"), SubResource("Resource_2jib8"), SubResource("Resource_2gkns"), SubResource("Resource_wfa41"), SubResource("Resource_ml50o"), SubResource("Resource_0y2xk"), SubResource("Resource_2lk6p"), SubResource("Resource_8lg6x"), SubResource("Resource_6y5vy")])
 boss_id = &"fv_boss_sentinel"
 mid_boss_id = &"fv_mid_husk"
+elite_tint = Color(1, 0.85, 0.35, 1)
 hazard_type = 3
 hazard_count = 12
+hazard_damage = 9.0
 hazard_radius = 170.0
 hazard_interval = 2.6
+hazard_start_time = 45.0
 bg_top = Color(0.03, 0.09, 0.14, 1)
 bg_bottom = Color(0.01, 0.03, 0.06, 1)
 grid_color = Color(0.2, 0.6, 0.7, 0.32)
 accent = Color(0.35, 0.95, 0.85, 1)
 fog_color = Color(0.05, 0.2, 0.26, 0.3)
 background_style = 2
+unlocked_by_default = false
 required_level_id = &"ash_wastes"
 reward_credits = 1100
 reward_research = 13

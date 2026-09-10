@@ -1,22 +1,33 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3]
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_80vyd"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_die1h"]
 
 [resource]
-script = ExtResource("1_80vyd")
+script = ExtResource("1_die1h")
 id = &"aw_spitter"
 display_name = "Magma Spitter"
 ai = 3
 max_health = 48.0
 move_speed = 112.0
 contact_damage = 6.6
+knockback_resist = 0.0
 xp_value = 3
 credit_value = 3
 radius = 26.0
-mass = 1.1818181818181819
+mass = 1.18182
+charge_interval = 3.0
+charge_speed_mult = 3.2
 shoot_interval = 2.0
+projectile_speed = 260.0
 projectile_damage = 12.0
+split_into_id = &""
+split_count = 2
+orbit_radius = 200.0
 color = Color(1, 0.72, 0.25, 1)
 color_secondary = Color(0.28, 0.16, 0.02, 1)
 shape = 2
+spin_speed = 0.0
+is_boss = false
+can_be_elite = true
+boss_title = ""
 boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

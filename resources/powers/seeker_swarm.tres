@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_fe7ux"]
+
+[resource]
+script = ExtResource("1_fe7ux")
+id = &"seeker_swarm"
+display_name = "Seeker Swarm"
+category = 0
+behavior = 9
+max_level = 5
+order = 8
+starting_weapon = false
+description = "Missiles that hunt on their own and burst where they land."
+tooltip = "Homing missiles. They explode on contact."
+level_notes = PackedStringArray("+8 damage, faster launches", "+8 damage, +1 missile", "+8 damage, faster launches", "+8 damage, +1 missile")
+damage = 16.0
+cooldown = 1.25
+area = 1.0
+count = 2
+projectile_speed = 430.0
+duration = 2.0
+knockback = 100.0
+pierce = 0
+hit_interval = 0.25
+aim = 1
+motion = 1
+on_hit = 1
+projectile_shape = 6
+spread = 0.9
+effect_radius = 110.0
+effect_value = 0.55
+damage_per_level = 8.0
+cooldown_mult_per_level = 0.93
+area_per_level = 0.1
+duration_per_level = 0.0
+count_at_levels = PackedInt32Array(3, 5)
+stat_multipliers = {}
+stat_flats = {}
+color = Color(1, 0.66, 0.42, 1)
+color_secondary = Color(1, 0.92, 0.6, 1)
+art = &"seeker_swarm"
+rarity = 2
+weight = 1.0

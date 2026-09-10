@@ -25,6 +25,10 @@ var level_list: Array[LevelData] = []
 var relic_list: Array[RelicData] = []
 var power_list: Array[PowerData] = []
 var active_power_list: Array[PowerData] = []
+## The starting weapons, which are chosen before a run rather than offered
+## during one. They are deliberately absent from power_list so nothing that
+## builds a level-up pool has to remember to filter them out.
+var weapon_list: Array[PowerData] = []
 var passive_list: Array[PowerData] = []
 var upgrade_list: Array[UpgradeData] = []
 
@@ -71,8 +75,12 @@ func _rebuild_lists() -> void:
 	power_list.clear()
 	active_power_list.clear()
 	passive_list.clear()
+	weapon_list.clear()
 	for key in powers:
 		var power: PowerData = powers[key]
+		if power.starting_weapon:
+			weapon_list.append(power)
+			continue
 		power_list.append(power)
 		if power.is_power():
 			active_power_list.append(power)
@@ -81,6 +89,7 @@ func _rebuild_lists() -> void:
 	power_list.sort_custom(_sort_powers)
 	active_power_list.sort_custom(_sort_powers)
 	passive_list.sort_custom(_sort_powers)
+	weapon_list.sort_custom(_sort_powers)
 
 	upgrade_list.clear()
 	for key in upgrades:
@@ -104,6 +113,14 @@ func _sort_relics(a: RelicData, b: RelicData) -> bool:
 
 func _sort_by_name(a: Resource, b: Resource) -> bool:
 	return String(a.get("display_name")) < String(b.get("display_name"))
+
+
+## Every choosable entry, weapons excluded. Used by the --everything soak flag.
+func all_power_ids() -> Array:
+	var out: Array = []
+	for data in power_list:
+		out.append(data.id)
+	return out
 
 
 func _sort_powers(a: PowerData, b: PowerData) -> bool:

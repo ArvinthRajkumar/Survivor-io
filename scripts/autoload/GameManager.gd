@@ -6,22 +6,36 @@ extends Node
 ## level scene owns the moment-to-moment simulation.
 
 signal state_changed(new_state: int)
+## Asked for by anything that lands a heavy hit and has no reference to the
+## level scene. GameScene is the only listener; nothing breaks in the menus,
+## where there is nobody connected.
+signal shake_requested(amount: float)
 signal level_up_requested
 signal revive_offered
 signal run_results_ready(results: Dictionary)
 signal quality_changed(quality: int)
 
-enum State { BOOT, MAIN_MENU, HERO_SELECT, LEVEL_SELECT, META, PLAYING, PAUSED, LEVEL_UP, RESULTS }
+enum State { BOOT, MAIN_MENU, HERO_SELECT, LEVEL_SELECT, META, WEAPON_SELECT, PLAYING, PAUSED, LEVEL_UP, RESULTS }
 
 const SCENE_MAIN_MENU := "res://scenes/menus/MainMenu.tscn"
 const SCENE_HERO_SELECT := "res://scenes/menus/HeroSelect.tscn"
 const SCENE_LEVEL_SELECT := "res://scenes/menus/LevelSelect.tscn"
 const SCENE_META := "res://scenes/menus/MetaLab.tscn"
+const SCENE_WEAPON_SELECT := "res://scenes/menus/WeaponSelect.tscn"
+const SCENE_HARDCORE := "res://scenes/menus/HardcoreSelect.tscn"
 const SCENE_GAME := "res://scenes/game/GameScene.tscn"
 
 var state: State = State.BOOT
 var selected_hero: HeroData
 var selected_level: LevelData
+## The starting weapon picked on the pre-run screen. Empty means "not chosen
+## this session", in which case RunManager falls back to the operative's own.
+var selected_weapon_id: StringName = &""
+## Set by the Hardcore loadout screen and consumed by the next start_run().
+## Cleared on any ordinary deploy, so a Hardcore run never leaks into the next
+## normal one.
+var hardcore_mode: bool = false
+var hardcore_picks: Array = []
 var quality: int = 1
 ## Set while a revive offer is on screen so the level scene can freeze.
 var awaiting_revive: bool = false
@@ -99,6 +113,21 @@ func goto_meta() -> void:
 	get_tree().change_scene_to_file(SCENE_META)
 
 
+## The pre-run weapon pick. Deploying goes through here rather than straight
+## into the level, so the run always starts with a choice the player made.
+func goto_weapon_select() -> void:
+	hardcore_mode = false
+	hardcore_picks.clear()
+	set_state(State.WEAPON_SELECT)
+	get_tree().change_scene_to_file(SCENE_WEAPON_SELECT)
+
+
+## The Hardcore loadout builder: weapon plus a full six slots, chosen up front.
+func goto_hardcore_select() -> void:
+	set_state(State.WEAPON_SELECT)
+	get_tree().change_scene_to_file(SCENE_HARDCORE)
+
+
 func start_run() -> void:
 	restore_last_selection()
 	if selected_hero == null or selected_level == null:
@@ -107,7 +136,14 @@ func start_run() -> void:
 	SaveManager.clear_active_run()
 	_clear_pause()
 	awaiting_revive = false
-	RunManager.configure(selected_hero, selected_level)
+	RunManager.configure(selected_hero, selected_level, 0, selected_weapon_id)
+	if hardcore_mode:
+		RunManager.begin_hardcore(hardcore_picks)
+	elif DevTools.has_flag("--everything"):
+		# Soak option: every power and passive in the game, at max level, all
+		# firing at once. Nothing a player can reach, and the only way to
+		# exercise all of them in a single run.
+		RunManager.begin_hardcore(ContentDB.all_power_ids())
 	# Revives depend on stats, which only exist after configure().
 	revives_available = maxi(1, RunManager.stats.get_int(&"revives") + 1)
 	set_state(State.PLAYING)
@@ -185,6 +221,10 @@ func _clear_pause() -> void:
 ## Recovery hatch for the level scene's watchdog: drops every pause source and
 ## resumes. Only ever called once the scene has established that nothing on
 ## screen is waiting for the player, so there is no decision left to lose.
+func request_shake(amount: float) -> void:
+	shake_requested.emit(amount)
+
+
 func clear_stuck_pause() -> void:
 	_clear_pause()
 	RunManager.resume_clock()

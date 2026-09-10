@@ -21,6 +21,16 @@ const BEHAVIORS := {
 	PowerData.Behavior.HEALING_DRONE: preload("res://scripts/powers/behaviors/HealingDronePower.gd"),
 	PowerData.Behavior.LASER: preload("res://scripts/powers/behaviors/LaserPower.gd"),
 	PowerData.Behavior.SPINNERS: preload("res://scripts/powers/behaviors/SpinnerPower.gd"),
+	PowerData.Behavior.VOLLEY: preload("res://scripts/powers/behaviors/VolleyPower.gd"),
+	PowerData.Behavior.NOVA: preload("res://scripts/powers/behaviors/NovaPower.gd"),
+	PowerData.Behavior.SPEAR: preload("res://scripts/powers/behaviors/SpearPower.gd"),
+	PowerData.Behavior.HAMMER: preload("res://scripts/powers/behaviors/HammerPower.gd"),
+	PowerData.Behavior.FLAMER: preload("res://scripts/powers/behaviors/FlamerPower.gd"),
+	PowerData.Behavior.MINES: preload("res://scripts/powers/behaviors/MinePower.gd"),
+	PowerData.Behavior.TURRET: preload("res://scripts/powers/behaviors/TurretPower.gd"),
+	PowerData.Behavior.BLADESTORM: preload("res://scripts/powers/behaviors/BladeStormPower.gd"),
+	PowerData.Behavior.VOID_WELL: preload("res://scripts/powers/behaviors/VoidWellPower.gd"),
+	PowerData.Behavior.BOW: preload("res://scripts/powers/behaviors/BowPower.gd"),
 }
 
 var player: Player

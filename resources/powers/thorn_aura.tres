@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_3q0bp"]
+
+[resource]
+script = ExtResource("1_3q0bp")
+id = &"thorn_aura"
+display_name = "Thorn Aura"
+category = 0
+behavior = 10
+max_level = 5
+order = 15
+starting_weapon = false
+description = "A thicket of barbs around you that never stops turning over."
+tooltip = "Permanent ring of damage around you."
+level_notes = PackedStringArray("+3.2 damage, wider ring", "+3.2 damage, wider ring", "+3.2 damage, wider ring", "+3.2 damage, wider ring")
+damage = 6.0
+cooldown = 1.6
+area = 1.0
+count = 1
+projectile_speed = 600.0
+duration = 1.7
+knockback = 0.0
+pierce = 0
+hit_interval = 0.35
+aim = 0
+motion = 0
+on_hit = 0
+projectile_shape = 3
+spread = 0.0
+effect_radius = 120.0
+effect_value = 1.0
+damage_per_level = 3.2
+cooldown_mult_per_level = 1.0
+area_per_level = 0.13
+duration_per_level = 0.1
+count_at_levels = PackedInt32Array()
+stat_multipliers = {}
+stat_flats = {}
+color = Color(0.55, 0.95, 0.55, 1)
+color_secondary = Color(0.9, 1, 0.6, 1)
+art = &"thorn_aura"
+rarity = 1
+weight = 1.0

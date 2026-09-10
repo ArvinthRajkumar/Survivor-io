@@ -1,16 +1,19 @@
-[gd_resource type="Resource" script_class="UpgradeData" format=3]
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_exjos"]
+[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_7jaor"]
 
 [resource]
-script = ExtResource("1_exjos")
+script = ExtResource("1_7jaor")
 id = &"meta_haste"
 display_name = "Cooling Loops"
 description = "base attack rate"
+kind = 0
 max_level = 8
 rarity = 1
+weight = 1.0
 stat_key = &"cooldown_mult"
 value_per_level = 0.025
+is_multiplier = true
 meta_only = true
 meta_cost_credits = 500
 meta_cost_research = 4

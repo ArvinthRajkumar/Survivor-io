@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_xhswv"]
+
+[resource]
+script = ExtResource("1_xhswv")
+id = &"boomerang_fang"
+display_name = "Boomerang Fang"
+category = 0
+behavior = 9
+max_level = 5
+order = 10
+starting_weapon = false
+description = "Fanged blades thrown wide that come back through the same crowd."
+tooltip = "Thrown blades return to you, cutting both ways."
+level_notes = PackedStringArray("+8 damage, faster throws", "+8 damage, +1 blade", "+8 damage, faster throws", "+8 damage, +1 blade")
+damage = 15.0
+cooldown = 1.05
+area = 1.0
+count = 2
+projectile_speed = 560.0
+duration = 1.7
+knockback = 100.0
+pierce = 8
+hit_interval = 0.35
+aim = 0
+motion = 3
+on_hit = 0
+projectile_shape = 7
+spread = 1.0
+effect_radius = 120.0
+effect_value = 0.55
+damage_per_level = 8.0
+cooldown_mult_per_level = 0.94
+area_per_level = 0.1
+duration_per_level = 0.0
+count_at_levels = PackedInt32Array(3, 5)
+stat_multipliers = {}
+stat_flats = {}
+color = Color(0.8, 0.88, 1, 1)
+color_secondary = Color(1, 0.72, 0.86, 1)
+art = &"boomerang_fang"
+rarity = 1
+weight = 1.0

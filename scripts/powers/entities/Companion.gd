@@ -9,6 +9,10 @@ extends Node2D
 
 enum Mode { GUN, HEAL }
 
+## A companion with no `target` is an emplacement: it stays where it was
+## dropped instead of orbiting, and it needs its own timer because there is no
+## owner whose disappearance would retire it.
+
 const DEPLOY_TIME := 0.45
 
 var mode: int = Mode.GUN
@@ -33,11 +37,15 @@ var heal_amount: float = 6.0
 var heal_radius: float = 110.0
 var heal_duration: float = 5.0
 var drop_range: float = 170.0
+## Seconds before the companion retires. Zero means "as long as its target
+## lives", which is what an orbiting drone wants.
+var lifetime: float = 0.0
 
 var _phase: float = 0.0
 var _fire_timer: float = 0.0
 var _recoil: float = 0.0
 var _deploy: float = 0.0
+var _age: float = 0.0
 var _alive: bool = false
 
 
@@ -51,6 +59,7 @@ func pool_reset() -> void:
 	_fire_timer = 0.6
 	_recoil = 0.0
 	_deploy = 0.0
+	_age = 0.0
 	_alive = true
 	scale = Vector2.ONE
 	modulate = Color.WHITE
@@ -84,6 +93,7 @@ func configure(cfg: Dictionary) -> void:
 	heal_radius = float(cfg.get("heal_radius", 110.0))
 	heal_duration = float(cfg.get("heal_duration", 5.0))
 	drop_range = float(cfg.get("drop_range", 170.0))
+	lifetime = float(cfg.get("lifetime", 0.0))
 	_fire_timer = fire_interval * RunManager.rng.randf_range(0.2, 0.8)
 	queue_redraw()
 
@@ -101,18 +111,25 @@ func retune(cfg: Dictionary) -> void:
 func _process(delta: float) -> void:
 	if not _alive:
 		return
-	if target == null or not is_instance_valid(target):
+	# An emplacement outlives whatever dropped it; an orbiting drone does not.
+	var anchored := target != null and is_instance_valid(target)
+	if not anchored and lifetime <= 0.0:
 		expire()
 		return
 	_phase += delta
+	_age += delta
+	if lifetime > 0.0 and _age >= lifetime:
+		expire()
+		return
 	_deploy = minf(1.0, _deploy + delta / DEPLOY_TIME)
 	_recoil = maxf(0.0, _recoil - delta * 4.0)
 
-	orbit_angle += orbit_speed * delta
 	# Ease outward on deploy so the drone visibly flies out from the player.
 	var eased := 1.0 - pow(1.0 - _deploy, 3.0)
-	var offset := Vector2(cos(orbit_angle), sin(orbit_angle)) * orbit_radius * eased
-	global_position = target.global_position + offset
+	if anchored and orbit_radius > 0.0:
+		orbit_angle += orbit_speed * delta
+		var offset := Vector2(cos(orbit_angle), sin(orbit_angle)) * orbit_radius * eased
+		global_position = target.global_position + offset
 	scale = Vector2.ONE * (0.4 + 0.6 * eased)
 
 	_fire_timer -= delta

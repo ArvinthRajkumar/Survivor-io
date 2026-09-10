@@ -1,17 +1,23 @@
-[gd_resource type="Resource" script_class="RelicData" format=3]
+[gd_resource type="Resource" script_class="RelicData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_47byd"]
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_n4sme"]
 
 [resource]
-script = ExtResource("1_47byd")
+script = ExtResource("1_n4sme")
 id = &"scholars_siphon"
 display_name = "Scholar's Siphon"
 description = "+30% experience, but upgrades cost you 10% attack rate."
+rarity = 1
 color = Color(0.55, 0.72, 1, 1)
+icon_shape = 7
+credit_cost = 800
 research_cost = 7
 stat_multipliers = {
 "xp_gain_mult": 0.3
 }
+stat_flats = {}
 stat_penalties = {
 "cooldown_mult": -0.1
 }
+special = &""
+special_value = 0.0

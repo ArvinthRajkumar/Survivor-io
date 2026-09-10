@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_rt5du"]
+
+[resource]
+script = ExtResource("1_rt5du")
+id = &"ablative_shell"
+display_name = "Ablative Shell"
+category = 1
+behavior = 0
+max_level = 5
+order = 18
+starting_weapon = false
+description = "A skin that spends itself a layer at a time so you do not."
+tooltip = "Takes a flat cut out of everything that hits you."
+level_notes = PackedStringArray()
+damage = 10.0
+cooldown = 1.0
+area = 1.0
+count = 1
+projectile_speed = 600.0
+duration = 2.0
+knockback = 100.0
+pierce = 0
+hit_interval = 0.25
+aim = 0
+motion = 0
+on_hit = 0
+projectile_shape = 0
+spread = 0.0
+effect_radius = 120.0
+effect_value = 0.55
+damage_per_level = 5.0
+cooldown_mult_per_level = 0.94
+area_per_level = 0.1
+duration_per_level = 0.0
+count_at_levels = PackedInt32Array()
+stat_multipliers = {}
+stat_flats = {
+"armor": 2.0,
+"damage_reduction": 0.05
+}
+color = Color(0.7, 0.78, 0.9, 1)
+color_secondary = Color(0.95, 0.98, 1, 1)
+art = &"ablative_shell"
+rarity = 2
+weight = 1.0

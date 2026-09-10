@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_1014h"]
+
+[resource]
+script = ExtResource("1_1014h")
+id = &"void_well"
+display_name = "Void Well"
+category = 0
+behavior = 17
+max_level = 5
+order = 19
+starting_weapon = false
+description = "A well that drags the swarm into one place and holds it there."
+tooltip = "Pulls enemies together while it burns them."
+level_notes = PackedStringArray("+5 damage, stronger pull", "+5 damage, the well lasts longer", "+5 damage, stronger pull", "+5 damage, the well lasts longer")
+damage = 9.0
+cooldown = 2.6
+area = 1.0
+count = 1
+projectile_speed = 600.0
+duration = 2.4
+knockback = 100.0
+pierce = 0
+hit_interval = 0.3
+aim = 0
+motion = 0
+on_hit = 0
+projectile_shape = 0
+spread = 0.0
+effect_radius = 120.0
+effect_value = 0.55
+damage_per_level = 5.0
+cooldown_mult_per_level = 0.93
+area_per_level = 0.12
+duration_per_level = 0.3
+count_at_levels = PackedInt32Array()
+stat_multipliers = {}
+stat_flats = {}
+color = Color(0.66, 0.44, 1, 1)
+color_secondary = Color(1, 0.62, 0.92, 1)
+art = &"void_well"
+rarity = 3
+weight = 1.0

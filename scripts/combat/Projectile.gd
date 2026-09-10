@@ -45,6 +45,13 @@ var slow_factor: float = 0.55
 var slow_duration: float = 2.0
 var scale_growth: float = 0.0
 var spin: float = 6.0
+## Distance ramp. A projectile with `ramp_to` above zero deals `ramp_near_mult`
+## of its damage at `ramp_from` and full damage from `ramp_to` outward, which is
+## what makes a bow a weapon for someone keeping their distance rather than a
+## slower bullet.
+var ramp_from: float = 0.0
+var ramp_to: float = 0.0
+var ramp_near_mult: float = 1.0
 
 var _age: float = 0.0
 var _alive: bool = false
@@ -53,6 +60,7 @@ var _retarget_timer: float = 0.0
 var _returning: bool = false
 var _hit_set: Dictionary = {}
 var _sweep_timer: float = 0.0
+var _origin: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
@@ -114,6 +122,10 @@ func configure(cfg: Dictionary) -> void:
 	slow_duration = float(cfg.get("slow_duration", 2.0))
 	scale_growth = float(cfg.get("scale_growth", 0.0))
 	spin = float(cfg.get("spin", 6.0))
+	ramp_from = float(cfg.get("ramp_from", 0.0))
+	ramp_to = float(cfg.get("ramp_to", 0.0))
+	ramp_near_mult = float(cfg.get("ramp_near_mult", 1.0))
+	_origin = cfg.get("position", global_position)
 
 	var circle := _shape.shape as CircleShape2D
 	if circle != null:
@@ -229,6 +241,16 @@ func _on_area_entered(area: Area2D) -> void:
 	_hit_enemy(area as Enemy)
 
 
+## 1.0 unless a ramp was configured, in which case it climbs from
+## `ramp_near_mult` at `ramp_from` to full at `ramp_to`.
+func _distance_scale() -> float:
+	if ramp_to <= ramp_from:
+		return 1.0
+	var travelled := global_position.distance_to(_origin)
+	var t := clampf((travelled - ramp_from) / (ramp_to - ramp_from), 0.0, 1.0)
+	return lerpf(ramp_near_mult, 1.0, t)
+
+
 func _hit_enemy(enemy: Enemy) -> void:
 	if enemy == null or not enemy.alive:
 		return
@@ -237,7 +259,7 @@ func _hit_enemy(enemy: Enemy) -> void:
 	if not persistent and _hit_set.has(key):
 		return
 	var is_crit := RunManager.rng.randf() < crit_chance
-	var amount := damage * (crit_damage if is_crit else 1.0)
+	var amount := damage * (crit_damage if is_crit else 1.0) * _distance_scale()
 	var kb := direction * knockback
 	# Transient projectiles already refuse repeat hits via _hit_set, so they bill
 	# against their own id with no cooldown - otherwise every bolt from one
@@ -342,6 +364,27 @@ func _draw() -> void:
 		7:
 			Draw2D.neon_polygon(self, Draw2D.star_points(6, radius * 1.2, radius * 0.4, 0.0), color2, color, 2.5)
 			draw_circle(Vector2.ZERO, radius * 0.4, Color(0, 0, 0, 0.7))
+		8:
+			# Arrow: a long shaft with a head and fletching, so a bow shot reads
+			# as a different object from a bullet at the same size.
+			ci_arrow(self, radius, color, color2)
+		9:
+			# Chakram: a ring with blades, spinning.
+			Draw2D.ring(self, Vector2.ZERO, radius, color, 3.5)
+			for i in 4:
+				var a := TAU * float(i) / 4.0 + rotation * 0.0
+				var base := Vector2(cos(a), sin(a)) * radius
+				Draw2D.neon_polygon(self, PackedVector2Array([
+					base * 0.72,
+					base * 1.34 + Vector2(-sin(a), cos(a)) * radius * 0.22,
+					base * 1.34 - Vector2(-sin(a), cos(a)) * radius * 0.10,
+				]), color2, color, 2.0)
+		10:
+			# Slug: short, fat and bright - a heavy round rather than a dart.
+			draw_circle(Vector2.ZERO, radius * 0.9, color2)
+			Draw2D.ring(self, Vector2.ZERO, radius * 0.9, color, 3.0)
+			draw_line(Vector2(-radius * 1.5, 0.0), Vector2(-radius * 0.6, 0.0),
+				Color(color.r, color.g, color.b, 0.6), radius * 0.7, true)
 		_:
 			# Default bolt: a tapered dart pointing along its direction.
 			var pts := PackedVector2Array([
@@ -352,3 +395,18 @@ func _draw() -> void:
 			])
 			Draw2D.neon_polygon(self, pts, color2, color, 2.5)
 			Draw2D.glow_circle(self, Vector2.ZERO, radius * 0.8, color, 2)
+
+
+## Arrow silhouette, drawn along +X so the projectile's own rotation aims it.
+static func ci_arrow(ci: CanvasItem, radius: float, color: Color, color2: Color) -> void:
+	var length := radius * 2.6
+	ci.draw_line(Vector2(-length * 0.5, 0.0), Vector2(length * 0.36, 0.0), color, radius * 0.32, true)
+	Draw2D.neon_polygon(ci, PackedVector2Array([
+		Vector2(length * 0.5, 0.0),
+		Vector2(length * 0.22, radius * 0.52),
+		Vector2(length * 0.22, -radius * 0.52),
+	]), color2, color, 2.0)
+	# Fletching.
+	for side in [-1.0, 1.0]:
+		ci.draw_line(Vector2(-length * 0.5, 0.0),
+			Vector2(-length * 0.28, side * radius * 0.46), color2, 2.0, true)

@@ -1,15 +1,19 @@
-[gd_resource type="Resource" script_class="HeroData" format=3]
+[gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_u877r"]
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_ag51p"]
 
 [resource]
-script = ExtResource("1_u877r")
+script = ExtResource("1_ag51p")
 id = &"rift"
 display_name = "Rift"
 role = "Dimensional Scout"
 description = "Maps the tears the swarm crawls out of. Never quite in the place you last saw."
 max_health = 85.0
 move_speed = 355.0
+armor = 0.0
+damage_mult = 1.0
+cooldown_mult = 1.0
+area_mult = 1.0
 pickup_radius = 70.0
 crit_chance = 0.1
 crit_damage = 1.75
@@ -22,8 +26,16 @@ ultimate_id = &"rift_walk"
 ultimate_name = "Rift Walk"
 ultimate_description = "Blinks repeatedly into the thickest crowd, leaving damaging tears behind."
 ultimate_cooldown = 42.0
+ultimate_duration = 8.0
 accent = Color(0.72, 0.55, 1, 1)
 accent_secondary = Color(1, 0.45, 0.85, 1)
 portrait_shape = 4
+unlocked_by_default = false
 unlock_credit_cost = 2200
 unlock_research_cost = 26
+max_rank = 5
+rank_cost_credits = 700
+rank_cost_research = 6
+rank_cost_growth = 1.8
+rank_health_bonus = 0.06
+rank_damage_bonus = 0.05

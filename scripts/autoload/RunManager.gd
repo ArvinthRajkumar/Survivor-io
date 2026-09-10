@@ -17,6 +17,13 @@ signal xp_changed(current: int, needed: int, level: int)
 signal leveled_up(new_level: int)
 signal kills_changed(kills: int)
 signal difficulty_changed(tier: int)
+
+## Minutes of difficulty a Hardcore run is handed before its clock starts, plus
+## the flat multipliers on top. Chosen so the opening is genuinely dangerous
+## with a finished loadout rather than a victory lap.
+const HARDCORE_HEAD_START := 6.0
+const HARDCORE_HEALTH_MULT := 1.6
+const HARDCORE_DAMAGE_MULT := 1.35
 signal threshold_reached(level_id: StringName)
 
 const XP_BASE := 8
@@ -49,6 +56,9 @@ var boss_kills: int = 0
 var damage_dealt: float = 0.0
 var revives_used: int = 0
 var difficulty_tier: int = 0
+## Hardcore runs open at the pressure an ordinary run reaches several minutes
+## in, and everything the player chose is already at its final level.
+var hardcore: bool = false
 ## True once the player has survived long enough to unlock the next sector.
 var threshold_cleared: bool = false
 
@@ -81,7 +91,8 @@ func _process(delta: float) -> void:
 
 # --- Lifecycle -------------------------------------------------------------
 
-func configure(selected_hero: HeroData, selected_level: LevelData, run_seed: int = 0) -> void:
+func configure(selected_hero: HeroData, selected_level: LevelData, run_seed: int = 0,
+		weapon_id: StringName = &"") -> void:
 	hero = selected_hero
 	level_data = selected_level
 	var forced := DevTools.get_int_option("seed")
@@ -109,6 +120,7 @@ func configure(selected_hero: HeroData, selected_level: LevelData, run_seed: int
 	damage_dealt = 0.0
 	revives_used = 0
 	difficulty_tier = 0
+	hardcore = false
 	threshold_cleared = false
 	_last_whole_second = -1
 
@@ -118,14 +130,34 @@ func configure(selected_hero: HeroData, selected_level: LevelData, run_seed: int
 	_apply_hero_rank()
 	_apply_meta_upgrades()
 	_apply_relics()
-	# Every operative carries a katana in. It is granted before the run starts
-	# and spends none of the six choosable slots, so the first level-up is a
-	# genuinely open choice rather than a forced second pick.
-	var innate := hero.starting_power_id if hero != null else PowerLoadout.INNATE_ID
-	if String(innate).is_empty():
-		innate = PowerLoadout.INNATE_ID
+	# The weapon chosen before the run is granted here. It spends none of the six
+	# choosable slots, so the first level-up is a genuinely open choice rather
+	# than a forced second pick.
+	#
+	# The fallbacks matter: a run started by a dev flag, or resumed from a save
+	# written before weapons were a choice, has no explicit pick, and the
+	# operative's own default weapon is the closest thing to one.
+	var innate := weapon_id
+	if String(innate).is_empty() and hero != null:
+		innate = hero.starting_power_id
+	if String(innate).is_empty() or ContentDB.get_power(innate) == null:
+		innate = PowerLoadout.DEFAULT_WEAPON
+	loadout.set_weapon(innate)
 	loadout.add_or_level(innate)
 	run_configured.emit(hero, level_data)
+
+
+## Turns the configured run into a Hardcore one: everything the player chose on
+## the loadout screen is granted at its final level, and the difficulty clock
+## starts wound forward. Must be called after configure(), which is what builds
+## the loadout it adds to.
+func begin_hardcore(picks: Array) -> void:
+	hardcore = true
+	for id in picks:
+		loadout.grant_at_max(StringName(id))
+	# The weapon is granted by configure() at level 1; in Hardcore it is
+	# finished like everything else.
+	loadout.grant_at_max(loadout.innate_id)
 
 
 ## Permanent ranks bought for this specific hero on the roster screen.
@@ -281,31 +313,40 @@ func register_damage(amount: float) -> void:
 ## per-minute growth is compounded by a second, slower term that only starts to
 ## matter after the first several minutes.
 
+## Minutes of pressure the run is currently under. Hardcore starts this clock
+## already wound forward, so minute one plays like minute seven of a normal run
+## - which is the point: the loadout is finished, so the difficulty curve has to
+## start where that loadout would otherwise have been earned.
+func difficulty_minutes() -> float:
+	return elapsed / 60.0 + (HARDCORE_HEAD_START if hardcore else 0.0)
+
+
 func _endless_factor() -> float:
-	var minutes := elapsed / 60.0
+	var minutes := difficulty_minutes()
 	return 1.0 + ENDLESS_RAMP_PER_MINUTE * maxf(0.0, minutes - 6.0) * minutes * 0.25
 
 
 func enemy_health_scale() -> float:
 	if level_data == null:
 		return 1.0
-	var minutes := elapsed / 60.0
+	var minutes := difficulty_minutes()
 	var base := (1.0 + level_data.health_growth_per_minute * minutes) * level_data.difficulty_scale
-	return base * _endless_factor()
+	return base * _endless_factor() * (HARDCORE_HEALTH_MULT if hardcore else 1.0)
 
 
 func enemy_damage_scale() -> float:
 	if level_data == null:
 		return 1.0
-	var minutes := elapsed / 60.0
-	return (1.0 + level_data.damage_growth_per_minute * minutes) * sqrt(_endless_factor())
+	var minutes := difficulty_minutes()
+	return (1.0 + level_data.damage_growth_per_minute * minutes) * sqrt(_endless_factor()) \
+		* (HARDCORE_DAMAGE_MULT if hardcore else 1.0)
 
 
 ## Spawn pressure: how many enemies the director is allowed to keep alive.
 func enemy_budget(quality: int) -> int:
 	var budgets: PackedInt32Array = [110, 180, 260]
 	var base: int = budgets[clampi(quality, 0, 2)]
-	var minutes := elapsed / 60.0
+	var minutes := difficulty_minutes()
 	# Ramps to the nominal budget at nine minutes, then creeps toward 1.35x so a
 	# long run keeps getting denser without ever becoming unrenderable.
 	var ramp := clampf(0.28 + minutes * 0.08, 0.28, 1.0)
@@ -375,6 +416,8 @@ func to_save_dictionary() -> Dictionary:
 		"revives_used": revives_used,
 		"threshold_cleared": threshold_cleared,
 		"loadout": loadout.to_dictionary(),
+		"weapon": String(loadout.innate_id),
+		"hardcore": hardcore,
 	}
 
 
@@ -386,7 +429,8 @@ func restore(dict: Dictionary) -> bool:
 	if saved_hero == null or saved_level == null:
 		return false
 
-	configure(saved_hero, saved_level, int(dict.get("seed", 0)))
+	configure(saved_hero, saved_level, int(dict.get("seed", 0)),
+		StringName(dict.get("weapon", "")))
 	elapsed = float(dict.get("elapsed", 0.0))
 	player_level = maxi(1, int(dict.get("player_level", 1)))
 	xp_current = int(dict.get("xp_current", 0))
@@ -398,6 +442,7 @@ func restore(dict: Dictionary) -> bool:
 	damage_dealt = float(dict.get("damage", 0.0))
 	revives_used = int(dict.get("revives_used", 0))
 	threshold_cleared = bool(dict.get("threshold_cleared", false))
+	hardcore = bool(dict.get("hardcore", false))
 	difficulty_tier = int(elapsed / 60.0)
 	_last_whole_second = int(elapsed)
 

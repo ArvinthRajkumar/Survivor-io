@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_c08ub"]
+
+[resource]
+script = ExtResource("1_c08ub")
+id = &"arc_coil"
+display_name = "Arc Coil"
+category = 0
+behavior = 9
+max_level = 5
+order = 7
+starting_weapon = false
+description = "A bolt that jumps from one body to the next until it runs out."
+tooltip = "Chains between nearby enemies."
+level_notes = PackedStringArray("+7 damage, faster arcs", "+7 damage, longer chains", "+7 damage, faster arcs", "+7 damage, longer chains")
+damage = 14.0
+cooldown = 0.85
+area = 1.0
+count = 1
+projectile_speed = 780.0
+duration = 2.0
+knockback = 40.0
+pierce = 0
+hit_interval = 0.25
+aim = 0
+motion = 0
+on_hit = 2
+projectile_shape = 1
+spread = 0.0
+effect_radius = 260.0
+effect_value = 3.0
+damage_per_level = 7.0
+cooldown_mult_per_level = 0.93
+area_per_level = 0.1
+duration_per_level = 0.0
+count_at_levels = PackedInt32Array()
+stat_multipliers = {}
+stat_flats = {}
+color = Color(0.55, 0.9, 1, 1)
+color_secondary = Color(1, 1, 0.72, 1)
+art = &"arc_coil"
+rarity = 2
+weight = 1.0

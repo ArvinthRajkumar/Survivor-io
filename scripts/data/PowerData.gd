@@ -25,6 +25,25 @@ enum Behavior {
 	# Appended rather than inserted: the numeric values are what the .tres files
 	# on disk store, so the existing entries must keep the indices they have.
 	KATANA,         ## melee sweep along the direction the player is moving
+	VOLLEY,         ## data-driven projectiles; `motion` and `on_hit` do the work
+	NOVA,           ## radial pulse centred on the player
+	SPEAR,          ## long narrow thrust along the direction of travel
+	HAMMER,         ## slow overhead smash with knockback and a stagger
+	FLAMER,         ## short cone of burning ground along the direction of travel
+	MINES,          ## proximity charges dropped in the player's wake
+	TURRET,         ## a deployed emplacement that shoots on its own
+	BLADESTORM,     ## a ring of cuts sweeping around the player
+	VOID_WELL,      ## a well that drags enemies inward while it burns them
+	BOW,            ## piercing shot that hits harder the farther it flies
+}
+
+## How an automatic weapon picks where to shoot.
+enum Aim {
+	NEAREST,        ## the closest enemy
+	RANDOM,         ## a random enemy in range, which spreads fire over a crowd
+	MOVEMENT,       ## the direction the player is travelling
+	RADIAL,         ## evenly spaced around the player, ignoring targets
+	DENSEST,        ## toward the thickest part of the crowd
 }
 
 @export var id: StringName = &""
@@ -33,6 +52,9 @@ enum Behavior {
 @export var behavior: Behavior = Behavior.NONE
 @export var max_level: int = 5
 @export var order: int = 0
+## Starting weapons are offered once, before the run, instead of appearing in
+## level-up choices. Exactly one is granted and it spends none of the six slots.
+@export var starting_weapon: bool = false
 
 @export_group("Copy")
 ## One line shown on the upgrade card.
@@ -53,6 +75,24 @@ enum Behavior {
 @export var pierce: int = 0
 ## Seconds an enemy must wait before this power can hit it again.
 @export var hit_interval: float = 0.25
+
+@export_group("Projectile Shape")
+## Read by the VOLLEY behaviour, and ignored by everything else. Keeping these
+## in data rather than in a script per weapon is what lets one behaviour cover a
+## revolver, a grenade volley and a returning blade.
+@export var aim: Aim = Aim.NEAREST
+## Projectile.Motion value (0 linear, 1 homing, 2 orbit, 3 boomerang, 4 bounce,
+## 5 spiral).
+@export var motion: int = 0
+## Projectile.OnHit value (0 none, 1 explode, 2 chain, 3 slow, 4 freeze).
+@export var on_hit: int = 0
+## Shape id understood by Projectile._draw().
+@export var projectile_shape: int = 0
+## Radians of spread between the outermost projectiles of one volley.
+@export var spread: float = 0.0
+## Extra tuning for on_hit, read only by the effect it belongs to.
+@export var effect_radius: float = 120.0
+@export var effect_value: float = 0.55
 
 @export_group("Power Growth")
 @export var damage_per_level: float = 5.0

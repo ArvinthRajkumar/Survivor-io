@@ -1,26 +1,44 @@
-[gd_resource type="Resource" script_class="PowerData" format=3]
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_h16e6"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_uwjeq"]
 
 [resource]
-script = ExtResource("1_h16e6")
+script = ExtResource("1_uwjeq")
 id = &"healing_drone"
 display_name = "Healing Drone"
+category = 0
 behavior = 5
+max_level = 5
 order = 4
+starting_weapon = false
 description = "A support drone drops healing circles. Stand in one to recover."
 tooltip = "Drops healing circles. Stand in them."
 level_notes = PackedStringArray("+2.6 health per second, wider circle", "+2.6 health per second, dropped more often", "+2.6 health per second, wider circle", "+2.6 health per second, dropped more often")
 damage = 5.0
 cooldown = 6.0
+area = 1.0
+count = 1
+projectile_speed = 600.0
 duration = 5.0
+knockback = 100.0
+pierce = 0
 hit_interval = 0.5
+aim = 0
+motion = 0
+on_hit = 0
+projectile_shape = 0
+spread = 0.0
+effect_radius = 120.0
+effect_value = 0.55
 damage_per_level = 2.6
 cooldown_mult_per_level = 0.92
 area_per_level = 0.16
 duration_per_level = 0.6
 count_at_levels = PackedInt32Array()
+stat_multipliers = {}
+stat_flats = {}
 color = Color(0.4, 0.95, 0.62, 1)
 color_secondary = Color(1, 0.45, 0.48, 1)
 art = &"healing_drone"
 rarity = 2
+weight = 1.0

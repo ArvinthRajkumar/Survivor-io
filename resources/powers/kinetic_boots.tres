@@ -1,16 +1,39 @@
-[gd_resource type="Resource" script_class="PowerData" format=3]
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_5lc45"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_ow88i"]
 
 [resource]
-script = ExtResource("1_5lc45")
+script = ExtResource("1_ow88i")
 id = &"kinetic_boots"
 display_name = "Kinetic Boots"
 category = 1
+behavior = 0
+max_level = 5
 order = 12
+starting_weapon = false
 description = "Reactive soles that turn a stumble into a stride."
 tooltip = "Move faster, take less damage."
 level_notes = PackedStringArray()
+damage = 10.0
+cooldown = 1.0
+area = 1.0
+count = 1
+projectile_speed = 600.0
+duration = 2.0
+knockback = 100.0
+pierce = 0
+hit_interval = 0.25
+aim = 0
+motion = 0
+on_hit = 0
+projectile_shape = 0
+spread = 0.0
+effect_radius = 120.0
+effect_value = 0.55
+damage_per_level = 5.0
+cooldown_mult_per_level = 0.94
+area_per_level = 0.1
+duration_per_level = 0.0
 count_at_levels = PackedInt32Array()
 stat_multipliers = {
 "move_speed_mult": 0.08
@@ -21,3 +44,5 @@ stat_flats = {
 color = Color(0.6, 1, 0.78, 1)
 color_secondary = Color(0.95, 1, 0.6, 1)
 art = &"kinetic_boots"
+rarity = 1
+weight = 1.0

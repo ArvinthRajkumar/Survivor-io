@@ -1,17 +1,23 @@
-[gd_resource type="Resource" script_class="HeroData" format=3]
+[gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_k604g"]
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_2qi3v"]
 
 [resource]
-script = ExtResource("1_k604g")
+script = ExtResource("1_2qi3v")
 id = &"bramble"
 display_name = "Bramble"
 role = "Bio-Guardian"
 description = "Grew the vault gardens, then grew something that fights back. Slow, patient, hard to finish."
 max_health = 130.0
+move_speed = 300.0
 armor = 2.0
+damage_mult = 1.0
+cooldown_mult = 1.0
 area_mult = 1.05
 pickup_radius = 70.0
+crit_chance = 0.05
+crit_damage = 1.6
+luck = 0.0
 starting_power_id = &"katana"
 passive_id = &"deep_roots"
 passive_name = "Deep Roots"
@@ -20,8 +26,16 @@ ultimate_id = &"thorn_maze"
 ultimate_name = "Thorn Maze"
 ultimate_description = "Grows a lattice of thorn patches that cut and badly slow anything crossing them."
 ultimate_cooldown = 42.0
+ultimate_duration = 8.0
 accent = Color(0.45, 0.95, 0.55, 1)
 accent_secondary = Color(0.9, 1, 0.45, 1)
 portrait_shape = 3
+unlocked_by_default = false
 unlock_credit_cost = 1400
 unlock_research_cost = 18
+max_rank = 5
+rank_cost_credits = 700
+rank_cost_research = 6
+rank_cost_growth = 1.8
+rank_health_bonus = 0.06
+rank_damage_bonus = 0.05

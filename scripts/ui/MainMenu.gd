@@ -31,6 +31,12 @@ func _build_content() -> void:
 		deploy.pressed.connect(_on_deploy)
 		body.add_child(deploy)
 
+	var hardcore := UITheme.make_button("HARDCORE", UITheme.SECONDARY_BUTTON_HEIGHT)
+	hardcore.add_theme_font_size_override("font_size", UITheme.SIZE_BODY)
+	hardcore.add_theme_color_override("font_color", Palette.DANGER)
+	hardcore.pressed.connect(_on_hardcore)
+	body.add_child(hardcore)
+
 	_add_nav("Operatives", GameManager.goto_hero_select)
 	_add_nav("Sectors", GameManager.goto_level_select)
 	_add_nav("Research Lab", GameManager.goto_meta)
@@ -60,7 +66,7 @@ func _make_summary() -> Control:
 	fill_card(card, accent, hero.portrait_shape if hero != null else 2,
 		hero.display_name if hero != null else "No operative",
 		level.display_name if level != null else "No sector",
-		"Tap DEPLOY to start the run", true,
+		"Tap DEPLOY to choose a weapon", true,
 		hero.accent_secondary if hero != null else Palette.ACCENT_WARM)
 	return card
 
@@ -74,8 +80,9 @@ func _make_resume_card() -> Control:
 	var card := make_card(accent, 220)
 	card.disabled = true
 	var saved_loadout := saved.get("loadout", {}) as Dictionary
-	# The katana is granted, so it never counts against the six.
-	var slots := maxi(0, saved_loadout.size() - (1 if saved_loadout.has(String(PowerLoadout.INNATE_ID)) else 0))
+	# The starting weapon is granted, so it never counts against the six.
+	var weapon := String(saved.get("weapon", PowerLoadout.DEFAULT_WEAPON))
+	var slots := maxi(0, saved_loadout.size() - (1 if saved_loadout.has(weapon) else 0))
 	fill_card(card, accent, hero.portrait_shape if hero != null else 2,
 		"Run in progress",
 		"%s · %s" % [
@@ -124,7 +131,12 @@ func _profile_line() -> String:
 
 func _on_deploy() -> void:
 	AudioManager.play_sfx(&"ui_confirm")
-	GameManager.start_run()
+	GameManager.goto_weapon_select()
+
+
+func _on_hardcore() -> void:
+	AudioManager.play_sfx(&"ui_click")
+	GameManager.goto_hardcore_select()
 
 
 func _on_settings() -> void:

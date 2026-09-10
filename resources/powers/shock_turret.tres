@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_dsuij"]
+
+[resource]
+script = ExtResource("1_dsuij")
+id = &"shock_turret"
+display_name = "Shock Turret"
+category = 0
+behavior = 15
+max_level = 5
+order = 17
+starting_weapon = false
+description = "An emplacement planted where you stand, holding that ground for you."
+tooltip = "Deploys a turret that shoots on its own."
+level_notes = PackedStringArray("+6 damage, the turret lasts longer", "+6 damage, deploys sooner", "+6 damage, and it fires an extra round", "+6 damage, the turret lasts longer")
+damage = 11.0
+cooldown = 3.2
+area = 1.0
+count = 1
+projectile_speed = 640.0
+duration = 5.0
+knockback = 100.0
+pierce = 0
+hit_interval = 0.38
+aim = 0
+motion = 0
+on_hit = 0
+projectile_shape = 0
+spread = 0.0
+effect_radius = 120.0
+effect_value = 0.55
+damage_per_level = 6.0
+cooldown_mult_per_level = 0.92
+area_per_level = 0.1
+duration_per_level = 0.7
+count_at_levels = PackedInt32Array(4)
+stat_multipliers = {}
+stat_flats = {}
+color = Color(0.6, 0.82, 1, 1)
+color_secondary = Color(1, 0.9, 0.55, 1)
+art = &"shock_turret"
+rarity = 2
+weight = 1.0
