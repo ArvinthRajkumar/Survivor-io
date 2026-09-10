@@ -1,5 +1,15 @@
 extends MenuScreen
 ## Title screen and hub.
+##
+## The operative is shown live rather than as a portrait: MenuStage runs the
+## same PlayerVisual the run uses, wearing the selected hero's colours and
+## swinging their blade. That is the screen's centrepiece, so everything else is
+## arranged to leave it room — the navigation is two-up rather than a stack of
+## full-width buttons, and the run summary is a single line under the stage
+## instead of the card it used to be.
+
+var _stage: MenuStage
+
 
 func get_screen_title() -> String:
 	return "LAST LIGHT"
@@ -12,9 +22,16 @@ func get_screen_subtitle() -> String:
 func _build_content() -> void:
 	GameManager.restore_last_selection()
 
+	_stage = MenuStage.new()
+	_stage.custom_minimum_size = Vector2(0, 350)
+	_stage.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_stage.set_hero(GameManager.selected_hero)
+	body.add_child(_stage)
+	body.add_child(_make_caption())
+
 	# An interrupted endless run takes priority over everything else on screen.
 	if GameManager.has_resumable_run():
-		body.add_child(_make_resume_card())
+		body.add_child(_make_resume_line())
 		var resume := UITheme.make_button("RESUME RUN", 138)
 		resume.add_theme_font_size_override("font_size", UITheme.SIZE_HEADING + 6)
 		resume.add_theme_color_override("font_color", Palette.GOLD)
@@ -25,22 +42,25 @@ func _build_content() -> void:
 		discard.pressed.connect(_on_discard_and_deploy)
 		body.add_child(discard)
 	else:
-		body.add_child(_make_summary())
 		var deploy := UITheme.make_button("DEPLOY", 138)
 		deploy.add_theme_font_size_override("font_size", UITheme.SIZE_HEADING + 8)
 		deploy.pressed.connect(_on_deploy)
 		body.add_child(deploy)
 
-	var hardcore := UITheme.make_button("HARDCORE", UITheme.SECONDARY_BUTTON_HEIGHT)
-	hardcore.add_theme_font_size_override("font_size", UITheme.SIZE_BODY)
-	hardcore.add_theme_color_override("font_color", Palette.DANGER)
-	hardcore.pressed.connect(_on_hardcore)
-	body.add_child(hardcore)
+		var hardcore := UITheme.make_button("HARDCORE", UITheme.SECONDARY_BUTTON_HEIGHT)
+		hardcore.add_theme_font_size_override("font_size", UITheme.SIZE_BODY)
+		hardcore.add_theme_color_override("font_color", Palette.DANGER)
+		hardcore.pressed.connect(_on_hardcore)
+		body.add_child(hardcore)
 
-	_add_nav("Operatives", GameManager.goto_hero_select)
-	_add_nav("Sectors", GameManager.goto_level_select)
-	_add_nav("Research Lab", GameManager.goto_meta)
-	_add_nav("Settings", _on_settings)
+	# Two per row. Four full-width buttons pushed the stage off the top of a
+	# phone screen, and none of these is a primary action.
+	body.add_child(_nav_row(
+		["Operatives", GameManager.goto_hero_select],
+		["Sectors", GameManager.goto_level_select]))
+	body.add_child(_nav_row(
+		["Research Lab", GameManager.goto_meta],
+		["Settings", _on_settings]))
 
 	# Longest single survival across every sector — the run's whole headline
 	# stat is "how long did you last", so that is what belongs on the title
@@ -57,42 +77,55 @@ func _build_content() -> void:
 	footer.add_child(stats)
 
 
-func _make_summary() -> Control:
+## Who is on the stage and where they are being sent, in one line under it.
+func _make_caption() -> Control:
 	var hero := GameManager.selected_hero
 	var level := GameManager.selected_level
-	var accent: Color = hero.accent if hero != null else Palette.ACCENT
-	var card := make_card(accent, 210)
-	card.disabled = true
-	fill_card(card, accent, hero.portrait_shape if hero != null else 2,
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 2)
+
+	var name_label := UITheme.make_title(
 		hero.display_name if hero != null else "No operative",
+		UITheme.SIZE_TITLE, hero.accent if hero != null else Palette.ACCENT)
+	box.add_child(name_label)
+
+	var where := UITheme.make_label("%s · %s" % [
+		hero.role if hero != null and not hero.role.is_empty() else "Operative",
 		level.display_name if level != null else "No sector",
-		"Tap DEPLOY to choose a weapon", true,
-		hero.accent_secondary if hero != null else Palette.ACCENT_WARM)
-	return card
+	], UITheme.SIZE_LABEL, Palette.TEXT_DIM, false)
+	where.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(where)
+	return box
 
 
 ## Summarises the run waiting to be picked up, so "Resume" is an informed choice.
-func _make_resume_card() -> Control:
+func _make_resume_line() -> Control:
 	var saved := SaveManager.get_active_run()
-	var hero := ContentDB.get_hero(StringName(saved.get("hero", "")))
 	var level := ContentDB.get_level(StringName(saved.get("level", "")))
-	var accent: Color = hero.accent if hero != null else Palette.GOLD
-	var card := make_card(accent, 220)
-	card.disabled = true
 	var saved_loadout := saved.get("loadout", {}) as Dictionary
 	# The starting weapon is granted, so it never counts against the six.
 	var weapon := String(saved.get("weapon", PowerLoadout.DEFAULT_WEAPON))
 	var slots := maxi(0, saved_loadout.size() - (1 if saved_loadout.has(weapon) else 0))
-	fill_card(card, accent, hero.portrait_shape if hero != null else 2,
-		"Run in progress",
-		"%s · %s" % [
-			hero.display_name if hero != null else "Unknown operative",
-			level.display_name if level != null else "Unknown sector"],
-		"Survived %s · level %d · %d/%d slots used" % [
-			MathUtil.format_time(float(saved.get("elapsed", 0.0))),
-			int(saved.get("player_level", 1)), slots, PowerLoadout.MAX_SLOTS],
-		true, hero.accent_secondary if hero != null else Palette.ACCENT_WARM)
-	return card
+	var text := "Run in progress · %s · survived %s · level %d · %d/%d slots" % [
+		level.display_name if level != null else "Unknown sector",
+		MathUtil.format_time(float(saved.get("elapsed", 0.0))),
+		int(saved.get("player_level", 1)), slots, PowerLoadout.MAX_SLOTS,
+	]
+	var label := UITheme.make_label(text, UITheme.SIZE_SMALL, Palette.GOLD)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	return label
+
+
+func _nav_row(left: Array, right: Array) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", UITheme.GAP_TIGHT + 4)
+	for entry in [left, right]:
+		var button := UITheme.make_button(String(entry[0]), UITheme.SECONDARY_BUTTON_HEIGHT)
+		button.add_theme_font_size_override("font_size", UITheme.SIZE_BODY)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.pressed.connect(_on_nav.bind(entry[1] as Callable))
+		row.add_child(button)
+	return row
 
 
 func _on_resume() -> void:
@@ -106,12 +139,6 @@ func _on_discard_and_deploy() -> void:
 	GameManager.discard_resumable_run()
 	AudioManager.play_sfx(&"ui_click")
 	get_tree().reload_current_scene()
-
-
-func _add_nav(text: String, callback: Callable) -> void:
-	var button := UITheme.make_button(text)
-	button.pressed.connect(_on_nav.bind(callback))
-	body.add_child(button)
 
 
 func _on_nav(callback: Callable) -> void:

@@ -67,6 +67,9 @@ func _physics_process(delta: float) -> void:
 
 	for enemy in active:
 		enemy.update_ai(delta, _player_pos)
+		# Animation redraws are metered inside the enemy and staggered per
+		# spawn, so this does not put 260 queue_redraw calls on one frame.
+		enemy.tick_visual(delta)
 
 
 ## Drops dead enemies and recycles anything that has wandered far off screen.

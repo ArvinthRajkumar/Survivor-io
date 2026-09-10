@@ -15,11 +15,10 @@ config/description="A portrait-mode mobile roguelite survival shooter."
 config/version="0.3.0"
 run/main_scene="res://scenes/game/Boot.tscn"
 config/quit_on_go_back=false
-config/features=PackedStringArray("4.7", "GL Compatibility")
+config/features=PackedStringArray("4.3", "GL Compatibility")
 boot_splash/bg_color=Color(0.027, 0.043, 0.086, 1)
 boot_splash/image="res://assets/icons/splash.png"
 boot_splash/fullsize=false
-boot_splash/use_filter=true
 config/icon="res://assets/icons/icon.svg"
 
 [autoload]

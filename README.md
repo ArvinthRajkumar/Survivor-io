@@ -2,15 +2,20 @@
 
 A portrait-mode mobile roguelite survival shooter built in **Godot 4.x** with **GDScript**.
 You hold one thumb on the screen and move. Everything you collect during a run aims and
-fires on its own — except the **katana** you carry in, which cuts along the direction you
-are moving, so steering is aiming. Runs are **endless**: there is no timer to beat and no
-victory screen. The swarm gets denser and harder for as long as you stay alive, and the
-only question is how long that is.
+fires on its own — except the **weapon you carried in**, which several of the eight aim
+along the direction you are moving, so steering is aiming. Runs are **endless**: there is
+no timer to beat and no victory screen. The swarm gets denser and harder for as long as
+you stay alive, and the only question is how long that is.
 
-Between level-ups you build a loadout out of **twelve upgrades** — seven Powers and five
-Passives — but you may only ever own **six of them**. Nothing can be swapped
-out, so every pick is a commitment. The katana is free: it is granted before the run
-starts, spends none of the six slots, and levels like anything else.
+Before a run you pick a **starting weapon** from three of eight offered. Between level-ups
+you build a loadout out of **thirty-two upgrades** — twenty Powers and twelve Passives —
+but you may only ever own **six of them**. Nothing can be swapped out, so every pick is a
+commitment. The weapon is free: it is granted before the run starts, spends none of the
+six slots, and levels like anything else.
+
+**Hardcore** inverts that. Every weapon, power and passive is on the table before the run
+and everything picked starts at its final level — and the swarm opens at the pressure an
+ordinary run reaches six minutes in, hitting harder and taking more killing.
 
 Everything in the project is original. There are no imported textures, fonts, or audio
 files: all visuals are drawn procedurally with Godot's 2D draw calls, and every sound
@@ -129,7 +134,8 @@ resources/
 assets/
   icons/     icon.svg
 data/        (reserved for shipped JSON; the save file lives in user://)
-tools/       content generator, soak harness, character and portrait previews
+tools/       content generator, soak harness, and art previews for the
+             character, the roster portraits, the cut, the icons and the swarm
 ```
 
 ### Autoloads
@@ -235,7 +241,7 @@ godot --headless --path . --script res://tools/generate_content.gd
 | File | Content |
 | --- | --- |
 | `tools/gen/GenHeroes.gd` | The five operatives, their stats, passives and ultimates |
-| `tools/gen/GenPowers.gd` | The katana, seven Powers and five Passives, with level curves |
+| `tools/gen/GenPowers.gd` | Eight starting weapons, twenty Powers and twelve Passives, with level curves |
 | `tools/gen/GenUpgrades.gd` | Eight Research Lab (meta) upgrades |
 | `tools/gen/GenEnemies.gd` | 28 enemy archetypes (five per sector, plus mid-boss and boss) |
 | `tools/gen/GenLevels.gd` | Four sectors: palette, hazards, wave script, boss timings |
@@ -256,7 +262,7 @@ aware that re-running the generator overwrites them.
 
 ### The katana
 
-Every operative carries one, and it is the only weapon in the game that the player aims.
+The default starting weapon, and the one several of the others are measured against.
 It cuts along the direction you are moving — standing still keeps the last heading, so
 backing off a crowd and stopping leaves your edge pointed at it. Swings alternate
 handedness, so holding a direction reads as a combo rather than one animation looping.
@@ -282,19 +288,40 @@ It runs to level 5 like everything else, but it costs none of the six slots.
 Every power runs to level 5. The last level is always a rule change rather than another
 number, so maxing something feels different rather than just bigger.
 
-| Power | What it does | At max level |
-| --- | --- | --- |
-| **Drone** | A gun drone orbits you and sprays bullets outward in a ring | Bullets stop spraying and track enemies |
-| **Domain** | A force field grinds down everything standing inside it | Each level widens the field and hits harder |
-| **Molotov Cocktail** | Lobs bottles that leave patches of burning ground | 2 bottles → 6 |
-| **Drill** | Drills ricochet around the screen, boring through the swarm | 2 drills → 5, each hitting harder |
-| **Healing Drone** | Drops healing circles near you; stand in one to regenerate | Wider circles, dropped more often |
-| **Laser** | Orbital strikes rake the ground around you in rotating patterns | 3 beams → 5, far heavier damage |
-| **Spinners** | Saw blades orbit you, cutting in bursts and retracting between them | 2 blades → 6, and they never stop spinning |
+Thirteen of the twenty share two behaviour scripts between them. A revolver, a grenade
+volley, a homing swarm, a returning blade and a bouncing orb are the same loop — pick a
+direction, spawn `count` projectiles along it — differing only in how they aim, how they
+move and what they do on contact, and all three of those are fields on `PowerData`. The
+ones with a genuinely different loop kept their own script.
+
+| Power | What it does |
+| --- | --- |
+| **Drone** | A gun drone orbits you and sprays bullets outward; tracks at max level |
+| **Domain** | A force field grinds down everything standing inside it |
+| **Molotov Cocktail** | Lobs bottles that leave patches of burning ground |
+| **Drill** | Drills ricochet around the screen, boring through the swarm |
+| **Healing Drone** | Drops healing circles near you; stand in one to regenerate |
+| **Laser** | Orbital strikes rake the ground in rotating patterns |
+| **Spinners** | Saw blades orbit you, cutting in bursts |
+| **Arc Coil** | A bolt that jumps from body to body until it runs out |
+| **Seeker Swarm** | Missiles that hunt on their own and burst where they land |
+| **Grenade Volley** | A fan of charges thrown into the thickest part of the crowd |
+| **Boomerang Fang** | Blades thrown wide that come back through the same crowd |
+| **Ricochet Orb** | An orb that bounces off the edges of the field for a long time |
+| **Rail Lance** | A slug fired along the way you are running, through everything |
+| **Frost Nova** | A ring of cold that leaves whatever it touches crawling |
+| **Sun Flare** | A column of light dropped on the densest part of the swarm |
+| **Thorn Aura** | A permanent thicket of barbs turning over around you |
+| **Mine Field** | Charges laid in your wake — the one power that rewards running |
+| **Shock Turret** | An emplacement planted where you stand, holding that ground |
+| **Blade Storm** | Four cuts chasing each other all the way around you |
+| **Void Well** | Drags the swarm into one place and holds it there while it burns |
 
 ### Passives
 
-No behaviour of their own — they bend the numbers every power reads.
+No behaviour of their own — they bend the numbers every power reads. Each one owns a
+different axis: a second passive that also bought damage and area would just be a worse
+Resonance Lens, and picking between them would be arithmetic rather than a decision.
 
 | Passive | Effect |
 | --- | --- |
@@ -303,6 +330,54 @@ No behaviour of their own — they bend the numbers every power reads.
 | **Kinetic Boots** | Faster movement, flat damage reduction |
 | **Resonance Lens** | More damage, larger areas, higher crit chance |
 | **Salvage Magnet** | Wider pickup radius, more experience |
+| **Hollow Point** | More critical hits, and harder ones |
+| **Vital Weave** | Regenerates health continuously |
+| **Siege Charge** | Much stronger knockback, slightly bigger effects |
+| **Ablative Shell** | A flat cut out of everything that hits you |
+| **Split Barrel** | +1 projectile on every weapon, every two levels |
+| **Long Fuse** | Zones, fires and fields all last longer |
+| **Omen Dice** | Better luck: rarer offers and richer drops |
+
+### Starting weapons
+
+One is chosen before every run from three of the eight offered. It spends none of the six
+slots and levels like anything else. They are meant to play differently rather than to be
+balanced against each other stat for stat — a revolver that fires twice as slowly as the
+pistol for twice the damage is the same weapon with different numbers, so the revolver
+also pierces and throws what it hits.
+
+| Weapon | How it plays |
+| --- | --- |
+| **Katana** | Cuts along the direction you are moving. Front cut, back cut and a pressure pulse |
+| **Heavy Revolver** | Slow, huge damage, punches through a line and throws what it hits |
+| **Machine Pistol** | Very fast, weak rounds in a tight spread |
+| **Longbow** | Pierces everything. Weak up close, full damage at range |
+| **Spear** | A long narrow thrust along the way you are moving; double-taps at max level |
+| **Chakram** | A thrown ring that cuts on the way out and again on the way back |
+| **War Hammer** | Very slow. Huge radial smash, big knockback, staggers |
+| **Flamethrower** | A short cone that leaves the ground burning behind it |
+
+### The swarm
+
+Twenty-eight enemy archetypes share **six body plans**, keyed to `EnemyData.shape`. They
+replaced flat polygons — a triangle, a hexagon, a star — which told the player nothing
+except "hostile". Six is enough that a charger can be told from a shooter before it
+arrives, which is the only thing the art has to achieve; twenty-eight bespoke drawings
+would not be maintainable and would not read any better at 20 px.
+
+| Body plan | Silhouette | Wears it |
+| --- | --- | --- |
+| **Scuttler** | Low six-legged insect, all legs and almost no body | The fast, flimsy ones |
+| **Sentry** | Armoured biped with a shoulder cannon it visibly aims | Shooters and emplacements |
+| **Brute** | Top-heavy, two thick fists, a stomping gait | The heavyweights and bosses |
+| **Wisp** | Floating bell with trailing tendrils; bobs rather than walks | Drifters and splitters |
+| **Ocular** | A single eye inside a cage of spinning plates | The stranger sectors' enemies |
+| **Maw** | Four-legged jaw that opens on the wind-up and snaps shut | The things that run you down |
+
+Each has a walk cycle driven by distance covered (a slowed enemy visibly slows its legs
+rather than running on the spot), a wind-up and strike for melee, and a recoil plus muzzle
+flash for ranged. Everything is drawn front-facing and flipped horizontally, so the swarm
+reads as characters the way the operative does rather than as shapes seen from overhead.
 
 ### Sectors
 
@@ -387,6 +462,17 @@ godot --path . --script res://tools/preview_portraits.gd
 Worth running after any change to `HeroPortrait`: a polygon Godot refuses to
 triangulate fails silently in-game (outline drawn, no fill) but prints an error here.
 
+The swarm is drawn in code too. `tools/preview_enemies.gd` puts all six body plans down
+the page, each one walking, winding up, striking and shooting:
+
+```bash
+godot --path . --script res://tools/preview_enemies.gd
+```
+
+`tools/preview_icons.gd` does the same for all forty power, passive and weapon icons, and
+`tools/preview_slash.gd` freezes five stages of one katana cut — it is on screen for a
+fifth of a second in play, which is far too short to judge a shape by.
+
 `tools/soak.ps1` sweeps combinations and reports a win rate — use it to judge balance
 changes, because a single run is dominated by RNG:
 
@@ -433,6 +519,12 @@ The target is a steady 60 fps on a mid-range phone with 150–250 enemies alive.
   flags are changed with `set_deferred`. Pools top themselves up during the idle frame
   so `acquire()` almost never has to allocate.
 - **One update loop for the swarm.** Enemies have no per-node `_physics_process`.
+- **Animation redraws are metered.** Enemies are drawn creatures now, not static
+  polygons, so the old "redraw only when the appearance changes" rule no longer holds.
+  Each one redraws at roughly 11 Hz on a per-spawn stagger instead of every frame — a
+  limb cycle at that rate is what hand-drawn animation runs at anyway, and it keeps 260
+  animated bodies off a single frame. State changes (a wind-up, a shot) redraw
+  immediately, so an attack is never late.
 - **Cheap neighbour queries.** A spatial hash rebuilt once per physics frame backs
   separation, target selection and every radius query, so cost does not grow with the
   total swarm size.

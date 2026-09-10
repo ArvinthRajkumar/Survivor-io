@@ -7,7 +7,11 @@ extends Area2D
 ##    in one loop, which avoids hundreds of per-node callbacks per frame.
 ##  * They are `monitorable` but not `monitoring`: projectiles and the player's
 ##    hurtbox look for enemies, never the other way round.
-##  * _draw() runs only when the appearance actually changes.
+##  * _draw() runs on a stagger at roughly 11Hz rather than every frame. The
+##    creatures are animated now, so the old "only when the appearance changes"
+##    rule no longer holds - but a limb cycle at 11Hz is the rate hand-drawn
+##    animation runs at anyway, and redrawing 260 of these every frame is not
+##    something a phone will do.
 
 signal died(enemy: Enemy)
 
@@ -15,6 +19,15 @@ const ELITE_HEALTH_MULT := 6.5
 const ELITE_DAMAGE_MULT := 1.6
 const ELITE_SCALE := 1.45
 const FLASH_TIME := 0.09
+## Seconds between animation redraws. Staggered per enemy so the whole swarm
+## never redraws on the same frame.
+const REDRAW_INTERVAL := 0.09
+## How close the player has to be before a melee body plan winds up a swing.
+const MELEE_RANGE := 30.0
+const WINDUP_TIME := 0.22
+const STRIKE_TIME := 0.26
+## How long the muzzle flash and recoil last after a shot.
+const SHOOT_TIME := 0.24
 
 @onready var health: HealthComponent = $Health
 @onready var _shape: CollisionShape2D = $Shape
@@ -38,7 +51,6 @@ var credit_value: int = 1
 
 var _knockback: Vector2 = Vector2.ZERO
 var _flash: float = 0.0
-var _spin: float = 0.0
 var _ai_timer: float = 0.0
 var _charging: float = 0.0
 var _slow_factor: float = 1.0
@@ -56,9 +68,23 @@ var _speed_jitter: float = 1.0
 ## pack into one solid mass; aiming a little off it spreads them into a cloud.
 var _target_offset: Vector2 = Vector2.ZERO
 var _offset_timer: float = 0.0
-var _points: PackedVector2Array = PackedVector2Array()
 var _fill: Color = Color.WHITE
 var _outline: Color = Color.WHITE
+var _accent: Color = Color.WHITE
+## Which of EnemyArt's six body plans this archetype wears.
+var _body: int = EnemyArt.Body.MAW
+## Advanced by distance travelled rather than by time, so a slowed enemy's legs
+## slow down with it instead of running on the spot.
+var _gait: float = 0.0
+var _facing_left: bool = false
+## Per-archetype animation speed, taken from what used to be the spin rate.
+var _gait_bias: float = 1.0
+var _anim_state: int = EnemyArt.State.MOVE
+var _anim_timer: float = 0.0
+var _anim_span: float = 1.0
+var _redraw_timer: float = 0.0
+## Melee bodies re-arm after a swing so they do not chain-bite in place.
+var _swing_cooldown: float = 0.0
 ## instance id of a damage source -> RunManager.elapsed at which it may hit again
 var _hit_cooldowns: Dictionary = {}
 var _time: float = 0.0
@@ -127,7 +153,11 @@ func configure(enemy_data: EnemyData, elite: bool, health_scale: float, damage_s
 	contact_damage = enemy_data.contact_damage * damage_scale * (ELITE_DAMAGE_MULT if is_elite else 1.0)
 	xp_value = enemy_data.xp_value * (5 if is_elite else 1)
 	credit_value = enemy_data.credit_value * (4 if is_elite else 1)
-	_spin = enemy_data.spin_speed
+	# EnemyData.spin_speed used to rotate the polygon body. The creatures are
+	# drawn front-facing now, so a spinning one would read as tumbling; the
+	# field feeds the gait instead, which is where a "restless" archetype should
+	# show anyway.
+	_gait_bias = 1.0 + absf(enemy_data.spin_speed) * 0.20
 
 	var hp := enemy_data.max_health * health_scale * (ELITE_HEALTH_MULT if is_elite else 1.0)
 	health.setup(hp)
@@ -146,33 +176,31 @@ func configure(enemy_data: EnemyData, elite: bool, health_scale: float, damage_s
 func _build_visual() -> void:
 	_fill = data.color_secondary
 	_outline = data.color
+	_accent = data.color.lerp(Color.WHITE, 0.35)
 	if is_elite:
 		_outline = _outline.lerp(Color(1.0, 0.86, 0.35), 0.55)
 		_fill = _fill.lerp(Color(0.25, 0.18, 0.02), 0.5)
-	match data.shape:
-		0:
-			_points = Draw2D.polygon_points(3, radius, -PI * 0.5)
-		1:
-			_points = Draw2D.polygon_points(4, radius, 0.0)
-		2:
-			_points = Draw2D.polygon_points(5, radius, -PI * 0.5)
-		3:
-			_points = Draw2D.polygon_points(6, radius, 0.0)
-		4:
-			_points = Draw2D.star_points(5, radius, radius * 0.48, -PI * 0.5)
-		_:
-			_points = Draw2D.polygon_points(9, radius, 0.0)
-			for i in _points.size():
-				_points[i] = _points[i] * (0.82 + 0.18 * float((i * 7) % 5) / 4.0)
+		_accent = Color(1.0, 0.90, 0.45)
+	# EnemyData.shape is what the roster on disk already stores, so the six body
+	# plans are keyed to it directly rather than re-authoring 28 resources.
+	_body = clampi(data.shape, 0, 5)
+	_gait = RunManager.rng.randf() * TAU
+	_anim_state = EnemyArt.State.MOVE
+	_anim_timer = 0.0
+	_redraw_timer = RunManager.rng.randf() * REDRAW_INTERVAL
 	queue_redraw()
 
 
 func _draw() -> void:
-	if _points.is_empty():
+	if data == null:
 		return
-	Draw2D.neon_polygon(self, _points, _fill, _outline, 3.0 if not is_elite else 4.5)
 	if is_elite:
-		Draw2D.ring(self, Vector2.ZERO, radius * 1.35, Color(1.0, 0.86, 0.35, 0.5), 2.5)
+		Draw2D.ring(self, Vector2.ZERO, radius * 1.45, Color(1.0, 0.86, 0.35, 0.45), 2.5)
+	var t := 0.0
+	if _anim_span > 0.0:
+		t = clampf(1.0 - _anim_timer / _anim_span, 0.0, 1.0)
+	EnemyArt.draw_body(self, _body, radius, _fill, _outline, _accent,
+		_gait, _anim_state, t, _facing_left)
 
 
 # --- Simulation (driven by EnemyDirector) ----------------------------------
@@ -189,6 +217,8 @@ func update_ai(delta: float, player_pos: Vector2) -> void:
 		_slow_timer -= delta
 		if _slow_timer <= 0.0:
 			_slow_factor = 1.0
+
+	_advance_animation(delta, player_pos)
 
 	_offset_timer -= delta
 	if _offset_timer <= 0.0:
@@ -243,8 +273,61 @@ func update_ai(delta: float, player_pos: Vector2) -> void:
 		global_position += _knockback * delta
 		_knockback = _knockback.lerp(Vector2.ZERO, clampf(delta * 7.0, 0.0, 1.0))
 	global_position += velocity * delta
-	if _spin != 0.0:
-		rotation += _spin * delta
+
+
+## Drives the creature sprite: which way it is facing, how far through its walk
+## cycle it is, and whether it is mid-attack.
+##
+## The gait advances with distance covered rather than with time, so a slowed or
+## knocked-back enemy visibly slows its legs instead of running on the spot.
+func _advance_animation(delta: float, player_pos: Vector2) -> void:
+	var speed := velocity.length()
+	_gait += delta * (2.0 + speed * 0.035) * _gait_bias
+	# A creature barely moving keeps its last facing rather than flickering
+	# between them every time the separation force jitters sideways.
+	if absf(velocity.x) > 12.0:
+		_facing_left = velocity.x < 0.0
+
+	if _swing_cooldown > 0.0:
+		_swing_cooldown -= delta
+
+	if _anim_state != EnemyArt.State.MOVE:
+		_anim_timer -= delta
+		if _anim_timer > 0.0:
+			# Wind-up rolls straight into the strike; everything else returns to
+			# walking.
+			return
+		if _anim_state == EnemyArt.State.WINDUP:
+			_set_anim(EnemyArt.State.STRIKE, STRIKE_TIME)
+		else:
+			_set_anim(EnemyArt.State.MOVE, 0.0)
+			_swing_cooldown = 0.6
+		return
+
+	# Melee bodies wind up once the player is within reach. Shooters get their
+	# animation from _shoot() instead, at the moment they actually fire.
+	if data.ai != EnemyData.AI.SHOOTER and _swing_cooldown <= 0.0:
+		var reach := radius + MELEE_RANGE
+		if player_pos.distance_squared_to(global_position) < reach * reach:
+			_set_anim(EnemyArt.State.WINDUP, WINDUP_TIME)
+
+
+func _set_anim(state: int, span: float) -> void:
+	_anim_state = state
+	_anim_span = maxf(0.0001, span)
+	_anim_timer = span
+	queue_redraw()
+
+
+## Called by EnemyDirector after update_ai, on its own reduced cadence.
+func tick_visual(delta: float) -> void:
+	if not alive:
+		return
+	_redraw_timer -= delta
+	if _redraw_timer > 0.0:
+		return
+	_redraw_timer = REDRAW_INTERVAL
+	queue_redraw()
 
 
 ## Heading for anything that closes on the player.
@@ -265,6 +348,8 @@ func _approach(dir: Vector2, distance: float) -> Vector2:
 
 
 func _shoot(dir: Vector2) -> void:
+	_facing_left = dir.x < 0.0
+	_set_anim(EnemyArt.State.SHOOT, SHOOT_TIME)
 	if EffectSpawner.instance == null:
 		return
 	EffectSpawner.instance.spawn_enemy_projectile(
