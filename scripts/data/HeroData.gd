@@ -23,8 +23,9 @@ extends Resource
 @export var luck: float = 0.0
 
 @export_group("Loadout")
-## The one Power the hero deploys with. It occupies the first of the six slots.
-@export var starting_power_id: StringName = &"drone"
+## The weapon every operative carries in. It is granted before the run starts
+## and does not spend one of the six choosable slots.
+@export var starting_power_id: StringName = &"katana"
 
 @export_group("Skills")
 @export var passive_id: StringName = &""

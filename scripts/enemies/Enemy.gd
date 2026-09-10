@@ -25,6 +25,10 @@ var is_boss: bool = false
 var alive: bool = false
 
 var velocity: Vector2 = Vector2.ZERO
+## Crowd-avoidance force, written by EnemyDirector and read here. It is not
+## cleared per tick: the director recomputes it on its own cadence and this
+## enemy keeps pushing with the last value in between, which is what stops the
+## swarm from collapsing on the frames the separation pass skips.
 var separation: Vector2 = Vector2.ZERO
 var radius: float = 22.0
 var contact_damage: float = 8.0
@@ -39,6 +43,19 @@ var _ai_timer: float = 0.0
 var _charging: float = 0.0
 var _slow_factor: float = 1.0
 var _slow_timer: float = 0.0
+## Per-spawn personality: which way this one prefers to peel off around the
+## player, how it wanders, and a small speed offset. Together these are what
+## turn a wave from one moving blob into a crowd.
+var _flank: float = 1.0
+var _wander_phase: float = 0.0
+var _wander_rate: float = 1.0
+var _wander_amount: float = 0.2
+var _speed_jitter: float = 1.0
+## A standing offset from the player that this enemy actually steers at, re-rolled
+## slowly. Every enemy solving for the exact same point is what packs a chasing
+## pack into one solid mass; aiming a little off it spreads them into a cloud.
+var _target_offset: Vector2 = Vector2.ZERO
+var _offset_timer: float = 0.0
 var _points: PackedVector2Array = PackedVector2Array()
 var _fill: Color = Color.WHITE
 var _outline: Color = Color.WHITE
@@ -70,6 +87,27 @@ func pool_reset() -> void:
 	_hit_cooldowns.clear()
 	modulate = Color.WHITE
 	set_deferred("monitorable", true)
+	_roll_personality()
+
+
+## Re-rolled on every spawn, so a recycled node never inherits the approach of
+## the enemy that used it last.
+func _roll_personality() -> void:
+	var rng := RunManager.rng
+	_flank = 1.0 if rng.randf() < 0.5 else -1.0
+	_wander_phase = rng.randf() * TAU
+	_wander_rate = rng.randf_range(0.7, 1.9)
+	_wander_amount = rng.randf_range(0.16, 0.42)
+	# A wide speed spread is what strings a chasing pack out into a column with
+	# stragglers, instead of a rigid body moving as one.
+	_speed_jitter = rng.randf_range(0.80, 1.24)
+	_offset_timer = rng.randf_range(1.0, 4.0)
+	_reroll_target_offset()
+
+
+func _reroll_target_offset() -> void:
+	var rng := RunManager.rng
+	_target_offset = MathUtil.random_point_on_circle(rng, 1.0) * rng.randf_range(30.0, 170.0)
 
 
 func pool_sleep() -> void:
@@ -85,7 +123,7 @@ func configure(enemy_data: EnemyData, elite: bool, health_scale: float, damage_s
 	is_elite = elite and enemy_data.can_be_elite
 	is_boss = enemy_data.is_boss
 	radius = enemy_data.radius * (ELITE_SCALE if is_elite else 1.0)
-	move_speed = enemy_data.move_speed * (0.86 if is_elite else 1.0)
+	move_speed = enemy_data.move_speed * (0.86 if is_elite else 1.0) * _speed_jitter
 	contact_damage = enemy_data.contact_damage * damage_scale * (ELITE_DAMAGE_MULT if is_elite else 1.0)
 	xp_value = enemy_data.xp_value * (5 if is_elite else 1)
 	credit_value = enemy_data.credit_value * (4 if is_elite else 1)
@@ -152,23 +190,33 @@ func update_ai(delta: float, player_pos: Vector2) -> void:
 		if _slow_timer <= 0.0:
 			_slow_factor = 1.0
 
-	var to_player := player_pos - global_position
+	_offset_timer -= delta
+	if _offset_timer <= 0.0:
+		_offset_timer = RunManager.rng.randf_range(2.5, 6.0)
+		_reroll_target_offset()
+
+	# The standing offset spreads the *approach*; it is faded out at close range
+	# so the swarm still converges and can actually touch the player. Left at
+	# full strength it parks everything in a ring and the game stops biting.
+	var raw_distance := player_pos.distance_to(global_position)
+	var offset_scale := clampf((raw_distance - 120.0) / 400.0, 0.0, 1.0)
+	var to_player := player_pos + _target_offset * offset_scale - global_position
 	var dir := to_player.normalized()
 	var desired := Vector2.ZERO
 
 	match data.ai:
 		EnemyData.AI.CHASER:
-			desired = dir * move_speed
+			desired = _approach(dir, raw_distance) * move_speed
 		EnemyData.AI.DRIFTER:
 			# Weaves instead of beelining, which spreads the swarm out.
-			var wobble := dir.orthogonal() * sin(_time * 2.2 + float(get_instance_id() % 128)) * 0.55
-			desired = (dir + wobble).normalized() * move_speed
+			var wobble := dir.orthogonal() * sin(_time * 2.2 + _wander_phase) * 0.55
+			desired = (_approach(dir, raw_distance) + wobble).normalized() * move_speed
 		EnemyData.AI.CHARGER:
 			_ai_timer -= delta
 			if _charging > 0.0:
 				_charging -= delta
 				desired = velocity.normalized() * move_speed * data.charge_speed_mult
-			elif _ai_timer <= 0.0 and to_player.length() < 620.0:
+			elif _ai_timer <= 0.0 and raw_distance < 620.0:
 				_charging = 0.55
 				_ai_timer = data.charge_interval
 				desired = dir * move_speed * data.charge_speed_mult
@@ -177,16 +225,16 @@ func update_ai(delta: float, player_pos: Vector2) -> void:
 		EnemyData.AI.SHOOTER:
 			_ai_timer -= delta
 			var range_target := 340.0
-			var gap := to_player.length() - range_target
-			desired = dir * move_speed * clampf(gap / 120.0, -0.8, 1.0)
-			if _ai_timer <= 0.0 and to_player.length() < 720.0:
+			var gap := raw_distance - range_target
+			desired = _approach(dir, raw_distance) * move_speed * clampf(gap / 120.0, -0.8, 1.0)
+			if _ai_timer <= 0.0 and raw_distance < 720.0:
 				_ai_timer = data.shoot_interval
 				_shoot(dir)
 		EnemyData.AI.SPLITTER:
-			desired = dir * move_speed
+			desired = _approach(dir, raw_distance) * move_speed
 		EnemyData.AI.ORBITER:
 			var tangent := dir.orthogonal()
-			var radial := to_player.length() - data.orbit_radius
+			var radial := raw_distance - data.orbit_radius
 			desired = (tangent + dir * clampf(radial / 160.0, -1.0, 1.0)).normalized() * move_speed
 
 	desired += separation
@@ -197,7 +245,23 @@ func update_ai(delta: float, player_pos: Vector2) -> void:
 	global_position += velocity * delta
 	if _spin != 0.0:
 		rotation += _spin * delta
-	separation = Vector2.ZERO
+
+
+## Heading for anything that closes on the player.
+##
+## Walking straight at the target is what makes a swarm pile into a single dot:
+## every enemy solves for the same point and they end up stacked on it. Instead
+## each one peels onto its own side as it closes, so the crowd wraps around the
+## player and stays a crowd. A slow wander on top keeps neighbours from
+## converging on identical curves.
+func _approach(dir: Vector2, distance: float) -> Vector2:
+	# The peel starts a long way out, not just at arm's reach: a pack that only
+	# fans at the last moment has already arrived as a blob by then.
+	var wrap := clampf(1.0 - distance / 520.0, 0.0, 1.0)
+	var tangent := dir.orthogonal() * _flank
+	var wander := dir.orthogonal() * sin(_time * _wander_rate + _wander_phase) * _wander_amount
+	var heading := dir * (1.0 - 0.45 * wrap) + tangent * (0.85 * wrap) + wander
+	return heading.normalized() if heading.length_squared() > 0.0001 else dir
 
 
 func _shoot(dir: Vector2) -> void:

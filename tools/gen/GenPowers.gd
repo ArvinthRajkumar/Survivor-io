@@ -1,8 +1,9 @@
 class_name GenPowers
 extends RefCounted
-## Authoring source for the twelve upgrades: seven Powers and five Passive
-## Abilities. The player may own six of them in total, so each one has to be
-## worth a permanent slot rather than a filler pick.
+## Authoring source for the katana every operative carries plus the twelve
+## choosable upgrades: seven Powers and five Passive Abilities. The player may
+## own six of the twelve in total, so each one has to be worth a permanent slot
+## rather than a filler pick. The katana is granted and spends none of them.
 ##
 ## Run tools/generate_content.gd to rewrite resources/powers/*.tres from here.
 
@@ -10,7 +11,7 @@ const DIR := "res://resources/powers/"
 
 
 static func run() -> void:
-	for group in [_powers(), _passives()]:
+	for group in [_innate(), _powers(), _passives()]:
 		for power in group:
 			_save(power)
 
@@ -33,6 +34,39 @@ static func _base(id: StringName, name: String, order: int) -> PowerData:
 	power.art = id
 	power.category = PowerData.Category.POWER
 	return power
+
+
+# --- Innate weapon ----------------------------------------------------------
+
+## Granted at the start of every run. PowerLoadout.can_offer() is what stops it
+## being offered as a *new* pick, so its weight is an ordinary one: it still has
+## to compete for level-ups like everything else.
+static func _innate() -> Array[PowerData]:
+	var katana := _base(&"katana", "Katana", -1)
+	katana.behavior = PowerData.Behavior.KATANA
+	katana.description = "The blade you carry in. It cuts along the direction you are moving."
+	katana.tooltip = "Cuts where you move. Combo grows with level."
+	katana.damage = 22.0
+	katana.damage_per_level = 9.0
+	katana.cooldown = 0.72
+	katana.cooldown_mult_per_level = 0.90
+	katana.count = 1
+	katana.count_at_levels = PackedInt32Array([3, 5])
+	katana.area_per_level = 0.09
+	katana.knockback = 190.0
+	katana.hit_interval = 0.0
+	katana.level_notes = PackedStringArray([
+		"+9 damage, wider arc and faster recovery",
+		"A second cut follows every swing",
+		"+9 damage, longer reach",
+		"Third cut becomes a full spin that clears every side",
+	])
+	katana.color = Color(0.78, 0.88, 1.00)
+	katana.color_secondary = Color(1.00, 0.78, 0.36)
+	katana.rarity = 2
+	katana.weight = 1.1
+	var out: Array[PowerData] = [katana]
+	return out
 
 
 # --- Powers -----------------------------------------------------------------

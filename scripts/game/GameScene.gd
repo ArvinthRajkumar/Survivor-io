@@ -120,15 +120,21 @@ func _unhandled_input(event: InputEvent) -> void:
 	_on_pause_pressed()
 
 
-## Test-only pilot. It kites: drifts along a slow arc while steering away from
-## the local enemy centroid, which is roughly what a competent player does and
-## makes the soak run a fair signal about pacing.
+## Test-only pilot.
+##
+## It has to engage, not just kite. Every run now opens with a melee weapon that
+## cuts along the direction of travel, so a bot that only backs away kills
+## nothing, never levels, and makes the soak run a measurement of an empty room.
+## So it closes on the nearest enemy while it is healthy and peels off when it is
+## not — which is also roughly how the weapon is meant to be played.
 func _drive_autopilot(delta: float) -> void:
 	_autopilot_time += delta
 	# Deliberately below full tilt: a real player repositions rather than
 	# sprinting in a straight line forever, and a full-speed bot would simply
 	# outrun the swarm and never test close-range builds.
-	var drift := Vector2(cos(_autopilot_time * 0.35), sin(_autopilot_time * 0.27)) * 0.5
+	var drift := Vector2(cos(_autopilot_time * 0.35), sin(_autopilot_time * 0.27)) * 0.45
+	var healthy := player.health.current_health / maxf(1.0, player.health.max_health) > 0.45
+
 	var avoid := Vector2.ZERO
 	if enemies != null:
 		for enemy in enemies.get_in_radius(player.global_position, 240.0, 16):
@@ -138,6 +144,17 @@ func _drive_autopilot(delta: float) -> void:
 		# Capped so the pilot behaves like a player who accepts some contact
 		# rather than a perfect kiter that never lets anything near it.
 		avoid = avoid.limit_length(1.1)
+
+	var engage := Vector2.ZERO
+	if enemies != null and healthy:
+		var target := enemies.get_nearest(player.global_position, 800.0)
+		if target != null:
+			var to_target := target.global_position - player.global_position
+			# Stop short rather than standing inside it: the cut has reach, and
+			# walking through a body is how the pilot takes contact damage.
+			if to_target.length() > 90.0:
+				engage = to_target.normalized()
+
 	# Hazards telegraph before they arm, so a real player walks out of them.
 	for node in get_tree().get_nodes_in_group(&"hazards"):
 		var hazard := node as Node2D
@@ -147,7 +164,8 @@ func _drive_autopilot(delta: float) -> void:
 		var dist := offset.length()
 		if dist < 240.0:
 			avoid += offset.normalized() * (240.0 - dist) / 240.0 * 6.0
-	var heading := drift + avoid * 0.9
+
+	var heading := drift + engage * 0.95 + avoid * (0.5 if healthy else 1.3)
 	if heading.length_squared() < 0.0025:
 		heading = drift
 	player.set_move_input(heading.limit_length(1.0))

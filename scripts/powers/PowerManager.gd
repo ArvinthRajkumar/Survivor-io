@@ -13,6 +13,7 @@ extends Node2D
 signal loadout_synced
 
 const BEHAVIORS := {
+	PowerData.Behavior.KATANA: preload("res://scripts/powers/behaviors/KatanaPower.gd"),
 	PowerData.Behavior.DRONE: preload("res://scripts/powers/behaviors/DronePower.gd"),
 	PowerData.Behavior.DOMAIN: preload("res://scripts/powers/behaviors/DomainPower.gd"),
 	PowerData.Behavior.MOLOTOV: preload("res://scripts/powers/behaviors/MolotovPower.gd"),

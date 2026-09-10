@@ -51,7 +51,7 @@ static func _nova() -> HeroData:
 	hero.move_speed = 330.0
 	hero.cooldown_mult = 0.94
 	hero.crit_chance = 0.08
-	hero.starting_power_id = &"drone"
+	hero.starting_power_id = &"katana"
 	hero.passive_id = &"overclock"
 	hero.passive_name = "Overclock"
 	hero.passive_description = "Weapons cycle 12% faster and cover slightly more ground."
@@ -77,7 +77,7 @@ static func _bramble() -> HeroData:
 	hero.move_speed = 300.0
 	hero.armor = 2.0
 	hero.area_mult = 1.05
-	hero.starting_power_id = &"domain"
+	hero.starting_power_id = &"katana"
 	hero.passive_id = &"deep_roots"
 	hero.passive_name = "Deep Roots"
 	hero.passive_description = "Regenerates health continuously and carries a larger reserve."
@@ -103,7 +103,7 @@ static func _rift() -> HeroData:
 	hero.crit_chance = 0.10
 	hero.crit_damage = 1.75
 	hero.luck = 2.0
-	hero.starting_power_id = &"drill"
+	hero.starting_power_id = &"katana"
 	hero.passive_id = &"phase_step"
 	hero.passive_name = "Phase Step"
 	hero.passive_description = "Moves 14% faster and shrugs off a slice of all incoming damage."
@@ -128,7 +128,7 @@ static func _aegis() -> HeroData:
 	hero.move_speed = 280.0
 	hero.armor = 4.0
 	hero.damage_mult = 0.94
-	hero.starting_power_id = &"spinners"
+	hero.starting_power_id = &"katana"
 	hero.passive_id = &"bulwark_plating"
 	hero.passive_name = "Bulwark Plating"
 	hero.passive_description = "Heavy armour and a deep health pool, at the cost of a little speed."
@@ -153,7 +153,7 @@ static func _ember() -> HeroData:
 	hero.move_speed = 310.0
 	hero.damage_mult = 1.08
 	hero.area_mult = 1.10
-	hero.starting_power_id = &"molotov"
+	hero.starting_power_id = &"katana"
 	hero.passive_id = &"kindling"
 	hero.passive_name = "Kindling"
 	hero.passive_description = "Every effect covers 18% more ground and critical hits land much harder."

@@ -8,15 +8,18 @@ extends Control
 ##
 ## Layout, top to bottom: a status panel with the level badge, run clock and
 ## milestone bar; the boss banner; the floating log; then the bottom console with
-## the health bar, six power slots and the ultimate button. Everything is one
-## thumb's reach from the bottom of a phone screen.
+## the health bar, the slot row and the ultimate button. The slot row is seven
+## wide: the innate katana first, then the six the player actually spends.
+## Everything is one thumb's reach from the bottom of a phone screen.
 
 signal pause_pressed
 signal joystick_moved(direction: Vector2)
 
 const LOG_LIFETIME := 2.6
 const MAX_LOG_LINES := 3
-const SLOT_SIZE := Vector2(96, 96)
+## Six chosen slots plus the innate katana that never spends one.
+const SLOT_COUNT := PowerLoadout.MAX_SLOTS + 1
+const SLOT_SIZE := Vector2(88, 88)
 
 @onready var joystick: TouchJoystick = $Joystick
 
@@ -261,11 +264,15 @@ func _build_console() -> void:
 	_slot_row.mouse_filter = Control.MOUSE_FILTER_PASS
 	column.add_child(_slot_row)
 
-	for i in PowerLoadout.MAX_SLOTS:
+	for i in SLOT_COUNT:
 		var slot := PowerSlot.new()
 		slot.slot_index = i
+		# Slot 0 always holds the katana, and says so.
+		slot.innate = i == 0
 		slot.custom_minimum_size = SLOT_SIZE
-		slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		# Fixed, not expanding: stretched sockets stop being square and the
+		# artwork inside them starts to look stretched with them.
+		slot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		slot.hover_changed.connect(_on_slot_hover)
 		_slot_row.add_child(slot)
 		_slots.append(slot)
@@ -318,7 +325,7 @@ func _build_tooltip() -> void:
 # --- Slots and tooltip ------------------------------------------------------
 
 func _rebuild_slots() -> void:
-	var ids := RunManager.loadout.get_ids()
+	var ids := RunManager.loadout.get_ordered_ids()
 	for i in _slots.size():
 		if i < ids.size():
 			var data := ContentDB.get_power(ids[i])
@@ -338,7 +345,9 @@ func _on_slot_hover(slot: PowerSlot, hovered: bool) -> void:
 		_hide_tooltip()
 		return
 	_tooltip_target = slot
-	_tooltip_title.text = "%s  ·  Lv %d/%d" % [slot.data.display_name, slot.level, slot.data.max_level]
+	var prefix := "◆ " if slot.innate else ""
+	_tooltip_title.text = "%s%s  ·  Lv %d/%d" % [
+		prefix, slot.data.display_name, slot.level, slot.data.max_level]
 	_tooltip_body.text = slot.tooltip_line()
 	_tooltip.visible = true
 	_tooltip.reset_size()

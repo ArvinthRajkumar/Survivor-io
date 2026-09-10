@@ -5,13 +5,22 @@ extends Control
 ## In dynamic mode the stick appears wherever the thumb lands inside its zone,
 ## which is what makes the game comfortable to play with a single hand on a large
 ## phone. It also accepts mouse input so the game is testable on desktop.
+##
+## Two details do most of the work for how the game feels to steer:
+##  * the dead zone is *remapped*, not clipped. A stick that jumps straight to
+##    0.12 the instant it leaves the centre is what makes touch movement feel
+##    like it snaps; rescaling the remainder to 0..1 means the first millimetre
+##    of travel produces the smallest possible nudge.
+##  * once the thumb passes the edge of the ring the origin is dragged along
+##    behind it, so a long swipe never runs out of stick and the direction stays
+##    exactly under the thumb.
 
 signal moved(direction: Vector2)
 signal released
 
 const BASE_RADIUS := 130.0
 const KNOB_RADIUS := 58.0
-const DEAD_ZONE := 0.12
+const DEAD_ZONE := 0.10
 
 @export var dynamic: bool = true
 @export var fixed_position: Vector2 = Vector2(240, 1500)
@@ -79,11 +88,26 @@ func _update(pos: Vector2) -> void:
 	if not _active:
 		return
 	var offset := pos - _origin
-	if offset.length() > BASE_RADIUS:
-		offset = offset.normalized() * BASE_RADIUS
+	var distance := offset.length()
+	if distance > BASE_RADIUS:
+		# Drag the origin along so the stick never bottoms out mid-swipe.
+		if dynamic:
+			_origin += offset.normalized() * (distance - BASE_RADIUS)
+			offset = pos - _origin
+			distance = offset.length()
+		if distance > BASE_RADIUS:
+			offset = offset.normalized() * BASE_RADIUS
+			distance = BASE_RADIUS
 	_knob = _origin + offset
-	var raw := offset / BASE_RADIUS
-	_direction = Vector2.ZERO if raw.length() < DEAD_ZONE else raw
+
+	var magnitude := distance / BASE_RADIUS
+	if magnitude <= DEAD_ZONE:
+		_direction = Vector2.ZERO
+	else:
+		# Rescale past the dead zone so the very first movement is tiny rather
+		# than an immediate jump to the dead-zone value.
+		var scaled := (magnitude - DEAD_ZONE) / (1.0 - DEAD_ZONE)
+		_direction = offset.normalized() * clampf(scaled, 0.0, 1.0)
 	moved.emit(_direction)
 
 

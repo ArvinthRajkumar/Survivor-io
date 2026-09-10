@@ -118,9 +118,13 @@ func configure(selected_hero: HeroData, selected_level: LevelData, run_seed: int
 	_apply_hero_rank()
 	_apply_meta_upgrades()
 	_apply_relics()
-	if hero != null:
-		# The starting Power takes the first of the six slots.
-		loadout.add_or_level(hero.starting_power_id)
+	# Every operative carries a katana in. It is granted before the run starts
+	# and spends none of the six choosable slots, so the first level-up is a
+	# genuinely open choice rather than a forced second pick.
+	var innate := hero.starting_power_id if hero != null else PowerLoadout.INNATE_ID
+	if String(innate).is_empty():
+		innate = PowerLoadout.INNATE_ID
+	loadout.add_or_level(innate)
 	run_configured.emit(hero, level_data)
 
 

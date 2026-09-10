@@ -63,7 +63,9 @@ func _make_resume_card() -> Control:
 	var accent: Color = hero.accent if hero != null else Palette.GOLD
 	var card := make_card(accent, 200)
 	card.disabled = true
-	var slots := (saved.get("loadout", {}) as Dictionary).size()
+	var saved_loadout := saved.get("loadout", {}) as Dictionary
+	# The katana is granted, so it never counts against the six.
+	var slots := maxi(0, saved_loadout.size() - (1 if saved_loadout.has(String(PowerLoadout.INNATE_ID)) else 0))
 	fill_card(card, accent, hero.portrait_shape if hero != null else 2,
 		"Run in progress",
 		"%s · %s" % [

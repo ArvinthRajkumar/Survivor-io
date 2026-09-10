@@ -4,8 +4,10 @@ extends Control
 ##
 ## A slot is either filled with an owned Power/Passive or shown as an empty
 ## socket, so the six-slot budget is legible at a glance rather than something
-## the player has to remember. Filled slots draw the power's own artwork, its
-## level pips, and — for Powers — a cooldown sweep.
+## the player has to remember. The leading slot is the innate katana, which is
+## always filled and wears a gold corner so it never reads as one of the six.
+## Filled slots draw the power's own artwork, its level pips, and — for Powers —
+## a cooldown sweep.
 ##
 ## Hovering (or touching and holding, on a phone) raises `hover_changed`, which
 ## the HUD turns into a tooltip.
@@ -18,6 +20,9 @@ var data: PowerData
 var level: int = 0
 var charge: float = 1.0
 var slot_index: int = 0
+## The innate weapon slot. It is always filled and is drawn apart from the six
+## choosable sockets so the slot budget stays honest at a glance.
+var innate: bool = false
 
 var _phase: float = 0.0
 var _hovered: bool = false
@@ -28,7 +33,8 @@ var _max_flash: float = 0.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	custom_minimum_size = Vector2(96, 96)
+	if custom_minimum_size == Vector2.ZERO:
+		custom_minimum_size = Vector2(88, 88)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 
@@ -143,8 +149,15 @@ func _draw() -> void:
 		border = Color.WHITE
 	draw_rect(local, border, false, 3.0 if (maxed or _hovered) else 2.0)
 
-	# Passives get a subtle corner notch so the two categories read apart even
-	# before you read the icon.
+	# The innate weapon wears a gold corner wedge; passives wear an accent one.
+	# Together they let the three kinds of entry read apart before the icon does.
+	if innate:
+		var wedge := PackedVector2Array([
+			local.position,
+			local.position + Vector2(18.0, 0.0),
+			local.position + Vector2(0.0, 18.0),
+		])
+		draw_colored_polygon(wedge, Color(1.0, 0.82, 0.38, 0.9))
 	if data.is_passive():
 		var notch := PackedVector2Array([
 			local.position + Vector2(local.size.x - 16.0, 0.0),

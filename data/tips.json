@@ -7,8 +7,16 @@
 	  "text": "Powers change at max level, not just get bigger — the Drone starts aiming, the Spinners stop resting."
 	},
 	{
+	  "id": "katana",
+	  "text": "The katana cuts along the way you are moving. Walking into a crowd and walking out of it are two different attacks."
+	},
+	{
+	  "id": "katana_slots",
+	  "text": "The katana is free — it never spends one of your six slots, so it is always worth levelling."
+	},
+	{
 	  "id": "positioning",
-	  "text": "You never aim. Where you stand is the whole decision — keep the swarm on one side of you."
+	  "text": "You never aim anything but the blade. Where you stand is the whole decision — keep the swarm on one side of you."
 	},
 	{
 	  "id": "hazards",

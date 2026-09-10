@@ -47,6 +47,8 @@ static func _shade(color: Color, amount: float) -> Color:
 static func draw(ci: CanvasItem, art_id: StringName, center: Vector2, radius: float,
 		color: Color, secondary: Color, phase: float = 0.0) -> void:
 	match art_id:
+		&"katana":
+			draw_katana(ci, center, radius, color, secondary, phase)
 		&"drone":
 			draw_drone(ci, center, radius, color, secondary, phase, false)
 		&"healing_drone":
@@ -125,6 +127,115 @@ static func draw_drone(ci: CanvasItem, c: Vector2, r: float, color: Color,
 		ci.draw_line(c + Vector2(0.0, bob + r * 0.25), muzzle, dark, r * 0.20, true)
 		var heat := 0.45 + 0.55 * absf(sin(phase * 6.0))
 		ci.draw_circle(muzzle, r * 0.16 * heat, Color(secondary.r, secondary.g, secondary.b, heat))
+
+
+## A katana held point-up: curved blade with a hamon temper line, a lozenge
+## tsuba guard, a wrapped tsuka, and a drifting glint that travels the edge.
+## The same geometry is reused by the world sprite the player carries, so the
+## icon and the weapon in your hands are unmistakably one object.
+static func draw_katana(ci: CanvasItem, c: Vector2, r: float, color: Color,
+		secondary: Color, phase: float) -> void:
+	var tilt := -0.42 + sin(phase * 1.6) * 0.03
+	var steel := Color(0.86, 0.91, 0.98)
+	var edge := Color(1.0, 1.0, 1.0, 0.95)
+
+	# Blade. The curve builds toward the tip rather than bulging in the middle:
+	# a sine bulge reads as a scimitar, while an arc that only deviates near the
+	# point is what makes a katana a katana.
+	var span := r * 1.62
+	var curve := r * 0.30
+	var blade := PackedVector2Array()
+	for i in 9:
+		var t := float(i) / 8.0
+		blade.append(Vector2(-curve * t * t - r * 0.055, -r * 0.34 - span * t * 0.62))
+	for i in range(8, -1, -1):
+		var t2 := float(i) / 8.0
+		blade.append(Vector2(-curve * t2 * t2 + r * 0.085, -r * 0.34 - span * t2 * 0.62))
+	_fill(ci, _poly(blade, tilt, c), steel, _shade(steel, 0.35), maxf(1.0, r * 0.05))
+
+	# Hamon: the wavy temper line along the cutting edge.
+	var hamon := PackedVector2Array()
+	for i in 9:
+		var t3 := float(i) / 8.0
+		hamon.append(Vector2(
+			-curve * t3 * t3 + r * 0.045 + sin(t3 * 9.0) * r * 0.012,
+			-r * 0.34 - span * t3 * 0.62))
+	ci.draw_polyline(_poly(hamon, tilt, c), Color(edge.r, edge.g, edge.b, 0.75),
+		maxf(1.0, r * 0.035), true)
+
+	# Glint travelling up the edge.
+	var g := fposmod(phase * 0.75, 1.0)
+	var glint := Vector2(-curve * g * g + r * 0.05, -r * 0.34 - span * g * 0.62).rotated(tilt) + c
+	ci.draw_circle(glint, r * 0.11, Color(1, 1, 1, 0.55 * sin(g * PI)))
+
+	# Tsuba (guard): a lozenge with a bright rim.
+	var guard := PackedVector2Array([
+		Vector2(0.0, -r * 0.52), Vector2(r * 0.30, -r * 0.34),
+		Vector2(0.0, -r * 0.16), Vector2(-r * 0.30, -r * 0.34),
+	])
+	_fill(ci, _poly(guard, tilt, c), _shade(secondary, 0.25), secondary, maxf(1.0, r * 0.05))
+
+	# Tsuka (hilt) with its diamond ito wrap.
+	var hilt := PackedVector2Array([
+		Vector2(-r * 0.115, -r * 0.30), Vector2(r * 0.115, -r * 0.30),
+		Vector2(r * 0.095, r * 0.72), Vector2(-r * 0.095, r * 0.72),
+	])
+	_fill(ci, _poly(hilt, tilt, c), _shade(color, 0.62), _shade(color, 0.30), maxf(1.0, r * 0.05))
+	for i in 4:
+		var y := -r * 0.18 + r * 0.22 * float(i)
+		var a := Vector2(-r * 0.12, y).rotated(tilt) + c
+		var b := Vector2(r * 0.12, y + r * 0.10).rotated(tilt) + c
+		ci.draw_line(a, b, Color(secondary.r, secondary.g, secondary.b, 0.65), maxf(1.0, r * 0.04), true)
+		ci.draw_line(Vector2(-r * 0.12, y + r * 0.10).rotated(tilt) + c,
+			Vector2(r * 0.12, y).rotated(tilt) + c,
+			Color(secondary.r, secondary.g, secondary.b, 0.35), maxf(1.0, r * 0.03), true)
+
+	# Kashira (pommel cap).
+	ci.draw_circle(Vector2(0.0, r * 0.74).rotated(tilt) + c, r * 0.11, secondary)
+
+
+## The crescent left behind by a sweep. `t` runs 0 (just struck) to 1 (gone);
+## `arc` is the total swept angle and `facing` its centre direction.
+static func draw_slash(ci: CanvasItem, c: Vector2, reach: float, arc: float,
+		facing: float, t: float, color: Color, secondary: Color) -> void:
+	var fade := 1.0 - t
+	# A sweep that has barely started has no area yet; drawing it would hand the
+	# renderer a degenerate polygon. A full turn is capped just short of closing
+	# for the same reason: at exactly TAU the band's two ends meet and the ring
+	# stops being a simple polygon.
+	if fade <= 0.01 or arc <= 0.06 or reach <= 1.0:
+		return
+	arc = minf(arc, TAU - 0.14)
+	# The crescent grows outward and thins as it dissipates.
+	var outer := reach * (0.82 + 0.26 * t)
+	# A ribbon, not a wedge: a thick filled cone reads as a shape sitting on the
+	# ground, while a thin band with a hot edge reads as something that moved.
+	var inner := outer * (0.78 + 0.18 * t)
+	var steps := 16
+	var band := PackedVector2Array()
+	for i in steps + 1:
+		var a := facing - arc * 0.5 + arc * float(i) / float(steps)
+		band.append(c + Vector2(cos(a), sin(a)) * outer)
+	for i in range(steps, -1, -1):
+		var a2 := facing - arc * 0.5 + arc * float(i) / float(steps)
+		band.append(c + Vector2(cos(a2), sin(a2)) * inner)
+	ci.draw_colored_polygon(band, Color(secondary.r, secondary.g, secondary.b, 0.30 * fade * fade))
+
+	# Bright cutting edge on the outside of the band.
+	var lead := PackedVector2Array()
+	for i in steps + 1:
+		var a3 := facing - arc * 0.5 + arc * float(i) / float(steps)
+		lead.append(c + Vector2(cos(a3), sin(a3)) * outer)
+	ci.draw_polyline(lead, Color(secondary.r, secondary.g, secondary.b, 0.95 * fade),
+		maxf(1.5, reach * 0.055 * fade), true)
+	ci.draw_polyline(lead, Color(1, 1, 1, 0.75 * fade * fade), maxf(1.0, reach * 0.022), true)
+
+	# Sparks flying off the leading tip.
+	var tip := c + Vector2(cos(facing + arc * 0.5), sin(facing + arc * 0.5)) * outer
+	for i in 3:
+		var sa := facing + arc * 0.5 + (float(i) - 1.0) * 0.35
+		ci.draw_line(tip, tip + Vector2(cos(sa), sin(sa)) * reach * 0.20 * fade,
+			Color(1, 1, 1, 0.5 * fade), 2.0, true)
 
 
 ## A hex-lattice bubble: two counter-rotating hex rings plus a bright core.

@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_katana"]
+
+[resource]
+script = ExtResource("1_katana")
+id = &"katana"
+display_name = "Katana"
+behavior = 8
+order = -1
+description = "The blade you carry in. It cuts along the direction you are moving."
+tooltip = "Cuts where you move. Combo grows with level."
+level_notes = PackedStringArray("+9 damage, wider arc and faster recovery", "A second cut follows every swing", "+9 damage, longer reach", "Third cut becomes a full spin that clears every side")
+damage = 22.0
+cooldown = 0.72
+count = 1
+knockback = 190.0
+pierce = 0
+hit_interval = 0.0
+damage_per_level = 9.0
+cooldown_mult_per_level = 0.9
+area_per_level = 0.09
+count_at_levels = PackedInt32Array(3, 5)
+color = Color(0.78, 0.88, 1, 1)
+color_secondary = Color(1, 0.78, 0.36, 1)
+art = &"katana"
+rarity = 2
+weight = 1.1

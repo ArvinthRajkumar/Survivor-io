@@ -1,14 +1,16 @@
 # Last Light: Swarmfall
 
 A portrait-mode mobile roguelite survival shooter built in **Godot 4.x** with **GDScript**.
-You hold one thumb on the screen and move; everything else — aiming, firing, target
-selection — happens on its own. Runs are **endless**: there is no timer to beat and no
+You hold one thumb on the screen and move. Everything you collect during a run aims and
+fires on its own — except the **katana** you carry in, which cuts along the direction you
+are moving, so steering is aiming. Runs are **endless**: there is no timer to beat and no
 victory screen. The swarm gets denser and harder for as long as you stay alive, and the
 only question is how long that is.
 
 Between level-ups you build a loadout out of **twelve upgrades** — seven Powers and five
 Passive Abilities — but you may only ever own **six of them**. Nothing can be swapped
-out, so every pick is a commitment.
+out, so every pick is a commitment. The katana is free: it is granted before the run
+starts, spends none of the six slots, and levels like anything else.
 
 Everything in the project is original. There are no imported textures, fonts, or audio
 files: all visuals are drawn procedurally with Godot's 2D draw calls, and every sound
@@ -72,7 +74,7 @@ letterboxing.
 
 | Input | Action |
 | --- | --- |
-| Drag anywhere on the lower ~60% of the screen | Move. The stick appears under your thumb ("dynamic" mode) |
+| Drag anywhere on the lower ~60% of the screen | Move, and swing the katana the way you are moving. The stick appears under your thumb ("dynamic" mode) |
 | `ULT` button (bottom right) | Fire the hero ultimate once its ring is full |
 | `II` button (top right) | Pause |
 | WASD / arrows *(desktop)* | Move |
@@ -82,8 +84,10 @@ letterboxing.
 Everything is reachable with one thumb. In **Settings** the stick can be switched to
 the right side, or pinned to a fixed position instead of following your thumb.
 
-There is no attack button by design: weapons fire on their own cooldowns and pick
-their own targets, so the only decision you make moment to moment is where to stand.
+There is no attack button by design. Everything you pick up fires on its own cooldown
+and chooses its own targets, and the katana swings on its own too — but along the
+heading you are holding, so where you walk decides what gets cut. The only decision you
+make moment to moment is where to stand.
 
 ## Project structure
 
@@ -94,7 +98,7 @@ scenes/
   player/    Player.tscn
   enemies/   Enemy.tscn, Boss.tscn
   combat/    Projectile.tscn, DamageZone.tscn, EnemyProjectile.tscn
-  powers/    Companion, SawBlade, DrillBody, ThrownBottle, LaserStrike
+  powers/    SlashArc, Companion, SawBlade, DrillBody, ThrownBottle, LaserStrike
   ui/        HUD, UpgradePanel, PauseMenu, Results, RevivePrompt, Tutorial
   levels/    Hazard.tscn
   fx/        DamageNumber, HitSpark, Burst
@@ -125,7 +129,7 @@ resources/
 assets/
   icons/     icon.svg
 data/        (reserved for shipped JSON; the save file lives in user://)
-tools/       content generator, soak harness
+tools/       content generator, soak harness, character preview
 ```
 
 ### Autoloads
@@ -160,6 +164,29 @@ spatial hash over their positions, and uses it for crowd separation and for the
 `monitorable` but not `monitoring` — projectiles and the player's hurtbox look for
 enemies, never the other way around.
 
+**Keeping the swarm a crowd.** A swarm that all solves for the same point arrives as one
+blob, and a blob reads as a single big enemy rather than as danger from every side.
+Three things stop that, and all three matter:
+
+  * every enemy peels onto its own side as it closes (`Enemy._approach()`), so the crowd
+    wraps around the player instead of converging on them;
+  * each spawn re-rolls a small personality — which way it flanks, how it wanders, a few
+    percent of speed either way — so neighbours never trace identical curves;
+  * separation is computed against *personal space*, not touching hitboxes, and the force
+    persists between passes. The pass runs every few frames for cost; clearing the force
+    per tick instead of per pass would leave most frames steering with no avoidance at
+    all, which is what visible clumping actually is.
+
+Spawning scatters along and across the view edge for the same reason: a batch that shares
+one exact bearing arrives as a knot and never really separates.
+
+**Movement.** The stick is folded together with the keyboard, smoothed, and then turned
+into an acceleration rather than an instant velocity, with braking quicker than
+acceleration so stopping feels deliberate instead of floaty. The stick's dead zone is
+*remapped* rather than clipped — a stick that jumps straight to its dead-zone value the
+instant it leaves centre is what makes touch movement feel like it snaps — and the origin
+follows the thumb past the edge of the ring so a long swipe never runs out of stick.
+
 **Powers.** A power is a `PowerData` resource plus one behaviour script from
 `scripts/powers/behaviors/`. `PowerBase` owns cooldowns, stat scaling, crit rolls and
 the per-level curves, so a behaviour only implements what makes it different —
@@ -170,7 +197,10 @@ they are pure `stat_flats` / `stat_multipliers` bundles applied to `PlayerStats`
 
 **The six-slot rule.** `PowerLoadout` holds what has been picked and enforces the cap.
 Once six entries are owned, `can_offer()` rejects anything new, so a level-up can only
-deepen what you already have. There is no swap path by design.
+deepen what you already have. There is no swap path by design. The katana
+(`PowerLoadout.INNATE_ID`) is the one exception: it lives in the same dictionary so it
+levels through the same path, but it is excluded from the count and never offered as a
+new pick, because it was never chosen.
 
 **Projectiles and zones.** Every moving hitbox in the game is one pooled
 `Projectile.tscn` (linear, homing, orbiting, bouncing, returning, spiralling — plus
@@ -205,7 +235,7 @@ godot --headless --path . --script res://tools/generate_content.gd
 | File | Content |
 | --- | --- |
 | `tools/gen/GenHeroes.gd` | The five operatives, their stats, passives and ultimates |
-| `tools/gen/GenPowers.gd` | Seven Powers and five Passive Abilities, with level curves |
+| `tools/gen/GenPowers.gd` | The katana, seven Powers and five Passive Abilities, with level curves |
 | `tools/gen/GenUpgrades.gd` | Eight Research Lab (meta) upgrades |
 | `tools/gen/GenEnemies.gd` | 28 enemy archetypes (five per sector, plus mid-boss and boss) |
 | `tools/gen/GenLevels.gd` | Four sectors: palette, hazards, wave script, boss timings |
@@ -223,6 +253,23 @@ aware that re-running the generator overwrites them.
 | **Rift** | Dimensional scout | Phase Step — faster, shrugs off a slice of damage | **Rift Walk** — blinks into the crowd leaving damaging tears |
 | **Aegis** | Shield soldier | Bulwark Plating — heavy armour, slower | **Bulwark** — invulnerable, reflects every hit back |
 | **Ember** | Firecaster | Kindling — much larger areas, harder crits | **Firewall** — a growing wall of flame rolls outward |
+
+### The katana
+
+Every operative carries one, and it is the only weapon in the game that the player aims.
+It cuts along the direction you are moving — standing still keeps the last heading, so
+backing off a crowd and stopping leaves your edge pointed at it. Swings alternate
+handedness, so holding a direction reads as a combo rather than one animation looping.
+
+| Level | What changes |
+| --- | --- |
+| 1 | One cut per swing, a little over a quadrant wide |
+| 2 | More damage, a wider arc and faster recovery |
+| 3 | A second cut follows every swing |
+| 4 | More damage and longer reach |
+| 5 | The third cut becomes a full spin that clears every side at once |
+
+It runs to level 5 like everything else, but it costs none of the six slots.
 
 ### Powers
 
@@ -314,6 +361,15 @@ godot --path . -- --shot --screen=game --no-tutorial
 godot --path . -- --pilot
 ```
 
+The player character is drawn entirely in code, so there is no sprite sheet to look at
+while working on it. `tools/preview_visual.gd` renders it large on a flat background in
+a handful of poses — idle, running sideways, running away from the camera, and mid-swing
+— and writes the frames to `user://preview_*.png`:
+
+```bash
+godot --path . --script res://tools/preview_visual.gd
+```
+
 `tools/soak.ps1` sweeps combinations and reports a win rate — use it to judge balance
 changes, because a single run is dominated by RNG:
 
@@ -325,6 +381,11 @@ Drop a Godot binary in `tools/` or pass `-Godot <path>`.
 
 ### Balance snapshot
 
+> **Stale.** The table below was measured before the katana became the starting
+> weapon and before the pilot was taught to close to melee range. Both change the
+> early game materially, so treat these as the last known-good figures rather than a
+> description of this build, and re-run the sweep before trusting them again.
+
 Measured with the automated pilot on a fresh profile (no Research Lab investment,
 no relics), three seeds per sector:
 
@@ -335,12 +396,13 @@ no relics), three seeds per sector:
 | Flooded Vault | 2/2 clear | — |
 | Moonfall Ridge | 0/3 — reaches ~10:50 of 13:00 | 2/2 clear |
 
-All five heroes clear Neon Ruins on a fresh profile with comparable results
-(level 27–32, 4 600–6 400 kills), so no starting weapon is a trap.
-
 Moonfall Ridge is deliberately the wall: a no-investment run gets roughly 85% of the
 way, and a few levels of lab research closes the gap. That is the progression gate
 working, not a difficulty bug.
+
+Every hero now opens with the same katana, so the old per-hero starting-weapon
+comparison no longer measures anything; what the sweep is for now is whether each
+hero's stat profile and ultimate still carry a run once the picks start landing.
 
 ## Performance notes
 
@@ -427,7 +489,9 @@ Things a shipping build would still want, listed honestly:
 - **No localisation.** All strings are inline English.
 - **Audio is functional, not final.** The synthesised loops do their job but are a
   placeholder for composed music.
-- **Balance is tuned against an automated pilot**, which kites better than a new
-  player and worse than an expert. See the [balance snapshot](#balance-snapshot) for
-  what that actually measures.
+- **Balance is tuned against an automated pilot**, which now closes to melee range
+  while healthy and peels off when it is not — closer to how the katana is meant to be
+  played than the old pure kiter, but still better than a new player and worse than an
+  expert. See the [balance snapshot](#balance-snapshot) for what that actually
+  measures.
 - **No analytics, ads, IAP, or cloud save** — the meta economy is entirely local.

@@ -12,6 +12,16 @@ signal ultimate_state_changed(ready_ratio: float, active: bool)
 
 const CONTACT_TICK := 0.30
 const DEATH_FADE := 0.4
+## Movement feel. The stick is sampled raw, then smoothed twice: once on the
+## input itself (which removes thumb jitter and the step a touch stick makes
+## when it re-centres) and once on the velocity (which gives the character
+## weight). Both are fast enough that the character still answers within a
+## couple of frames — the goal is to take the chatter out, not the response.
+const INPUT_SMOOTH := 26.0
+const ACCELERATION := 3400.0
+const BRAKING := 4200.0
+## Below this input magnitude the stick counts as released.
+const INPUT_EPSILON := 0.06
 
 @onready var health: HealthComponent = $Health
 @onready var hurtbox: Area2D = $Hurtbox
@@ -23,7 +33,10 @@ const DEATH_FADE := 0.4
 
 var stats: PlayerStats
 var hero: HeroData
+## Raw stick/keyboard input for this frame.
 var move_input: Vector2 = Vector2.ZERO
+## The smoothed heading actually used to drive movement and the animation.
+var move_dir: Vector2 = Vector2.ZERO
 var facing: Vector2 = Vector2.DOWN
 var is_dead: bool = false
 var invulnerable_timer: float = 0.0
@@ -97,6 +110,12 @@ func set_move_input(dir: Vector2) -> void:
 	move_input = dir.limit_length(1.0)
 
 
+## True while the player is actually driving the character, which the katana
+## uses to decide between "cut where I am going" and "cut where I last went".
+func is_moving() -> bool:
+	return move_dir.length_squared() > 0.02
+
+
 func _physics_process(delta: float) -> void:
 	if is_dead:
 		velocity = Vector2.ZERO
@@ -109,19 +128,45 @@ func _physics_process(delta: float) -> void:
 			health.invulnerable = false
 			visual.call("set_shielded", false)
 
-	var dir := move_input
-	if dir.length_squared() < 0.01:
-		dir = Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	var speed := _base_speed * stats.get_stat(&"move_speed_mult") if stats != null else _base_speed
-	velocity = dir * speed + _knockback
-	_knockback = _knockback.lerp(Vector2.ZERO, clampf(delta * 8.0, 0.0, 1.0))
-	if dir.length_squared() > 0.02:
-		facing = dir.normalized()
-	move_and_slide()
-	visual.call("set_motion", dir, delta)
+	_step_movement(delta)
 
 	_tick_contact_damage(delta)
 	_tick_regen(delta)
+
+
+## Movement is the only thing the player drives directly, so it gets the care.
+##
+## The stick is folded together with the keyboard, smoothed, and then turned into
+## an acceleration rather than an instant velocity. Braking is quicker than
+## acceleration, which is what makes stopping feel deliberate instead of floaty,
+## and the heading is smoothed separately so a flick across the stick curves the
+## character around rather than teleporting its facing.
+func _step_movement(delta: float) -> void:
+	var raw := move_input
+	if raw.length_squared() < 0.01:
+		raw = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	raw = raw.limit_length(1.0)
+
+	var blend := clampf(delta * INPUT_SMOOTH, 0.0, 1.0)
+	move_dir = move_dir.lerp(raw, blend)
+	if move_dir.length() < INPUT_EPSILON and raw.length_squared() < 0.0001:
+		move_dir = Vector2.ZERO
+
+	var speed := _base_speed * (stats.get_stat(&"move_speed_mult") if stats != null else 1.0)
+	var target := move_dir * speed
+	var rate := ACCELERATION if target.length_squared() > 1.0 else BRAKING
+	var travel := velocity - _knockback
+	travel = travel.move_toward(target, rate * delta)
+	velocity = travel + _knockback
+	_knockback = _knockback.lerp(Vector2.ZERO, clampf(delta * 8.0, 0.0, 1.0))
+
+	# Facing turns toward the heading instead of snapping, so the katana never
+	# cuts at an angle the character was not visibly moving in.
+	if move_dir.length_squared() > 0.02:
+		var want := move_dir.normalized()
+		facing = facing.slerp(want, clampf(delta * 18.0, 0.0, 1.0)).normalized()
+	move_and_slide()
+	visual.call("set_motion", move_dir, travel, delta)
 
 
 ## Enemies deal damage by touching the player; sampling on a timer is far

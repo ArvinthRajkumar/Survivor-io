@@ -12,11 +12,13 @@ const SAW_SCENE := preload("res://scenes/powers/SawBlade.tscn")
 const DRILL_SCENE := preload("res://scenes/powers/DrillBody.tscn")
 const BOTTLE_SCENE := preload("res://scenes/powers/ThrownBottle.tscn")
 const LASER_SCENE := preload("res://scenes/powers/LaserStrike.tscn")
+const SLASH_SCENE := preload("res://scenes/powers/SlashArc.tscn")
 
 ## Hard ceilings so a runaway build cannot tank the frame rate.
 const MAX_PROJECTILES := 260
 const MAX_ZONES := 56
 const MAX_LASERS := 40
+const MAX_SLASHES := 18
 
 
 func _ready() -> void:
@@ -28,6 +30,7 @@ func _ready() -> void:
 	PoolManager.register(DRILL_SCENE, self, 10)
 	PoolManager.register(BOTTLE_SCENE, self, 12)
 	PoolManager.register(LASER_SCENE, self, 16)
+	PoolManager.register(SLASH_SCENE, self, 10)
 
 
 func _exit_tree() -> void:
@@ -104,8 +107,19 @@ func spawn_laser(cfg: Dictionary) -> LaserStrike:
 	return node
 
 
+func spawn_slash(cfg: Dictionary) -> SlashArc:
+	if PoolManager.active_count(SLASH_SCENE) >= MAX_SLASHES:
+		return null
+	var node := PoolManager.acquire(SLASH_SCENE) as SlashArc
+	if node == null:
+		return null
+	node.global_position = cfg.get("position", Vector2.ZERO)
+	node.configure(cfg)
+	return node
+
+
 func clear_all() -> void:
 	PoolManager.release_group(&"projectiles")
 	PoolManager.release_group(&"damage_zones")
-	for group in [&"companions", &"saw_blades", &"drills", &"bottles", &"laser_strikes"]:
+	for group in [&"companions", &"saw_blades", &"drills", &"bottles", &"laser_strikes", &"slashes"]:
 		PoolManager.release_group(group)

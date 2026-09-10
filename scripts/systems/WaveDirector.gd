@@ -146,11 +146,13 @@ func _spawn_batch(wave: WaveData) -> void:
 			WaveData.Formation.RING:
 				director.spawn_offscreen(data, elite, TAU * float(i) / float(wave.batch_size))
 			WaveData.Formation.ARC:
-				director.spawn_offscreen(data, elite, base_angle + (float(i) - float(wave.batch_size) * 0.5) * 0.18)
+				director.spawn_offscreen(data, elite, base_angle + (float(i) - float(wave.batch_size) * 0.5) * 0.26)
 			WaveData.Formation.STREAM:
-				director.spawn_offscreen(data, elite, base_angle + RunManager.rng.randf_range(-0.06, 0.06))
+				director.spawn_offscreen(data, elite, base_angle + RunManager.rng.randf_range(-0.16, 0.16))
 			WaveData.Formation.BURST:
-				director.spawn_offscreen(data, elite, base_angle)
+				# Spread rather than stacked: a burst that shares one exact bearing
+				# arrives as a single blob and reads as one big enemy.
+				director.spawn_offscreen(data, elite, base_angle + RunManager.rng.randf_range(-0.42, 0.42))
 			_:
 				director.spawn_offscreen(data, elite)
 

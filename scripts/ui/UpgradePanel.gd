@@ -115,7 +115,7 @@ func _refresh_header() -> void:
 func _draw_slot_pips() -> void:
 	var ci := _slot_pips
 	var loadout := RunManager.loadout
-	var ids := loadout.get_ids()
+	var ids := loadout.get_chosen_ids()
 	var total := PowerLoadout.MAX_SLOTS
 	var gap := 10.0
 	var width := (ci.size.x - gap * float(total - 1)) / float(total)

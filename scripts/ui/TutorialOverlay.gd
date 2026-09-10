@@ -8,12 +8,16 @@ const PAGES: Array[Dictionary] = [
 		"body": "Drag anywhere on the lower half of the screen. The stick appears under your thumb, so one hand is enough.",
 	},
 	{
+		"title": "KATANA",
+		"body": "You always carry a blade, and it cuts along the way you are moving. Steering is aiming.",
+	},
+	{
 		"title": "AUTO-FIRE",
-		"body": "Your powers aim and fire on their own. Positioning is the whole game.",
+		"body": "Everything else aims and fires on its own. Positioning is the whole game.",
 	},
 	{
 		"title": "SIX SLOTS",
-		"body": "Collect shards to level up, then pick a Power or Ability. You get six slots for the whole run, so choose deliberately.",
+		"body": "Collect shards to level up, then pick a Power or Ability. Six slots for the whole run — the katana costs none of them.",
 	},
 ]
 

@@ -7,6 +7,11 @@ extends RefCounted
 ## are owned the offer generator stops proposing new ones entirely — from that
 ## point a level-up can only deepen what you already have. Nothing can be
 ## swapped out, so an early pick is a commitment.
+##
+## The katana is the exception: every operative carries one in, so it is granted
+## before the run starts and spends none of the six. It still levels like
+## anything else, which is why it lives in this dictionary rather than off to one
+## side — it is simply not counted against the budget.
 
 signal entry_added(data: PowerData, level: int)
 signal entry_leveled(data: PowerData, level: int)
@@ -14,6 +19,8 @@ signal entry_maxed(data: PowerData)
 signal changed
 
 const MAX_SLOTS := 6
+## Granted at the start of every run and excluded from the slot budget.
+const INNATE_ID := &"katana"
 
 ## StringName -> int level
 var levels: Dictionary = {}
@@ -24,16 +31,44 @@ func clear() -> void:
 	changed.emit()
 
 
+## Only chosen entries count; the innate weapon is free.
 func slots_used() -> int:
-	return levels.size()
+	var used := levels.size()
+	if levels.has(INNATE_ID):
+		used -= 1
+	return maxi(0, used)
 
 
 func slots_free() -> int:
-	return maxi(0, MAX_SLOTS - levels.size())
+	return maxi(0, MAX_SLOTS - slots_used())
 
 
 func is_full() -> bool:
-	return levels.size() >= MAX_SLOTS
+	return slots_used() >= MAX_SLOTS
+
+
+func is_innate(id: StringName) -> bool:
+	return id == INNATE_ID
+
+
+## Owned ids with the innate weapon first, which is the order the HUD draws.
+func get_ordered_ids() -> Array:
+	var out: Array = []
+	if levels.has(INNATE_ID):
+		out.append(INNATE_ID)
+	for id in levels.keys():
+		if id != INNATE_ID:
+			out.append(id)
+	return out
+
+
+## The chosen entries only — what the six-slot budget is actually spent on.
+func get_chosen_ids() -> Array:
+	var out: Array = []
+	for id in levels.keys():
+		if id != INNATE_ID:
+			out.append(id)
+	return out
 
 
 func has(id: StringName) -> bool:
@@ -69,7 +104,8 @@ func can_offer(data: PowerData) -> bool:
 		return false
 	if levels.has(data.id):
 		return get_level(data.id) < data.max_level
-	return not is_full()
+	# The innate weapon is granted, never offered as a new pick.
+	return data.id != INNATE_ID and not is_full()
 
 
 ## Adds the entry at level 1, or raises it by one. Returns the new level.
@@ -86,7 +122,7 @@ func add_or_level(id: StringName) -> int:
 			entry_maxed.emit(data)
 		changed.emit()
 		return level
-	if is_full():
+	if is_full() and not is_innate(id):
 		push_warning("PowerLoadout: all %d slots are taken." % MAX_SLOTS)
 		return 0
 	levels[id] = 1
@@ -106,8 +142,14 @@ func to_dictionary() -> Dictionary:
 
 func from_dictionary(dict: Dictionary) -> void:
 	levels.clear()
+	# The innate weapon goes in first so it keeps the leading HUD slot, and is
+	# re-granted even for a run saved before it existed.
+	if ContentDB.get_power(INNATE_ID) != null:
+		levels[INNATE_ID] = maxi(1, int(dict.get(String(INNATE_ID), 1)))
 	for key in dict.keys():
 		var id := StringName(key)
+		if id == INNATE_ID:
+			continue
 		if ContentDB.get_power(id) != null:
 			levels[id] = int(dict[key])
 	changed.emit()

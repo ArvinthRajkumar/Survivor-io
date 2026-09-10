@@ -22,6 +22,9 @@ enum Behavior {
 	HEALING_DRONE,  ## drone that drops healing circles near the player
 	LASER,          ## orbital strikes called down in patterns
 	SPINNERS,       ## saw blades orbiting the player
+	# Appended rather than inserted: the numeric values are what the .tres files
+	# on disk store, so the existing entries must keep the indices they have.
+	KATANA,         ## melee sweep along the direction the player is moving
 }
 
 @export var id: StringName = &""
