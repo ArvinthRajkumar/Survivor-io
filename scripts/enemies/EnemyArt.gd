@@ -70,6 +70,10 @@ static func _eye(ci: CanvasItem, at: Vector2, size: float, accent: Color,
 		angry: float, dir: float) -> void:
 	ci.draw_circle(at, size, Color(0.04, 0.04, 0.08, 0.9))
 	ci.draw_circle(at, size * 0.72, Color(accent.r, accent.g, accent.b, 0.55 + 0.45 * angry))
+	# Pupil and catchlight are sub-pixel on a small enemy: two draw calls each,
+	# on every one of a couple of hundred bodies, for nothing visible.
+	if size < 5.0:
+		return
 	ci.draw_circle(at + Vector2(dir * size * 0.20, 0.0), size * 0.32, Color(0.03, 0.02, 0.05))
 	ci.draw_circle(at + Vector2(-dir * size * 0.22, -size * 0.26), size * 0.18,
 		Color(1, 1, 1, 0.75))
@@ -100,13 +104,21 @@ static func _scuttler(ci: CanvasItem, r: float, fill: Color, outline: Color,
 	var width := maxf(1.2, r * 0.11)
 	# Legs first so they sit behind the shell. Two banks of three, half a cycle
 	# apart, which is what makes the gait read as skittering rather than hopping.
+	# Twelve segments in one draw_multiline rather than six polylines. Limbs are
+	# most of the cost of an animated body and a run can have 260 of them, so
+	# every body plan below batches its limbs the same way.
+	var legs := PackedVector2Array()
 	for side in [-1.0, 1.0]:
 		for i in 3:
 			var swing := sin(phase * 9.0 + float(i) * 1.1 + (0.0 if side > 0.0 else PI))
 			var root := body_c + Vector2((float(i) - 1.0) * r * 0.34, r * 0.10)
 			var knee := root + Vector2(side * r * 0.42, r * 0.30 + swing * r * 0.10)
 			var foot := knee + Vector2(side * r * 0.28, r * 0.44 - swing * r * 0.18)
-			ci.draw_polyline(PackedVector2Array([root, knee, foot]), outline, width, true)
+			legs.append(root)
+			legs.append(knee)
+			legs.append(knee)
+			legs.append(foot)
+	ci.draw_multiline(legs, outline, width)
 	_shape(ci, _blob(r * 0.68, 0.62), body_c, fill, outline, maxf(1.5, r * 0.14))
 	# Carapace ridge.
 	ci.draw_line(body_c + Vector2(-r * 0.46, -r * 0.10), body_c + Vector2(r * 0.46, -r * 0.10),
@@ -115,10 +127,12 @@ static func _scuttler(ci: CanvasItem, r: float, fill: Color, outline: Color,
 		1.0 if state != State.MOVE else 0.4, dir)
 	# Mandibles, opening as it strikes.
 	var gape := (0.5 + 0.5 * t) if state == State.STRIKE else 0.35
+	var jaws := PackedVector2Array()
 	for side2 in [-1.0, 1.0]:
 		var jaw := body_c + Vector2(dir * r * 0.62, side2 * r * 0.10 * gape)
-		ci.draw_line(body_c + Vector2(dir * r * 0.40, 0.0),
-			jaw + Vector2(dir * r * 0.22, side2 * r * 0.22 * gape), accent, width, true)
+		jaws.append(body_c + Vector2(dir * r * 0.40, 0.0))
+		jaws.append(jaw + Vector2(dir * r * 0.22, side2 * r * 0.22 * gape))
+	ci.draw_multiline(jaws, accent, width)
 
 
 ## Armoured emplacement on stubby legs, with a shoulder cannon. The one body
@@ -128,10 +142,12 @@ static func _sentry(ci: CanvasItem, r: float, fill: Color, outline: Color,
 	var recoil := (_lunge(state, t, r) if state == State.SHOOT else 0.0) * dir
 	var bob := sin(phase * 5.0) * r * 0.04
 	var width := maxf(1.5, r * 0.13)
+	var legs := PackedVector2Array()
 	for side in [-1.0, 1.0]:
 		var step := sin(phase * 5.0 + (0.0 if side > 0.0 else PI)) * r * 0.10
-		ci.draw_line(Vector2(side * r * 0.30, r * 0.40), Vector2(side * r * 0.34, r * 0.92 + step),
-			outline, width * 1.3, true)
+		legs.append(Vector2(side * r * 0.30, r * 0.40))
+		legs.append(Vector2(side * r * 0.34, r * 0.92 + step))
+	ci.draw_multiline(legs, outline, width * 1.3)
 	# Chassis: a wedge, wider at the shoulders than the base.
 	_shape(ci, PackedVector2Array([
 		Vector2(-r * 0.62, -r * 0.44),
@@ -199,15 +215,18 @@ static func _wisp(ci: CanvasItem, r: float, fill: Color, outline: Color,
 	var bob := sin(phase * 2.6) * r * 0.14
 	var centre := Vector2(push, bob - r * 0.14)
 	# Tendrils, drawn first so the bell sits over their roots.
+	var tendrils := PackedVector2Array()
 	for i in 5:
 		var x := (float(i) - 2.0) * r * 0.26
 		var sway := sin(phase * 3.4 + float(i) * 0.9) * r * 0.16
+		var root := centre + Vector2(x * 0.8, r * 0.22)
+		var mid := centre + Vector2(x + sway * 0.5, r * 0.48)
 		var tip := centre + Vector2(x + sway, r * (0.72 + 0.10 * float(i % 2)))
-		ci.draw_polyline(PackedVector2Array([
-			centre + Vector2(x * 0.8, r * 0.22),
-			centre + Vector2(x + sway * 0.5, r * 0.48),
-			tip,
-		]), Color(outline.r, outline.g, outline.b, 0.75), maxf(1.0, r * 0.09), true)
+		tendrils.append(root)
+		tendrils.append(mid)
+		tendrils.append(mid)
+		tendrils.append(tip)
+	ci.draw_multiline(tendrils, Color(outline.r, outline.g, outline.b, 0.75), maxf(1.0, r * 0.09))
 	# Bell.
 	var bell := PackedVector2Array()
 	for i in 14:
@@ -255,14 +274,19 @@ static func _maw(ci: CanvasItem, r: float, fill: Color, outline: Color,
 	var push := _lunge(state, t, r) * dir
 	var width := maxf(1.2, r * 0.12)
 	# Four legs in a two-beat gait.
+	var legs := PackedVector2Array()
 	for i in 4:
 		var front: bool = i < 2
 		var side := 1.0 if (i % 2) == 0 else -1.0
 		var swing := sin(phase * 7.5 + (0.0 if front == (side > 0.0) else PI))
 		var hip := Vector2(dir * (r * 0.34 if front else -r * 0.40), r * 0.16)
+		var knee := hip + Vector2(side * r * 0.16, r * 0.40)
 		var foot := hip + Vector2(swing * r * 0.30 + side * r * 0.10, r * 0.74)
-		ci.draw_polyline(PackedVector2Array([hip, hip + Vector2(side * r * 0.16, r * 0.40), foot]),
-			outline.darkened(0.15 if side < 0.0 else 0.0), width, true)
+		legs.append(hip)
+		legs.append(knee)
+		legs.append(knee)
+		legs.append(foot)
+	ci.draw_multiline(legs, outline, width)
 	# Body, lower at the shoulders than the haunches.
 	_shape(ci, PackedVector2Array([
 		Vector2(dir * r * 0.72 + push, -r * 0.30),
@@ -298,10 +322,11 @@ static func _maw(ci: CanvasItem, r: float, fill: Color, outline: Color,
 	]), Vector2.ZERO, fill.darkened(0.15), outline, maxf(1.2, r * 0.10))
 	# Teeth, visible only when the jaws are actually open.
 	if gape > 0.25:
+		var teeth := PackedVector2Array()
 		for i in 3:
 			var x := dir * (r * 0.02 + float(i) * r * 0.13)
-			ci.draw_line(head + Vector2(x, -r * 0.10 - r * gape * 0.6),
-				head + Vector2(x, -r * 0.10 - r * gape * 0.2), Color(1, 1, 1, 0.85),
-				maxf(1.0, r * 0.05), true)
+			teeth.append(head + Vector2(x, -r * 0.10 - r * gape * 0.6))
+			teeth.append(head + Vector2(x, -r * 0.10 - r * gape * 0.2))
+		ci.draw_multiline(teeth, Color(1, 1, 1, 0.85), maxf(1.0, r * 0.05))
 	_eye(ci, head + Vector2(-dir * r * 0.06, -r * 0.14), r * 0.14, accent,
 		1.0 if state != State.MOVE else 0.4, dir)

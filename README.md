@@ -484,10 +484,10 @@ Drop a Godot binary in `tools/` or pass `-Godot <path>`.
 
 ### Balance snapshot
 
-> **Stale.** The table below was measured before the katana became the starting
-> weapon and before the pilot was taught to close to melee range. Both change the
-> early game materially, so treat these as the last known-good figures rather than a
-> description of this build, and re-run the sweep before trusting them again.
+> **Stale.** The table below predates the starting-weapon pick, the jump from twelve
+> upgrades to thirty-two, and Hardcore mode. All three change the early game
+> materially, so treat these as the last known-good figures rather than a description
+> of this build, and re-run the sweep before trusting them again.
 
 Measured with the automated pilot on a fresh profile (no Research Lab investment,
 no relics), three seeds per sector:
@@ -595,6 +595,16 @@ Things a shipping build would still want, listed honestly:
 - **Not tested on real hardware.** All verification here was headless plus windowed
   desktop runs. The frame-rate targets above are design budgets, not measurements from
   a phone.
+- **The animated swarm has not been measured on a device.** A polygon body was about
+  two draw calls; a creature is roughly 7 (wisp, scuttler) to 18 (brute, ocular), even
+  after batching every limb into one `draw_multiline` per body, dropping the sub-pixel
+  eye detail below 5px, and metering redraws to ~11Hz on a stagger. Batching alone took
+  a measured ~35% off the frame's draw count at the same enemy count. But the container
+  this was built in renders through llvmpipe, where the absolute numbers mean nothing,
+  so the polygon-vs-creature comparison was never made end to end. This is the first
+  thing to check on hardware. If it does not hold, the lever is a reduced-detail body
+  for small enemies — the brute and the ocular are where the cost is — rather than
+  going back to polygons.
 - **No localisation.** All strings are inline English.
 - **Audio is functional, not final.** The synthesised loops do their job but are a
   placeholder for composed music.
