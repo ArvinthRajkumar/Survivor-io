@@ -7,11 +7,10 @@ extends Area2D
 ##    in one loop, which avoids hundreds of per-node callbacks per frame.
 ##  * They are `monitorable` but not `monitoring`: projectiles and the player's
 ##    hurtbox look for enemies, never the other way round.
-##  * _draw() runs on a stagger at roughly 11Hz rather than every frame. The
-##    creatures are animated now, so the old "only when the appearance changes"
-##    rule no longer holds - but a limb cycle at 11Hz is the rate hand-drawn
-##    animation runs at anyway, and redrawing 260 of these every frame is not
-##    something a phone will do.
+##  * The body is a baked sprite (CreatureSprite), not a procedural drawing.
+##    That is one textured quad per enemy instead of 7-18 draw commands, and the
+##    animation runs at the frame rate rather than the 11Hz stagger the
+##    procedural version had to be metered down to.
 
 signal died(enemy: Enemy)
 
@@ -19,9 +18,6 @@ const ELITE_HEALTH_MULT := 6.5
 const ELITE_DAMAGE_MULT := 1.6
 const ELITE_SCALE := 1.45
 const FLASH_TIME := 0.09
-## Seconds between animation redraws. Staggered per enemy so the whole swarm
-## never redraws on the same frame.
-const REDRAW_INTERVAL := 0.09
 ## How close the player has to be before a melee body plan winds up a swing.
 const MELEE_RANGE := 30.0
 const WINDUP_TIME := 0.22
@@ -68,9 +64,9 @@ var _speed_jitter: float = 1.0
 ## pack into one solid mass; aiming a little off it spreads them into a cloud.
 var _target_offset: Vector2 = Vector2.ZERO
 var _offset_timer: float = 0.0
-var _fill: Color = Color.WHITE
-var _outline: Color = Color.WHITE
-var _accent: Color = Color.WHITE
+## The baked body. Created on first configure and reused for the whole life of
+## this pooled node.
+var _sprite: CreatureSprite
 ## Which of EnemyArt's six body plans this archetype wears.
 var _body: int = EnemyArt.Body.MAW
 ## Advanced by distance travelled rather than by time, so a slowed enemy's legs
@@ -82,7 +78,6 @@ var _gait_bias: float = 1.0
 var _anim_state: int = EnemyArt.State.MOVE
 var _anim_timer: float = 0.0
 var _anim_span: float = 1.0
-var _redraw_timer: float = 0.0
 ## Melee bodies re-arm after a swing so they do not chain-bite in place.
 var _swing_cooldown: float = 0.0
 ## instance id of a damage source -> RunManager.elapsed at which it may hit again
@@ -174,33 +169,41 @@ func configure(enemy_data: EnemyData, elite: bool, health_scale: float, damage_s
 
 
 func _build_visual() -> void:
-	_fill = data.color_secondary
-	_outline = data.color
-	_accent = data.color.lerp(Color.WHITE, 0.35)
-	if is_elite:
-		_outline = _outline.lerp(Color(1.0, 0.86, 0.35), 0.55)
-		_fill = _fill.lerp(Color(0.25, 0.18, 0.02), 0.5)
-		_accent = Color(1.0, 0.90, 0.45)
+	if _sprite == null:
+		_sprite = CreatureSprite.new()
+		# Behind the enemy's own children (the health bar a boss adds) but in
+		# front of the floor.
+		_sprite.z_index = -1
+		add_child(_sprite)
 	# EnemyData.shape is what the roster on disk already stores, so the six body
 	# plans are keyed to it directly rather than re-authoring 28 resources.
 	_body = clampi(data.shape, 0, 5)
-	_gait = RunManager.rng.randf() * TAU
+	_sprite.set_palette(data.color, data.color_secondary, is_elite)
+	_sprite.set_radius(radius)
+	_sprite.set_flash(0.0)
+	_gait = RunManager.rng.randf()
 	_anim_state = EnemyArt.State.MOVE
 	_anim_timer = 0.0
-	_redraw_timer = RunManager.rng.randf() * REDRAW_INTERVAL
+	_refresh_frame()
 	queue_redraw()
 
 
-func _draw() -> void:
-	if data == null:
+## Picks the atlas frame for the current state. MOVE loops on the gait; the
+## other three play once across their own duration.
+func _refresh_frame() -> void:
+	if _sprite == null:
 		return
+	var t := fposmod(_gait, 1.0)
+	if _anim_state != EnemyArt.State.MOVE and _anim_span > 0.0:
+		t = clampf(1.0 - _anim_timer / _anim_span, 0.0, 1.0)
+	_sprite.set_frame_index(EnemyArt.frame_index(_body, _anim_state, t))
+
+
+func _draw() -> void:
+	# The body is a child sprite; all that is left here is the elite ring, which
+	# is one archetype-independent flourish and not worth a second atlas.
 	if is_elite:
 		Draw2D.ring(self, Vector2.ZERO, radius * 1.45, Color(1.0, 0.86, 0.35, 0.45), 2.5)
-	var t := 0.0
-	if _anim_span > 0.0:
-		t = clampf(1.0 - _anim_timer / _anim_span, 0.0, 1.0)
-	EnemyArt.draw_body(self, _body, radius, _fill, _outline, _accent,
-		_gait, _anim_state, t, _facing_left)
 
 
 # --- Simulation (driven by EnemyDirector) ----------------------------------
@@ -211,8 +214,10 @@ func update_ai(delta: float, player_pos: Vector2) -> void:
 	_time += delta
 	if _flash > 0.0:
 		_flash -= delta
-		if _flash <= 0.0:
-			modulate = Color.WHITE
+		# Driven through the shader rather than modulate: over-brightening the
+		# node would scale the mask channels too and the creature would come out
+		# the wrong colour on the way back down.
+		_sprite.set_flash(maxf(0.0, _flash / FLASH_TIME))
 	if _slow_timer > 0.0:
 		_slow_timer -= delta
 		if _slow_timer <= 0.0:
@@ -282,11 +287,16 @@ func update_ai(delta: float, player_pos: Vector2) -> void:
 ## knocked-back enemy visibly slows its legs instead of running on the spot.
 func _advance_animation(delta: float, player_pos: Vector2) -> void:
 	var speed := velocity.length()
-	_gait += delta * (2.0 + speed * 0.035) * _gait_bias
+	# One full cycle per second at rest, faster the quicker it moves, so a
+	# slowed enemy visibly slows its legs instead of running on the spot.
+	_gait = fposmod(_gait + delta * (0.55 + speed * 0.0075) * _gait_bias, 1.0)
 	# A creature barely moving keeps its last facing rather than flickering
 	# between them every time the separation force jitters sideways.
 	if absf(velocity.x) > 12.0:
-		_facing_left = velocity.x < 0.0
+		var want := velocity.x < 0.0
+		if want != _facing_left:
+			_facing_left = want
+			_sprite.set_facing_left(want)
 
 	if _swing_cooldown > 0.0:
 		_swing_cooldown -= delta
@@ -316,18 +326,15 @@ func _set_anim(state: int, span: float) -> void:
 	_anim_state = state
 	_anim_span = maxf(0.0001, span)
 	_anim_timer = span
-	queue_redraw()
+	_refresh_frame()
 
 
-## Called by EnemyDirector after update_ai, on its own reduced cadence.
-func tick_visual(delta: float) -> void:
+## Called by EnemyDirector after update_ai. Now that the body is a sprite this is
+## a region-rect assignment, not a redraw, so it can run every frame.
+func tick_visual(_delta: float) -> void:
 	if not alive:
 		return
-	_redraw_timer -= delta
-	if _redraw_timer > 0.0:
-		return
-	_redraw_timer = REDRAW_INTERVAL
-	queue_redraw()
+	_refresh_frame()
 
 
 ## Heading for anything that closes on the player.
@@ -376,7 +383,7 @@ func apply_hit(amount: float, is_crit: bool, knockback: Vector2, source_id: int,
 		return false
 	RunManager.register_damage(dealt)
 	_flash = FLASH_TIME
-	modulate = Color(2.4, 2.4, 2.4)
+	_sprite.set_flash(1.0)
 	var resist := 1.0 - clampf(data.knockback_resist, 0.0, 1.0)
 	_knockback += knockback * resist / maxf(0.2, data.mass)
 	if EffectSpawner.instance != null:
