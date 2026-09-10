@@ -1,0 +1,25 @@
+# Godot 4
+.godot/
+android/
+*.translation
+
+# Export artefacts
+build/
+export/
+*.apk
+*.aab
+*.ipa
+*.pck
+*.zip
+
+# Local, machine-specific export configuration (keystore paths, signing).
+# Copy export_presets.template.cfg to export_presets.cfg and edit it there.
+export_presets.cfg
+
+# The pinned Godot binary used by tools/soak.ps1 is not committed.
+tools/Godot_v4*.exe
+tools/godot*
+
+# OS noise
+Thumbs.db
+.DS_Store

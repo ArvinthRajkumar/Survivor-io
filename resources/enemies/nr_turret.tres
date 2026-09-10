@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_mkm63"]
+
+[resource]
+script = ExtResource("1_mkm63")
+id = &"nr_turret"
+display_name = "Wall Turret"
+ai = 3
+max_health = 38.0
+move_speed = 99.0
+contact_damage = 5.5
+xp_value = 3
+credit_value = 3
+radius = 26.0
+mass = 1.1818181818181819
+shoot_interval = 2.2
+projectile_speed = 300.0
+projectile_damage = 9.0
+color = Color(1, 0.78, 0.3, 1)
+color_secondary = Color(0.24, 0.16, 0.02, 1)
+shape = 1
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

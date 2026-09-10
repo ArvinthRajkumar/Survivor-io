@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_buyvn"]
+
+[resource]
+script = ExtResource("1_buyvn")
+id = &"aw_scuttler"
+display_name = "Cinder Scuttler"
+max_health = 26.0
+move_speed = 195.0
+contact_damage = 6.1
+radius = 20.0
+mass = 0.9090909090909091
+color = Color(1, 0.48, 0.2, 1)
+color_secondary = Color(0.24, 0.08, 0.02, 1)
+shape = 0
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

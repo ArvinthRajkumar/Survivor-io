@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_l56kj"]
+
+[resource]
+script = ExtResource("1_l56kj")
+id = &"resonance_lens"
+display_name = "Resonance Lens"
+category = 1
+order = 13
+description = "Focuses every emission into a tighter, meaner beam."
+tooltip = "More damage, bigger effects, more crits."
+level_notes = PackedStringArray()
+count_at_levels = PackedInt32Array()
+stat_multipliers = {
+"area_mult": 0.08,
+"damage_mult": 0.1
+}
+stat_flats = {
+"crit_chance": 0.03
+}
+color = Color(0.82, 0.55, 1, 1)
+color_secondary = Color(1, 0.95, 0.7, 1)
+art = &"resonance_lens"
+rarity = 2
+weight = 0.9

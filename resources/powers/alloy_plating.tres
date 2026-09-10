@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_ge4ca"]
+
+[resource]
+script = ExtResource("1_ge4ca")
+id = &"alloy_plating"
+display_name = "Alloy Plating"
+category = 1
+order = 11
+description = "Layered armour welded over everything vital."
+tooltip = "More health and armour."
+level_notes = PackedStringArray()
+count_at_levels = PackedInt32Array()
+stat_flats = {
+"armor": 3.0,
+"max_health": 28.0
+}
+color = Color(0.72, 0.8, 0.92, 1)
+color_secondary = Color(1, 0.86, 0.45, 1)
+art = &"alloy_plating"
+rarity = 0
+weight = 1.2

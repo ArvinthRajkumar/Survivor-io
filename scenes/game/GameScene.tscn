@@ -1,0 +1,69 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/game/GameScene.gd" id="1_game"]
+[ext_resource type="Script" path="res://scripts/levels/BackgroundRenderer.gd" id="2_bg"]
+[ext_resource type="Script" path="res://scripts/systems/EnemyDirector.gd" id="3_enemies"]
+[ext_resource type="Script" path="res://scripts/systems/ProjectileSystem.gd" id="4_proj"]
+[ext_resource type="Script" path="res://scripts/systems/HazardSystem.gd" id="5_hazards"]
+[ext_resource type="Script" path="res://scripts/systems/EffectSpawner.gd" id="6_fx"]
+[ext_resource type="Script" path="res://scripts/systems/WaveDirector.gd" id="7_waves"]
+[ext_resource type="Script" path="res://scripts/systems/PerfMonitor.gd" id="14_perf"]
+[ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/UpgradePanel.tscn" id="9_upgrade"]
+[ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="10_pause"]
+[ext_resource type="PackedScene" path="res://scenes/ui/Results.tscn" id="11_results"]
+[ext_resource type="PackedScene" path="res://scenes/ui/RevivePrompt.tscn" id="12_revive"]
+[ext_resource type="PackedScene" path="res://scenes/ui/Tutorial.tscn" id="13_tutorial"]
+
+[node name="GameScene" type="Node2D"]
+script = ExtResource("1_game")
+
+[node name="BackgroundLayer" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="Background" type="Node2D" parent="BackgroundLayer"]
+script = ExtResource("2_bg")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Hazards" type="Node2D" parent="World"]
+script = ExtResource("5_hazards")
+
+[node name="Pickups" type="Node2D" parent="World"]
+
+[node name="Enemies" type="Node2D" parent="World"]
+script = ExtResource("3_enemies")
+
+[node name="Projectiles" type="Node2D" parent="World"]
+script = ExtResource("4_proj")
+
+[node name="Effects" type="Node2D" parent="World"]
+
+[node name="FX" type="Node2D" parent="World"]
+script = ExtResource("6_fx")
+effects_root_path = NodePath("../Effects")
+pickups_root_path = NodePath("../Pickups")
+
+[node name="Waves" type="Node" parent="."]
+script = ExtResource("7_waves")
+
+[node name="PerfMonitor" type="Node" parent="."]
+script = ExtResource("14_perf")
+
+[node name="Camera" type="Camera2D" parent="."]
+position_smoothing_enabled = false
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="HUD" parent="UI" instance=ExtResource("8_hud")]
+
+[node name="UpgradePanel" parent="UI" instance=ExtResource("9_upgrade")]
+
+[node name="PauseMenu" parent="UI" instance=ExtResource("10_pause")]
+
+[node name="Results" parent="UI" instance=ExtResource("11_results")]
+
+[node name="RevivePrompt" parent="UI" instance=ExtResource("12_revive")]
+
+[node name="Tutorial" parent="UI" instance=ExtResource("13_tutorial")]

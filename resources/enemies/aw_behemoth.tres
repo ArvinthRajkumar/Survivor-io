@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_u1oh5"]
+
+[resource]
+script = ExtResource("1_u1oh5")
+id = &"aw_behemoth"
+display_name = "Slag Behemoth"
+max_health = 230.0
+move_speed = 109.0
+contact_damage = 14.3
+knockback_resist = 0.7
+xp_value = 8
+credit_value = 8
+radius = 44.0
+mass = 2.0
+color = Color(0.72, 0.66, 0.6, 1)
+color_secondary = Color(0.16, 0.13, 0.11, 1)
+shape = 2
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

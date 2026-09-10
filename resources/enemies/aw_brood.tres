@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_7qokd"]
+
+[resource]
+script = ExtResource("1_7qokd")
+id = &"aw_brood"
+display_name = "Ember Brood"
+ai = 4
+max_health = 62.0
+move_speed = 141.0
+contact_damage = 7.2
+xp_value = 3
+credit_value = 3
+radius = 30.0
+mass = 1.3636363636363635
+split_into_id = &"aw_scuttler"
+split_count = 3
+color = Color(1, 0.6, 0.35, 1)
+color_secondary = Color(0.26, 0.1, 0.04, 1)
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

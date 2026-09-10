@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_vj1wt"]
+
+[resource]
+script = ExtResource("1_vj1wt")
+id = &"fv_drifter"
+display_name = "Pale Drifter"
+ai = 1
+max_health = 36.0
+move_speed = 202.0
+contact_damage = 8.2
+xp_value = 2
+credit_value = 2
+radius = 24.0
+mass = 1.0909090909090908
+color = Color(0.3, 0.6, 1, 1)
+color_secondary = Color(0.04, 0.12, 0.26, 1)
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

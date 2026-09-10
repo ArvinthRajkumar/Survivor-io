@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_btirf"]
+
+[resource]
+script = ExtResource("1_btirf")
+id = &"overclock_core"
+display_name = "Overclock Core"
+category = 1
+order = 10
+description = "Push every system past its rated limit. Everything fires sooner."
+tooltip = "Faster cooldowns and projectiles."
+level_notes = PackedStringArray()
+count_at_levels = PackedInt32Array()
+stat_multipliers = {
+"cooldown_mult": 0.08,
+"projectile_speed_mult": 0.1
+}
+color = Color(0.45, 0.92, 1, 1)
+color_secondary = Color(1, 0.9, 0.45, 1)
+art = &"overclock_core"
+weight = 1.1

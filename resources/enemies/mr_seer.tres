@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_rvlip"]
+
+[resource]
+script = ExtResource("1_rvlip")
+id = &"mr_seer"
+display_name = "Pale Seer"
+ai = 3
+max_health = 72.0
+move_speed = 115.0
+contact_damage = 11.0
+xp_value = 6
+credit_value = 6
+radius = 32.0
+mass = 1.4545454545454546
+shoot_interval = 1.6
+projectile_speed = 380.0
+projectile_damage = 19.0
+color = Color(0.55, 0.95, 1, 1)
+color_secondary = Color(0.06, 0.2, 0.28, 1)
+shape = 2
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

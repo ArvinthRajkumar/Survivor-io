@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="HeroData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_7diwp"]
+
+[resource]
+script = ExtResource("1_7diwp")
+id = &"nova"
+display_name = "Nova"
+role = "Plasma Engineer"
+description = "Keeps the grid alive by overclocking anything with a power cell. Fast cycles, thin plating."
+max_health = 110.0
+move_speed = 330.0
+cooldown_mult = 0.94
+pickup_radius = 260.0
+crit_chance = 0.08
+passive_id = &"overclock"
+passive_name = "Overclock"
+passive_description = "Weapons cycle 12% faster and cover slightly more ground."
+ultimate_id = &"plasma_drones"
+ultimate_name = "Drone Halo"
+ultimate_description = "Summons five plasma drones that orbit and shred anything they touch."
+ultimate_cooldown = 42.0
+accent_secondary = Color(0.6, 1, 0.85, 1)
+unlocked_by_default = true
+unlock_credit_cost = 0
+unlock_research_cost = 0

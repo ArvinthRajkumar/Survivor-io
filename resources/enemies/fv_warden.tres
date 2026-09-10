@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_sw8ln"]
+
+[resource]
+script = ExtResource("1_sw8ln")
+id = &"fv_warden"
+display_name = "Pressure Warden"
+ai = 3
+max_health = 78.0
+move_speed = 106.0
+contact_damage = 8.8
+xp_value = 5
+credit_value = 5
+radius = 30.0
+mass = 1.3636363636363635
+shoot_interval = 1.8
+projectile_speed = 340.0
+projectile_damage = 15.0
+color = Color(1, 0.8, 0.4, 1)
+color_secondary = Color(0.26, 0.18, 0.04, 1)
+shape = 1
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

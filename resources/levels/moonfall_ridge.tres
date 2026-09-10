@@ -1,0 +1,147 @@
+[gd_resource type="Resource" script_class="LevelData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_ui2ow"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_mote.tres" id="2_g6lc3"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_swarmling.tres" id="3_c1god"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_stalker.tres" id="4_on0bj"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_seer.tres" id="5_hc1iq"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_colossus.tres" id="6_12624"]
+[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_mobqu"]
+[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_g6faf"]
+
+[sub_resource type="Resource" id="Resource_yg2wr"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_mote"
+end_time = 260.0
+interval = 1.9
+interval_end_scale = 0.45
+
+[sub_resource type="Resource" id="Resource_6t2tj"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_swarmling"
+start_time = 45.0
+end_time = 440.0
+interval = 2.3
+interval_end_scale = 0.42
+formation = 3
+
+[sub_resource type="Resource" id="Resource_wnla7"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_stalker"
+start_time = 120.0
+end_time = 560.0
+batch_size = 3
+interval = 3.4
+interval_end_scale = 0.48
+formation = 2
+elite_chance = 0.06
+
+[sub_resource type="Resource" id="Resource_5u5fa"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_mote"
+start_time = 160.0
+end_time = 780.0
+batch_size = 9
+interval = 1.3
+interval_end_scale = 0.38
+elite_chance = 0.05
+
+[sub_resource type="Resource" id="Resource_v68ry"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_seer"
+start_time = 220.0
+end_time = 780.0
+batch_size = 2
+interval = 4.4
+interval_end_scale = 0.5
+elite_chance = 0.09
+
+[sub_resource type="Resource" id="Resource_m7kum"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_swarmling"
+start_time = 280.0
+end_time = 780.0
+batch_size = 8
+interval = 1.7
+interval_end_scale = 0.4
+formation = 1
+elite_chance = 0.08
+
+[sub_resource type="Resource" id="Resource_5dkk4"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_colossus"
+start_time = 340.0
+end_time = 780.0
+batch_size = 1
+interval = 7.5
+interval_end_scale = 0.5
+elite_chance = 0.16
+
+[sub_resource type="Resource" id="Resource_pamu7"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_stalker"
+start_time = 420.0
+end_time = 780.0
+batch_size = 6
+interval = 2.4
+interval_end_scale = 0.42
+formation = 1
+elite_chance = 0.14
+
+[sub_resource type="Resource" id="Resource_3knpx"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_seer"
+start_time = 500.0
+end_time = 780.0
+interval = 3.2
+interval_end_scale = 0.45
+formation = 1
+elite_chance = 0.16
+
+[sub_resource type="Resource" id="Resource_mlf46"]
+script = ExtResource("8_g6faf")
+enemy_id = &"mr_colossus"
+start_time = 660.0
+end_time = 660.0
+batch_size = 5
+interval = 1.0
+interval_end_scale = 1.0
+formation = 1
+elite_chance = 0.4
+one_shot = true
+
+[resource]
+script = ExtResource("7_mobqu")
+id = &"moonfall_ridge"
+display_name = "Moonfall Ridge"
+description = "Cliffs of alien glass where gravity forgets itself. The last place the light reached."
+order = 3
+unlock_time = 600.0
+boss_time = 260.0
+boss_interval = 185.0
+mid_boss_time = 130.0
+mid_boss_interval = 130.0
+difficulty_scale = 1.42
+health_growth_per_minute = 0.21
+damage_growth_per_minute = 0.1
+endless_interval = 1.4
+endless_batch = 7
+enemy_pool = Array[ExtResource("1_ui2ow")]([ExtResource("2_g6lc3"), ExtResource("3_c1god"), ExtResource("4_on0bj"), ExtResource("5_hc1iq"), ExtResource("6_12624")])
+waves = Array[ExtResource("8_g6faf")]([SubResource("Resource_yg2wr"), SubResource("Resource_6t2tj"), SubResource("Resource_wnla7"), SubResource("Resource_5u5fa"), SubResource("Resource_v68ry"), SubResource("Resource_m7kum"), SubResource("Resource_5dkk4"), SubResource("Resource_pamu7"), SubResource("Resource_3knpx"), SubResource("Resource_mlf46")])
+boss_id = &"mr_boss_parasite"
+mid_boss_id = &"mr_mid_grasper"
+hazard_type = 4
+hazard_count = 12
+hazard_damage = 13.0
+hazard_radius = 160.0
+hazard_interval = 3.0
+hazard_start_time = 65.0
+bg_top = Color(0.07, 0.05, 0.14, 1)
+bg_bottom = Color(0.02, 0.01, 0.05, 1)
+grid_color = Color(0.45, 0.4, 0.7, 0.3)
+accent = Color(0.78, 0.55, 1, 1)
+fog_color = Color(0.14, 0.08, 0.26, 0.28)
+background_style = 3
+required_level_id = &"flooded_vault"
+reward_credits = 1700
+reward_research = 18

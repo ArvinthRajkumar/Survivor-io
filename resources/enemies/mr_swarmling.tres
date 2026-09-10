@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_s6c7d"]
+
+[resource]
+script = ExtResource("1_s6c7d")
+id = &"mr_swarmling"
+display_name = "Ridge Swarmling"
+max_health = 35.0
+move_speed = 243.0
+contact_damage = 9.9
+xp_value = 3
+credit_value = 3
+radius = 20.0
+mass = 0.9090909090909091
+color = Color(0.78, 0.55, 1, 1)
+color_secondary = Color(0.14, 0.06, 0.26, 1)
+shape = 0
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_gdvop"]
+
+[resource]
+script = ExtResource("1_gdvop")
+id = &"mr_boss_parasite"
+display_name = "Celestial Parasite"
+max_health = 9900.0
+move_speed = 112.0
+contact_damage = 28.6
+knockback_resist = 0.85
+xp_value = 60
+credit_value = 60
+radius = 46.0
+mass = 12.0
+projectile_speed = 320.0
+projectile_damage = 16.0
+color = Color(0.9, 0.6, 1, 1)
+color_secondary = Color(0.1, 0.02, 0.2, 1)
+shape = 4
+spin_speed = 0.35
+is_boss = true
+can_be_elite = false
+boss_title = "IT LOOKS BACK"
+boss_phase_thresholds = PackedFloat32Array(0.8, 0.6, 0.4, 0.2)

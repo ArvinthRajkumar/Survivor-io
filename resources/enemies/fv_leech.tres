@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_mo5sd"]
+
+[resource]
+script = ExtResource("1_mo5sd")
+id = &"fv_leech"
+display_name = "Vault Leech"
+max_health = 26.0
+move_speed = 189.0
+contact_damage = 7.2
+xp_value = 2
+credit_value = 2
+radius = 20.0
+mass = 0.9090909090909091
+color = Color(0.35, 0.95, 0.85, 1)
+color_secondary = Color(0.04, 0.2, 0.2, 1)
+shape = 5
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_h0v1r"]
+
+[resource]
+script = ExtResource("1_h0v1r")
+id = &"aw_hound"
+display_name = "Ash Hound"
+ai = 2
+max_health = 42.0
+move_speed = 166.0
+contact_damage = 9.4
+xp_value = 2
+credit_value = 2
+radius = 24.0
+mass = 1.0909090909090908
+charge_interval = 2.2
+color = Color(1, 0.3, 0.2, 1)
+color_secondary = Color(0.24, 0.04, 0.03, 1)
+shape = 5
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

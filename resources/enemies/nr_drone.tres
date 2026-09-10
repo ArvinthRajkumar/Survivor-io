@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_0f1m7"]
+
+[resource]
+script = ExtResource("1_0f1m7")
+id = &"nr_drone"
+display_name = "Scrap Drone"
+max_health = 14.0
+move_speed = 173.0
+contact_damage = 4.4
+radius = 20.0
+mass = 0.9090909090909091
+color = Color(0.35, 0.85, 1, 1)
+color_secondary = Color(0.06, 0.14, 0.22, 1)
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

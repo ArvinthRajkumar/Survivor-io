@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="HeroData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_k604g"]
+
+[resource]
+script = ExtResource("1_k604g")
+id = &"bramble"
+display_name = "Bramble"
+role = "Bio-Guardian"
+description = "Grew the vault gardens, then grew something that fights back. Slow, patient, hard to finish."
+max_health = 130.0
+armor = 2.0
+area_mult = 1.05
+pickup_radius = 260.0
+starting_power_id = &"domain"
+passive_id = &"deep_roots"
+passive_name = "Deep Roots"
+passive_description = "Regenerates health continuously and carries a larger reserve."
+ultimate_id = &"thorn_maze"
+ultimate_name = "Thorn Maze"
+ultimate_description = "Grows a lattice of thorn patches that cut and badly slow anything crossing them."
+ultimate_cooldown = 42.0
+accent = Color(0.45, 0.95, 0.55, 1)
+accent_secondary = Color(0.9, 1, 0.45, 1)
+portrait_shape = 3
+unlock_credit_cost = 1400
+unlock_research_cost = 18

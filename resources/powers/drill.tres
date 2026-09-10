@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_lod14"]
+
+[resource]
+script = ExtResource("1_lod14")
+id = &"drill"
+display_name = "Drill"
+behavior = 4
+order = 3
+description = "Drills ricochet around the area, boring through the swarm."
+tooltip = "Bouncing drills. Hits everything they cross."
+level_notes = PackedStringArray("+1 drill, +7 damage", "+7 damage, wider bit", "+1 drill, +7 damage", "+1 drill, +7 damage")
+damage = 14.0
+cooldown = 2.5
+count = 2
+projectile_speed = 340.0
+knockback = 150.0
+hit_interval = 0.45
+damage_per_level = 7.0
+area_per_level = 0.07
+count_at_levels = PackedInt32Array(2, 4, 5)
+color = Color(1, 0.78, 0.3, 1)
+color_secondary = Color(0.95, 0.97, 1, 1)
+art = &"drill"

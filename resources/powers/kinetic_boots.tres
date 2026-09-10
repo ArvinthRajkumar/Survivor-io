@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_5lc45"]
+
+[resource]
+script = ExtResource("1_5lc45")
+id = &"kinetic_boots"
+display_name = "Kinetic Boots"
+category = 1
+order = 12
+description = "Reactive soles that turn a stumble into a stride."
+tooltip = "Move faster, take less damage."
+level_notes = PackedStringArray()
+count_at_levels = PackedInt32Array()
+stat_multipliers = {
+"move_speed_mult": 0.08
+}
+stat_flats = {
+"damage_reduction": 0.04
+}
+color = Color(0.6, 1, 0.78, 1)
+color_secondary = Color(0.95, 1, 0.6, 1)
+art = &"kinetic_boots"

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_tgrun"]
+
+[resource]
+script = ExtResource("1_tgrun")
+id = &"nr_hulk"
+display_name = "Rebar Hulk"
+max_health = 140.0
+move_speed = 118.0
+contact_damage = 11.0
+knockback_resist = 0.55
+xp_value = 6
+credit_value = 6
+radius = 40.0
+mass = 1.8181818181818181
+color = Color(0.6, 0.7, 0.85, 1)
+color_secondary = Color(0.1, 0.14, 0.22, 1)
+shape = 2
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

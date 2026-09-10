@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_stjny"]
+
+[resource]
+script = ExtResource("1_stjny")
+id = &"glass_lattice"
+display_name = "Glass Lattice"
+description = "+35% damage, but you have 30% less health."
+rarity = 2
+color = Color(1, 0.4, 0.45, 1)
+icon_shape = 6
+credit_cost = 900
+research_cost = 8
+stat_multipliers = {
+"damage_mult": 0.35
+}
+stat_flats = {
+"max_health": -30.0
+}

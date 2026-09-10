@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_a80yi"]
+
+[resource]
+script = ExtResource("1_a80yi")
+id = &"meta_greed"
+display_name = "Field Analytics"
+description = "experience gained"
+max_level = 6
+rarity = 1
+stat_key = &"xp_gain_mult"
+value_per_level = 0.05
+meta_only = true
+meta_cost_credits = 460
+meta_cost_research = 4
+meta_cost_growth = 1.55
+color = Color(0.55, 0.72, 1, 1)
+icon_shape = 7

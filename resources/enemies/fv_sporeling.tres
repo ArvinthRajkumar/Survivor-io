@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_wewte"]
+
+[resource]
+script = ExtResource("1_wewte")
+id = &"fv_sporeling"
+display_name = "Spore Vessel"
+ai = 4
+max_health = 62.0
+move_speed = 147.0
+contact_damage = 8.2
+xp_value = 4
+credit_value = 4
+radius = 32.0
+mass = 1.4545454545454546
+split_into_id = &"fv_leech"
+split_count = 3
+color = Color(0.6, 1, 0.55, 1)
+color_secondary = Color(0.1, 0.24, 0.08, 1)
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

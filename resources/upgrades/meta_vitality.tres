@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_5lpee"]
+
+[resource]
+script = ExtResource("1_5lpee")
+id = &"meta_vitality"
+display_name = "Reinforced Frames"
+description = "base maximum health"
+max_level = 10
+rarity = 1
+stat_key = &"max_health"
+value_per_level = 12.0
+is_multiplier = false
+meta_only = true
+meta_cost_credits = 380
+meta_cost_growth = 1.55
+color = Color(0.45, 0.95, 0.55, 1)
+icon_shape = 5

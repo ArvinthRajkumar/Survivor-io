@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_dtruq"]
+
+[resource]
+script = ExtResource("1_dtruq")
+id = &"laser"
+display_name = "Laser"
+behavior = 6
+order = 5
+description = "Orbital strikes rake the ground around you in rotating patterns."
+tooltip = "Orbital strikes. Heavy burst damage."
+level_notes = PackedStringArray("+20 damage", "+1 beam, +20 damage", "+20 damage, wider blast", "+1 beam, +20 damage")
+damage = 34.0
+cooldown = 4.2
+count = 3
+knockback = 220.0
+damage_per_level = 20.0
+cooldown_mult_per_level = 0.95
+area_per_level = 0.08
+count_at_levels = PackedInt32Array(3, 5)
+color = Color(0.6, 0.8, 1, 1)
+art = &"laser"
+rarity = 2

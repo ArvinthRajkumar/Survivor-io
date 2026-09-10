@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_8ww6d"]
+
+[resource]
+script = ExtResource("1_8ww6d")
+id = &"nr_crawler"
+display_name = "Cable Crawler"
+ai = 1
+max_health = 22.0
+move_speed = 205.0
+contact_damage = 5.5
+color = Color(1, 0.35, 0.75, 1)
+color_secondary = Color(0.2, 0.04, 0.14, 1)
+shape = 5
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_gmcw3"]
+
+[resource]
+script = ExtResource("1_gmcw3")
+id = &"ballast_core"
+display_name = "Ballast Core"
+description = "+60 health and +5 armour, but you move 12% slower."
+color = Color(0.7, 0.8, 0.95, 1)
+icon_shape = 5
+credit_cost = 700
+research_cost = 6
+stat_flats = {
+"armor": 5.0,
+"max_health": 60.0
+}
+stat_penalties = {
+"move_speed_mult": 0.12
+}

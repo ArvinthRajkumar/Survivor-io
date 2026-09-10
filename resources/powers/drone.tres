@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_asbf7"]
+
+[resource]
+script = ExtResource("1_asbf7")
+id = &"drone"
+display_name = "Drone"
+behavior = 1
+description = "A gun drone orbits you and sprays bullets outward."
+tooltip = "Orbiting drone. Sprays bullets; aims at max level."
+level_notes = PackedStringArray("+5 damage, faster bursts", "+1 drone", "+5 damage, faster bursts", "+1 drone, and bullets now track enemies")
+damage = 12.0
+cooldown = 1.1
+projectile_speed = 560.0
+hit_interval = 0.0
+cooldown_mult_per_level = 0.9
+area_per_level = 0.06
+count_at_levels = PackedInt32Array(3, 5)
+color = Color(0.42, 0.86, 1, 1)
+color_secondary = Color(0.85, 0.98, 1, 1)
+art = &"drone"

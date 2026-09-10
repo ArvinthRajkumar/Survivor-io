@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_3c8ju"]
+
+[resource]
+script = ExtResource("1_3c8ju")
+id = &"meta_power"
+display_name = "Munitions Research"
+description = "base weapon damage"
+max_level = 10
+rarity = 1
+stat_key = &"damage_mult"
+value_per_level = 0.04
+meta_only = true
+meta_cost_credits = 420
+meta_cost_research = 3
+meta_cost_growth = 1.55
+color = Color(1, 0.45, 0.35, 1)
+icon_shape = 4

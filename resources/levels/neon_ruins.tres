@@ -1,0 +1,139 @@
+[gd_resource type="Resource" script_class="LevelData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_a8l22"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_drone.tres" id="2_vcav2"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_crawler.tres" id="3_rpjpa"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_spark.tres" id="4_cij0s"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_turret.tres" id="5_eo3x8"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_hulk.tres" id="6_kjama"]
+[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_5jmvf"]
+[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_efdfl"]
+
+[sub_resource type="Resource" id="Resource_vuyca"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_drone"
+end_time = 180.0
+batch_size = 3
+interval = 1.8
+interval_end_scale = 0.6
+
+[sub_resource type="Resource" id="Resource_7tcsp"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_crawler"
+start_time = 45.0
+end_time = 300.0
+batch_size = 3
+interval = 2.2
+interval_end_scale = 0.6
+formation = 2
+
+[sub_resource type="Resource" id="Resource_vrr57"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_spark"
+start_time = 110.0
+end_time = 420.0
+batch_size = 2
+interval = 3.2
+interval_end_scale = 0.55
+formation = 3
+
+[sub_resource type="Resource" id="Resource_y0sag"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_drone"
+start_time = 150.0
+end_time = 540.0
+batch_size = 5
+interval = 1.6
+interval_end_scale = 0.5
+elite_chance = 0.02
+
+[sub_resource type="Resource" id="Resource_nbm26"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_turret"
+start_time = 190.0
+end_time = 540.0
+batch_size = 2
+interval = 5.0
+interval_end_scale = 0.6
+elite_chance = 0.04
+
+[sub_resource type="Resource" id="Resource_t5x2d"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_crawler"
+start_time = 240.0
+end_time = 600.0
+batch_size = 6
+interval = 2.0
+interval_end_scale = 0.45
+formation = 1
+elite_chance = 0.05
+
+[sub_resource type="Resource" id="Resource_chsds"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_hulk"
+start_time = 300.0
+end_time = 600.0
+batch_size = 1
+interval = 9.0
+interval_end_scale = 0.5
+elite_chance = 0.12
+
+[sub_resource type="Resource" id="Resource_a864f"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_drone"
+start_time = 360.0
+end_time = 600.0
+batch_size = 10
+interval = 2.4
+interval_end_scale = 0.4
+formation = 1
+elite_chance = 0.03
+
+[sub_resource type="Resource" id="Resource_kbtv8"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_spark"
+start_time = 420.0
+end_time = 600.0
+interval = 2.6
+interval_end_scale = 0.5
+formation = 4
+elite_chance = 0.1
+
+[sub_resource type="Resource" id="Resource_awk0v"]
+script = ExtResource("8_efdfl")
+enemy_id = &"nr_hulk"
+start_time = 480.0
+end_time = 480.0
+batch_size = 6
+interval = 1.0
+interval_end_scale = 1.0
+formation = 1
+elite_chance = 0.25
+one_shot = true
+
+[resource]
+script = ExtResource("7_5jmvf")
+id = &"neon_ruins"
+display_name = "Neon Ruins"
+description = "A collapsed sign-district still drawing power. The floor arcs where the grid broke."
+unlock_time = 420.0
+boss_time = 230.0
+boss_interval = 200.0
+mid_boss_interval = 145.0
+health_growth_per_minute = 0.17
+endless_interval = 1.6
+endless_batch = 5
+enemy_pool = Array[ExtResource("1_a8l22")]([ExtResource("2_vcav2"), ExtResource("3_rpjpa"), ExtResource("4_cij0s"), ExtResource("5_eo3x8"), ExtResource("6_kjama")])
+waves = Array[ExtResource("8_efdfl")]([SubResource("Resource_vuyca"), SubResource("Resource_7tcsp"), SubResource("Resource_vrr57"), SubResource("Resource_y0sag"), SubResource("Resource_nbm26"), SubResource("Resource_t5x2d"), SubResource("Resource_chsds"), SubResource("Resource_a864f"), SubResource("Resource_kbtv8"), SubResource("Resource_awk0v")])
+boss_id = &"nr_boss_warden"
+mid_boss_id = &"nr_mid_bulwark"
+hazard_type = 1
+hazard_count = 8
+hazard_damage = 12.0
+hazard_interval = 3.6
+hazard_start_time = 60.0
+bg_top = Color(0.05, 0.07, 0.14, 1)
+bg_bottom = Color(0.02, 0.02, 0.06, 1)
+grid_color = Color(0.22, 0.6, 0.85, 0.3)
+fog_color = Color(0.08, 0.18, 0.32, 0.22)
+unlocked_by_default = true

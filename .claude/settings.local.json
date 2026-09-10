@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./tools/Godot_v4.7.2-stable_win64_console.exe --headless --path . --fixed-fps 60 --quit-after 3600 -- --smoke --seed=7)",
+      "Bash(./tools/Godot_v4.7.2-stable_win64_console.exe --headless --verbose --path . --fixed-fps 60 --quit-after 600 -- --smoke --seed=7)"
+    ]
+  }
+}

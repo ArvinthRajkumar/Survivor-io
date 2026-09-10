@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="HeroData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_0ayqv"]
+
+[resource]
+script = ExtResource("1_0ayqv")
+id = &"aegis"
+display_name = "Aegis"
+role = "Shield Soldier"
+description = "Last of the wall units. Built to stand in the doorway until the lights come back on."
+max_health = 165.0
+move_speed = 280.0
+armor = 4.0
+damage_mult = 0.94
+pickup_radius = 260.0
+starting_power_id = &"spinners"
+passive_id = &"bulwark_plating"
+passive_name = "Bulwark Plating"
+passive_description = "Heavy armour and a deep health pool, at the cost of a little speed."
+ultimate_id = &"aegis_bulwark"
+ultimate_name = "Bulwark"
+ultimate_description = "Becomes invulnerable and reflects every hit back at whatever landed it."
+ultimate_cooldown = 42.0
+accent = Color(1, 0.78, 0.35, 1)
+accent_secondary = Color(0.55, 0.75, 1, 1)
+portrait_shape = 1
+unlock_credit_cost = 1800
+unlock_research_cost = 22

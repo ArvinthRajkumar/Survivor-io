@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="PowerData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_limi6"]
+
+[resource]
+script = ExtResource("1_limi6")
+id = &"salvage_magnet"
+display_name = "Salvage Magnet"
+category = 1
+order = 14
+description = "Drags every loose shard on the field toward you."
+tooltip = "Wider pickup radius, more experience."
+level_notes = PackedStringArray()
+count_at_levels = PackedInt32Array()
+stat_multipliers = {
+"pickup_radius_mult": 0.22,
+"xp_gain_mult": 0.15
+}
+color = Color(1, 0.72, 0.35, 1)
+color_secondary = Color(0.6, 0.85, 1, 1)
+art = &"salvage_magnet"

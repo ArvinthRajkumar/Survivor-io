@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="HeroData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_jrfg5"]
+
+[resource]
+script = ExtResource("1_jrfg5")
+id = &"ember"
+display_name = "Ember"
+role = "Firecaster"
+description = "Burned the first nest down alone. Has been feeding the habit ever since."
+move_speed = 310.0
+damage_mult = 1.08
+area_mult = 1.1
+pickup_radius = 260.0
+starting_power_id = &"molotov"
+passive_id = &"kindling"
+passive_name = "Kindling"
+passive_description = "Every effect covers 18% more ground and critical hits land much harder."
+ultimate_id = &"flame_wall"
+ultimate_name = "Firewall"
+ultimate_description = "Rolls a growing wall of flame outward in the direction you are facing."
+ultimate_cooldown = 42.0
+accent = Color(1, 0.52, 0.22, 1)
+accent_secondary = Color(1, 0.85, 0.35, 1)
+portrait_shape = 0
+unlock_credit_cost = 2600
+unlock_research_cost = 30

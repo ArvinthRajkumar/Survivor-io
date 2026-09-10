@@ -1,0 +1,141 @@
+[gd_resource type="Resource" script_class="LevelData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_s65b2"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_scuttler.tres" id="2_l0gir"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_hound.tres" id="3_7wuhf"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_spitter.tres" id="4_hbo3b"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_brood.tres" id="5_elav0"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_behemoth.tres" id="6_4mhu6"]
+[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_y7vl6"]
+[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_u3jms"]
+
+[sub_resource type="Resource" id="Resource_qdgsc"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_scuttler"
+end_time = 220.0
+interval = 1.7
+interval_end_scale = 0.55
+
+[sub_resource type="Resource" id="Resource_s3xyv"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_hound"
+start_time = 50.0
+end_time = 360.0
+batch_size = 3
+interval = 2.6
+interval_end_scale = 0.5
+formation = 3
+
+[sub_resource type="Resource" id="Resource_0rjsp"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_spitter"
+start_time = 120.0
+end_time = 480.0
+batch_size = 2
+interval = 4.2
+interval_end_scale = 0.55
+formation = 2
+elite_chance = 0.04
+
+[sub_resource type="Resource" id="Resource_j7nr2"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_scuttler"
+start_time = 160.0
+end_time = 660.0
+batch_size = 7
+interval_end_scale = 0.42
+elite_chance = 0.03
+
+[sub_resource type="Resource" id="Resource_vggu4"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_brood"
+start_time = 210.0
+end_time = 660.0
+batch_size = 2
+interval = 5.5
+interval_end_scale = 0.5
+elite_chance = 0.08
+
+[sub_resource type="Resource" id="Resource_4nocr"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_hound"
+start_time = 280.0
+end_time = 660.0
+batch_size = 5
+interval = 2.2
+interval_end_scale = 0.45
+formation = 1
+elite_chance = 0.07
+
+[sub_resource type="Resource" id="Resource_5m18h"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_behemoth"
+start_time = 330.0
+end_time = 660.0
+batch_size = 1
+interval = 8.0
+interval_end_scale = 0.5
+elite_chance = 0.14
+
+[sub_resource type="Resource" id="Resource_feb7p"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_spitter"
+start_time = 400.0
+end_time = 660.0
+interval = 3.4
+interval_end_scale = 0.5
+formation = 1
+elite_chance = 0.1
+
+[sub_resource type="Resource" id="Resource_ty6m4"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_brood"
+start_time = 470.0
+end_time = 660.0
+interval = 4.0
+interval_end_scale = 0.45
+formation = 4
+elite_chance = 0.12
+
+[sub_resource type="Resource" id="Resource_sv74l"]
+script = ExtResource("8_u3jms")
+enemy_id = &"aw_behemoth"
+start_time = 540.0
+end_time = 540.0
+batch_size = 5
+interval = 1.0
+interval_end_scale = 1.0
+formation = 1
+elite_chance = 0.3
+one_shot = true
+
+[resource]
+script = ExtResource("7_y7vl6")
+id = &"ash_wastes"
+display_name = "Ash Wastes"
+description = "Volcanic flats under permanent fallout. Vents open without warning."
+order = 1
+boss_interval = 195.0
+mid_boss_time = 120.0
+mid_boss_interval = 140.0
+difficulty_scale = 1.22
+health_growth_per_minute = 0.19
+damage_growth_per_minute = 0.08
+enemy_pool = Array[ExtResource("1_s65b2")]([ExtResource("2_l0gir"), ExtResource("3_7wuhf"), ExtResource("4_hbo3b"), ExtResource("5_elav0"), ExtResource("6_4mhu6")])
+waves = Array[ExtResource("8_u3jms")]([SubResource("Resource_qdgsc"), SubResource("Resource_s3xyv"), SubResource("Resource_0rjsp"), SubResource("Resource_j7nr2"), SubResource("Resource_vggu4"), SubResource("Resource_4nocr"), SubResource("Resource_5m18h"), SubResource("Resource_feb7p"), SubResource("Resource_ty6m4"), SubResource("Resource_sv74l")])
+boss_id = &"aw_boss_ashbrand"
+mid_boss_id = &"aw_mid_maw"
+hazard_type = 2
+hazard_count = 10
+hazard_damage = 15.0
+hazard_radius = 120.0
+hazard_interval = 3.0
+bg_top = Color(0.14, 0.06, 0.04, 1)
+bg_bottom = Color(0.04, 0.02, 0.02, 1)
+grid_color = Color(0.55, 0.28, 0.15, 0.35)
+accent = Color(1, 0.52, 0.22, 1)
+fog_color = Color(0.3, 0.14, 0.06, 0.25)
+background_style = 1
+required_level_id = &"neon_ruins"
+reward_credits = 700
+reward_research = 9

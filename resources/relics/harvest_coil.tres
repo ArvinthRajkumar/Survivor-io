@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_qno65"]
+
+[resource]
+script = ExtResource("1_qno65")
+id = &"harvest_coil"
+display_name = "Harvest Coil"
+description = "+55% pickup radius and a little regeneration."
+rarity = 0
+color = Color(0.55, 1, 0.75, 1)
+icon_shape = 2
+credit_cost = 600
+research_cost = 5
+stat_multipliers = {
+"pickup_radius_mult": 0.55
+}
+stat_flats = {
+"health_regen": 0.8
+}

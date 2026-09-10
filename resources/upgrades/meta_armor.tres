@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_bxbqv"]
+
+[resource]
+script = ExtResource("1_bxbqv")
+id = &"meta_armor"
+display_name = "Composite Plating"
+description = "base armour"
+max_level = 8
+stat_key = &"armor"
+value_per_level = 1.0
+is_multiplier = false
+meta_only = true
+meta_cost_credits = 340
+meta_cost_growth = 1.55
+color = Color(0.75, 0.8, 0.9, 1)
+icon_shape = 3

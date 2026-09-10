@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_mxlpw"]
+
+[resource]
+script = ExtResource("1_mxlpw")
+id = &"mr_colossus"
+display_name = "Moonfall Colossus"
+max_health = 216.0
+move_speed = 106.0
+contact_damage = 18.7
+knockback_resist = 0.8
+xp_value = 12
+credit_value = 12
+radius = 48.0
+mass = 2.1818181818181817
+color = Color(0.7, 0.75, 0.95, 1)
+color_secondary = Color(0.14, 0.16, 0.26, 1)
+shape = 2
+boss_phase_thresholds = PackedFloat32Array(0.66, 0.33)

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_n4uwq"]
+
+[resource]
+script = ExtResource("1_n4uwq")
+id = &"meta_fortune"
+display_name = "Salvage Doctrine"
+description = "upgrade luck"
+rarity = 2
+stat_key = &"luck"
+value_per_level = 1.0
+is_multiplier = false
+meta_only = true
+meta_cost_credits = 900
+meta_cost_research = 8
+meta_cost_growth = 1.55
+color = Color(1, 0.85, 0.4, 1)
+icon_shape = 6

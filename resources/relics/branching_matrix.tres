@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_k0kwt"]
+
+[resource]
+script = ExtResource("1_k0kwt")
+id = &"branching_matrix"
+display_name = "Branching Matrix"
+description = "Level-ups offer a fourth option."
+rarity = 3
+color = Color(0.78, 0.55, 1, 1)
+credit_cost = 2600
+research_cost = 30
+special = &"extra_choice"
+special_value = 1.0

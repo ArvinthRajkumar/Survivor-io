@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RelicData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_173a2"]
+
+[resource]
+script = ExtResource("1_173a2")
+id = &"marksmans_eye"
+display_name = "Marksman's Eye"
+description = "+10% critical chance and +40% critical damage."
+rarity = 2
+color = Color(1, 0.85, 0.4, 1)
+icon_shape = 6
+credit_cost = 1500
+research_cost = 15
+stat_multipliers = {
+"crit_damage_mult": 0.4
+}
+stat_flats = {
+"crit_chance": 0.1
+}

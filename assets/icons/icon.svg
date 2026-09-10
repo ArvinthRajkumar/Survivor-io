@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Last Light: Swarmfall - original app icon, drawn as plain vectors. -->
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#132038"/>
+      <stop offset="100%" stop-color="#070910"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5ce6ff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#5ce6ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+
+  <!-- Faint grid, matching the Neon Ruins backdrop. -->
+  <g stroke="#2f6f96" stroke-opacity="0.28" stroke-width="2">
+    <path d="M0 128H512M0 256H512M0 384H512M128 0V512M256 0V512M384 0V512"/>
+  </g>
+
+  <circle cx="256" cy="256" r="190" fill="url(#glow)"/>
+
+  <!-- The swarm closing in from the corners. -->
+  <g fill="#ff3f66" fill-opacity="0.92">
+    <path d="M96 96l34 20-34 20-34-20z"/>
+    <path d="M416 96l34 20-34 20-34-20z"/>
+    <path d="M96 396l34 20-34 20-34-20z"/>
+    <path d="M416 396l34 20-34 20-34-20z"/>
+    <path d="M256 62l30 18-30 18-30-18z"/>
+    <path d="M62 256l18 30-18 30-18-30z" transform="translate(6,0)"/>
+    <path d="M432 256l18 30-18 30-18-30z"/>
+    <path d="M256 428l30 18-30 18-30-18z"/>
+  </g>
+
+  <!-- The last light: an orbiting guard ring around a bright core. -->
+  <circle cx="256" cy="256" r="132" fill="none" stroke="#ffa947" stroke-opacity="0.35" stroke-width="4"/>
+  <g fill="#ffa947">
+    <circle cx="256" cy="124" r="16"/>
+    <circle cx="370" cy="322" r="16"/>
+    <circle cx="142" cy="322" r="16"/>
+  </g>
+
+  <polygon points="256,150 348,217 313,325 199,325 164,217"
+           fill="#123449" stroke="#5ce6ff" stroke-width="14" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="34" fill="#eafcff"/>
+</svg>
