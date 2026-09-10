@@ -61,15 +61,21 @@ func close() -> void:
 
 
 ## Small helper for the stat rows used by the results and pause screens.
+##
+## Both labels are built with wrap off. A wrapped Label reports almost no
+## minimum width (Godot lets the container decide, since it can always wrap
+## more) — with `key` set to EXPAND_FILL that starved `value` down to a sliver,
+## and every digit in it wrapped onto its own line. These are short one-line
+## stats by design, so there is nothing to wrap in the first place.
 func add_stat_row(parent: Control, label_text: String, value_text: String,
 		value_color: Color = Palette.TEXT) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 12)
 	parent.add_child(row)
-	var key := UITheme.make_label(label_text, 28, Palette.TEXT_DIM)
+	var key := UITheme.make_label(label_text, 28, Palette.TEXT_DIM, false)
 	key.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(key)
-	var value := UITheme.make_label(value_text, 32, value_color)
+	var value := UITheme.make_label(value_text, 32, value_color, false)
 	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	row.add_child(value)
 	return row

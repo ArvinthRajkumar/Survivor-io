@@ -304,6 +304,15 @@ func get_best_time(level_id: StringName) -> float:
 	return float(best.get(String(level_id), 0.0))
 
 
+## Longest survival across every sector, for the main menu's headline stat.
+func get_best_time_overall() -> float:
+	var best: Dictionary = profile.get("best_times", {})
+	var top := 0.0
+	for key in best:
+		top = maxf(top, float(best[key]))
+	return top
+
+
 func get_clear_count(level_id: StringName) -> int:
 	var clears: Dictionary = profile.get("clears", {})
 	return int(clears.get(String(level_id), 0))

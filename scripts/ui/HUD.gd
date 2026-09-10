@@ -8,17 +8,17 @@ extends Control
 ##
 ## Layout, top to bottom: a status panel with the level badge, run clock and
 ## milestone bar; the boss banner; the floating log; then the bottom console with
-## the health bar, the slot row and the ultimate button. The slot row is seven
-## wide: the innate katana first, then the six the player actually spends.
-## Everything is one thumb's reach from the bottom of a phone screen.
+## the health bar, two labelled slot rows and the ultimate button. The rows keep
+## the two upgrade categories visually grouped instead of interleaved in pick
+## order: Powers (the innate katana first, then any chosen Powers) on top,
+## Passive Abilities below. Everything is one thumb's reach from the bottom of a
+## phone screen.
 
 signal pause_pressed
 signal joystick_moved(direction: Vector2)
 
 const LOG_LIFETIME := 2.6
 const MAX_LOG_LINES := 3
-## Six chosen slots plus the innate katana that never spends one.
-const SLOT_COUNT := PowerLoadout.MAX_SLOTS + 1
 const SLOT_SIZE := Vector2(88, 88)
 
 @onready var joystick: TouchJoystick = $Joystick
@@ -45,8 +45,12 @@ var _health_ghost: float = 1.0
 var _health_label: Label
 var _health_bar: Control
 
-var _slots: Array[PowerSlot] = []
-var _slot_row: HBoxContainer
+## The two rows, each in pick order. Slot 0 of _power_slots is always the
+## innate katana. Kept separate so rebuilding can route an owned id to the
+## right row by category, but the two are iterated together (see _all_slots())
+## wherever a piece of code genuinely does not care which row a slot is in.
+var _power_slots: Array[PowerSlot] = []
+var _passive_slots: Array[PowerSlot] = []
 var _tooltip: PanelContainer
 var _tooltip_title: Label
 var _tooltip_body: Label
@@ -235,13 +239,13 @@ func _build_console() -> void:
 	console.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
 	console.offset_left = 18
 	console.offset_right = -18
-	console.offset_top = -212
+	console.offset_top = -340
 	console.offset_bottom = -22
 	console.mouse_filter = Control.MOUSE_FILTER_PASS
 	add_child(console)
 
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 12)
+	column.add_theme_constant_override("separation", 8)
 	column.mouse_filter = Control.MOUSE_FILTER_PASS
 	console.add_child(column)
 
@@ -258,26 +262,55 @@ func _build_console() -> void:
 	_health_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_health_bar.add_child(_health_label)
 
-	_slot_row = HBoxContainer.new()
-	_slot_row.add_theme_constant_override("separation", 10)
-	_slot_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_slot_row.mouse_filter = Control.MOUSE_FILTER_PASS
-	column.add_child(_slot_row)
+	# Each row's socket count is however many of that category could ever be
+	# owned at once — capped by the six-slot budget, but also by how many of
+	# that category actually exist in content, so the Passives row (only five
+	# exist) is not stretched out with sockets nothing could ever fill.
+	var power_capacity := 1 + mini(PowerLoadout.MAX_SLOTS,
+		maxi(0, ContentDB.active_power_list.size() - 1))
+	var passive_capacity := mini(PowerLoadout.MAX_SLOTS, ContentDB.passive_list.size())
+	_power_slots = _build_slot_row(column, "POWERS", power_capacity, true)
+	_passive_slots = _build_slot_row(column, "PASSIVE ABILITIES", passive_capacity, false)
 
-	for i in SLOT_COUNT:
+	_build_ultimate()
+
+
+## One labelled row of sockets. `innate_first` marks slot 0 as the katana,
+## which only the Powers row ever has.
+func _build_slot_row(column: VBoxContainer, title: String, capacity: int,
+		innate_first: bool) -> Array[PowerSlot]:
+	var label := UITheme.make_label(title, 18, Palette.TEXT_DIM, false)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(label)
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.mouse_filter = Control.MOUSE_FILTER_PASS
+	column.add_child(row)
+
+	var slots: Array[PowerSlot] = []
+	for i in capacity:
 		var slot := PowerSlot.new()
 		slot.slot_index = i
-		# Slot 0 always holds the katana, and says so.
-		slot.innate = i == 0
+		slot.innate = innate_first and i == 0
 		slot.custom_minimum_size = SLOT_SIZE
 		# Fixed, not expanding: stretched sockets stop being square and the
 		# artwork inside them starts to look stretched with them.
 		slot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 		slot.hover_changed.connect(_on_slot_hover)
-		_slot_row.add_child(slot)
-		_slots.append(slot)
+		row.add_child(slot)
+		slots.append(slot)
+	return slots
 
-	_build_ultimate()
+
+## The two rows concatenated, for the handful of places (the per-frame charge
+## sweep) that genuinely want every slot regardless of category.
+func _all_slots() -> Array[PowerSlot]:
+	var out: Array[PowerSlot] = []
+	out.append_array(_power_slots)
+	out.append_array(_passive_slots)
+	return out
 
 
 func _build_ultimate() -> void:
@@ -289,8 +322,9 @@ func _build_ultimate() -> void:
 	_ultimate_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	_ultimate_button.offset_left = -186
 	_ultimate_button.offset_right = -36
-	_ultimate_button.offset_top = -400
-	_ultimate_button.offset_bottom = -250
+	# Floats clear above the console, which is now two slot rows tall.
+	_ultimate_button.offset_top = -520
+	_ultimate_button.offset_bottom = -370
 	_ultimate_button.pressed.connect(_on_ultimate_pressed)
 	add_child(_ultimate_button)
 
@@ -325,15 +359,31 @@ func _build_tooltip() -> void:
 # --- Slots and tooltip ------------------------------------------------------
 
 func _rebuild_slots() -> void:
-	var ids := RunManager.loadout.get_ordered_ids()
-	for i in _slots.size():
-		if i < ids.size():
-			var data := ContentDB.get_power(ids[i])
-			_slots[i].set_entry(data, RunManager.loadout.get_level(ids[i]))
+	# Katana first (get_ordered_ids() guarantees that), then split by category
+	# so each row only ever shows its own kind, in the order it was picked.
+	var power_ids: Array = []
+	var passive_ids: Array = []
+	for id in RunManager.loadout.get_ordered_ids():
+		var data := ContentDB.get_power(id)
+		if data == null:
+			continue
+		if data.is_passive():
+			passive_ids.append(id)
 		else:
-			_slots[i].clear_entry()
+			power_ids.append(id)
+	_fill_row(_power_slots, power_ids)
+	_fill_row(_passive_slots, passive_ids)
 	if _tooltip_target != null and not _tooltip_target.is_filled():
 		_hide_tooltip()
+
+
+func _fill_row(slots: Array[PowerSlot], ids: Array) -> void:
+	for i in slots.size():
+		if i < ids.size():
+			var id: StringName = ids[i]
+			slots[i].set_entry(ContentDB.get_power(id), RunManager.loadout.get_level(id))
+		else:
+			slots[i].clear_entry()
 
 
 func _on_slot_hover(slot: PowerSlot, hovered: bool) -> void:
@@ -478,7 +528,7 @@ func _process(delta: float) -> void:
 		clear_boss()
 
 	if player != null and is_instance_valid(player):
-		for slot in _slots:
+		for slot in _all_slots():
 			if slot.is_filled() and slot.data.is_power():
 				slot.set_charge(player.powers.get_charge_ratio(slot.data.id))
 

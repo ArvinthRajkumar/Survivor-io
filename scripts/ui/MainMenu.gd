@@ -38,6 +38,15 @@ func _build_content() -> void:
 	_add_nav("Research Lab", GameManager.goto_meta)
 	_add_nav("Settings", _on_settings)
 
+	# Longest single survival across every sector — the run's whole headline
+	# stat is "how long did you last", so that is what belongs on the title
+	# screen. Left off entirely on a blank profile rather than showing 00:00.
+	var best := SaveManager.get_best_time_overall()
+	if best > 0.0:
+		var best_label := UITheme.make_label(
+			"Best survival: %s" % MathUtil.format_time(best), 26, Palette.GOLD)
+		footer.add_child(best_label)
+
 	var stats := UITheme.make_label(_profile_line(), 24, Palette.TEXT_DIM)
 	footer.add_child(stats)
 

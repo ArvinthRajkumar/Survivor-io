@@ -13,7 +13,7 @@ tooltip = "Wider pickup radius, more experience."
 level_notes = PackedStringArray()
 count_at_levels = PackedInt32Array()
 stat_multipliers = {
-"pickup_radius_mult": 0.22,
+"pickup_radius_mult": 0.4,
 "xp_gain_mult": 0.15
 }
 color = Color(1, 0.72, 0.35, 1)

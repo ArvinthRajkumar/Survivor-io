@@ -33,7 +33,11 @@ static func _base() -> HeroData:
 	hero.damage_mult = 1.0
 	hero.cooldown_mult = 1.0
 	hero.area_mult = 1.0
-	hero.pickup_radius = 260.0
+	# Deliberately tight: this is the "walk over it" radius before any magnet
+	# investment. It used to be 260, wide enough that most kills anywhere on
+	# screen would start homing toward the player unprompted — collection
+	# should read as something the player did, not something that just happens.
+	hero.pickup_radius = 70.0
 	hero.crit_chance = 0.05
 	hero.crit_damage = 1.6
 	hero.ultimate_cooldown = 42.0

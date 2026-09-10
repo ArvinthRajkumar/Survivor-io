@@ -9,8 +9,11 @@ const COLLECT_DISTANCE := 26.0
 const LIFETIME := 75.0
 ## Shards inside this multiple of the magnet radius start drifting in on their
 ## own. The Area2D magnet gives a crisp snap; this soft pull is what stops a
-## ranged build from leaving most of its own XP on the floor.
-const SOFT_PULL_SCALE := 2.1
+## ranged build from leaving most of its own XP on the floor. Kept close to 1x
+## now that the base pickup radius is itself tight (a shard should not start
+## flying across half the screen just because the player exists somewhere on
+## it) — a dedicated magnet passive is what is supposed to widen this.
+const SOFT_PULL_SCALE := 1.5
 const SCAN_INTERVAL := 0.3
 
 var value: int = 1

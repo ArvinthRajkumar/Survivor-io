@@ -6,9 +6,9 @@ extends Node2D
 ## enemies on screen. Everything that makes it feel alive is layered on top of
 ## that silhouette rather than baked into it:
 ##
-##  * a three-quarter turn — the character shows its back when running upward and
-##    its face when running down, which is what stops top-down movement reading
-##    as a sprite sliding on ice;
+##  * the operative always faces the camera — only the left/right mirror and the
+##    lean change with movement, so the player's own character is never a blank
+##    silhouette to look at;
 ##  * a scarf simulated as a lagging chain, so direction changes whip it;
 ##  * squash and stretch driven by acceleration, plus a lean into the turn;
 ##  * footfall dust timed to the actual step cycle;
@@ -40,8 +40,6 @@ var _step: float = 0.0
 var _thrust: float = 0.0
 var _facing: float = 1.0
 var _lean: float = 0.0
-## 0 = facing the camera, 1 = seen from behind. Blended, never snapped.
-var _back: float = 0.0
 var _squash: float = 0.0
 var _last_speed: float = 0.0
 var _hurt_flash: float = 0.0
@@ -90,10 +88,6 @@ func set_motion(dir: Vector2, velocity: Vector2, delta: float) -> void:
 	if absf(dir.x) > 0.12:
 		_facing = signf(dir.x)
 	_lean = clampf(dir.x * 0.20, -0.24, 0.24)
-	# Turning toward the top of the screen shows the operative's back; the blend
-	# is slow enough that a wiggle never flips the character back and forth.
-	var want_back := clampf(-dir.y * 1.6, 0.0, 1.0) if dir.length_squared() > 0.02 else _back
-	_back = lerpf(_back, want_back, clampf(delta * 7.0, 0.0, 1.0))
 	# Acceleration drives squash and stretch: speeding up stretches the body
 	# along its travel, slamming to a stop squashes it.
 	var accel := (speed - _last_speed) / maxf(0.0001, delta)
@@ -116,7 +110,6 @@ func play_slash(dir: Vector2, handedness: float, arc: float, spin: bool) -> void
 	_slash_time = _slash_span
 	if absf(_slash_dir.x) > 0.2:
 		_facing = signf(_slash_dir.x)
-	_back = lerpf(_back, clampf(-_slash_dir.y * 1.6, 0.0, 1.0), 0.5)
 	# A short lunge sells the commitment of the swing.
 	_lunge = _slash_dir * (7.0 if spin else 5.0)
 
@@ -400,22 +393,14 @@ func _draw_torso(origin: Vector2, lean: float, tint: Color) -> void:
 		shade.append((p as Vector2).rotated(lean) + centre)
 	draw_colored_polygon(shade, Color(0.0, 0.0, 0.0, 0.16))
 
-	if _back > 0.5:
-		# Seen from behind: a spine seam and the harness that holds the saya.
-		draw_line(Vector2(0.0, -BODY_HEIGHT * 0.5).rotated(lean) + centre,
-			Vector2(0.0, BODY_HEIGHT * 0.6).rotated(lean) + centre,
-			tint.darkened(0.3), 2.0, true)
-		draw_line(Vector2(-BODY_WIDTH * 0.9, -BODY_HEIGHT * 0.2).rotated(lean) + centre,
-			Vector2(BODY_WIDTH * 0.9, BODY_HEIGHT * 0.15).rotated(lean) + centre,
-			accent_secondary.darkened(0.36), 3.0, true)
-	else:
-		# Seen from the front: open jacket, undershirt, and the roster emblem.
-		var lapel := PackedVector2Array()
-		for p in [Vector2(-5.5, -BODY_HEIGHT * 0.55), Vector2(5.5, -BODY_HEIGHT * 0.55),
-				Vector2(3.0, BODY_HEIGHT * 0.6), Vector2(-3.0, BODY_HEIGHT * 0.6)]:
-			lapel.append((p as Vector2).rotated(lean) + centre)
-		draw_colored_polygon(lapel, tint.darkened(0.75))
-		_draw_emblem(centre + Vector2(0.0, -BODY_HEIGHT * 0.12).rotated(lean), lean)
+	# Open jacket, undershirt, and the roster emblem — always visible since the
+	# operative always faces the camera.
+	var lapel := PackedVector2Array()
+	for p in [Vector2(-5.5, -BODY_HEIGHT * 0.55), Vector2(5.5, -BODY_HEIGHT * 0.55),
+			Vector2(3.0, BODY_HEIGHT * 0.6), Vector2(-3.0, BODY_HEIGHT * 0.6)]:
+		lapel.append((p as Vector2).rotated(lean) + centre)
+	draw_colored_polygon(lapel, tint.darkened(0.75))
+	_draw_emblem(centre + Vector2(0.0, -BODY_HEIGHT * 0.12).rotated(lean), lean)
 
 	# Belt across the hips.
 	var belt_l := Vector2(-BODY_WIDTH * 1.0, BODY_HEIGHT * 0.44).rotated(lean) + centre
@@ -507,16 +492,14 @@ func _draw_sword_arm(origin: Vector2, lean: float, swing: float, tint: Color) ->
 func _draw_head(origin: Vector2, lean: float, tint: Color) -> void:
 	var head := origin + Vector2(0.0, -BODY_HEIGHT - HEAD_RADIUS * 0.55).rotated(lean * 0.6)
 	var tilt := lean * 0.5
-	var from_behind := _back > 0.55
 
 	# Hair mass behind the face, with a couple of loose strands that sway.
 	_draw_hair_back(head, tilt)
 
-	# Ears, only where a viewer would actually see them.
-	if not from_behind:
-		for side in [-1.0, 1.0]:
-			draw_circle(head + Vector2(side * HEAD_RADIUS * 0.94, HEAD_RADIUS * 0.06), 3.2,
-				_skin.darkened(0.08))
+	# Ears.
+	for side in [-1.0, 1.0]:
+		draw_circle(head + Vector2(side * HEAD_RADIUS * 0.94, HEAD_RADIUS * 0.06), 3.2,
+			_skin.darkened(0.08))
 
 	var skin := _skin
 	if _hurt_flash > 0.0:
@@ -525,18 +508,12 @@ func _draw_head(origin: Vector2, lean: float, tint: Color) -> void:
 		skin = skin.darkened(0.35)
 
 	# Head shape: a slightly squared circle reads more like a face than a ball.
-	# Turned away, the same shape is filled with hair rather than skin, which is
-	# the whole reason the turn reads at a glance.
 	var face := PackedVector2Array()
 	for i in 16:
 		var a := TAU * float(i) / 16.0
 		var r := HEAD_RADIUS * (1.0 - 0.06 * cos(a * 2.0))
 		face.append(head + Vector2(cos(a) * r, sin(a) * r * 0.98))
-	draw_colored_polygon(face, _hair if from_behind else skin)
-
-	if from_behind:
-		_draw_back_of_head(head, tilt)
-		return
+	draw_colored_polygon(face, skin)
 
 	_draw_face(head, skin)
 	_draw_hair_front(head, tilt)
@@ -548,28 +525,6 @@ func _draw_head(origin: Vector2, lean: float, tint: Color) -> void:
 		accent_secondary, 4.2, true)
 	draw_circle(head + Vector2(HEAD_RADIUS * 0.30 * _facing, -HEAD_RADIUS * 0.44), 3.0,
 		Color(1, 1, 1, 0.85))
-
-
-## Running away from the camera: hair, the sheen across it, and the headband
-## knot with two ties that swing on their own clock.
-func _draw_back_of_head(head: Vector2, tilt: float) -> void:
-	draw_arc(head + Vector2(0.0, -HEAD_RADIUS * 0.12), HEAD_RADIUS * 0.72,
-		PI * 1.10, PI * 1.70, 10, _hair.lightened(0.26), 3.4, true)
-	# Nape: a short fan of strands where the hair meets the collar.
-	for i in 5:
-		var t := float(i) / 4.0
-		var root := head + Vector2(lerpf(-0.62, 0.62, t) * HEAD_RADIUS, HEAD_RADIUS * 0.55)
-		draw_line(root, root + Vector2((t - 0.5) * 6.0, HEAD_RADIUS * 0.34).rotated(tilt),
-			_hair.darkened(0.25), 4.0, true)
-	draw_line(head + Vector2(-HEAD_RADIUS * 0.96, -HEAD_RADIUS * 0.10).rotated(tilt * 0.4),
-		head + Vector2(HEAD_RADIUS * 0.96, -HEAD_RADIUS * 0.14).rotated(tilt * 0.4),
-		accent_secondary, 4.2, true)
-	var knot := head + Vector2(HEAD_RADIUS * 0.80 * _facing, -HEAD_RADIUS * 0.08)
-	draw_circle(knot, 3.4, accent_secondary)
-	for i in 2:
-		var sway := sin(_phase * 5.5 + float(i) * 1.4) * 3.2
-		draw_line(knot, knot + Vector2(8.0 * _facing + sway, 9.0 + float(i) * 3.0),
-			accent_secondary.darkened(0.12 + 0.1 * float(i)), 2.6, true)
 
 
 func _draw_hair_back(head: Vector2, tilt: float) -> void:

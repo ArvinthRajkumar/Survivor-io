@@ -304,7 +304,11 @@ static func _passives() -> Array[PowerData]:
 	var magnet := _passive(&"salvage_magnet", "Salvage Magnet", 14)
 	magnet.description = "Drags every loose shard on the field toward you."
 	magnet.tooltip = "Wider pickup radius, more experience."
-	magnet.stat_multipliers = {"pickup_radius_mult": 0.22, "xp_gain_mult": 0.15}
+	# The base radius is deliberately tight (walk-over-it range), so this is
+	# the passive that actually has to deliver "wider" — each level is worth
+	# noticeably more than the old 0.22 was against the old, already-generous
+	# base of 260.
+	magnet.stat_multipliers = {"pickup_radius_mult": 0.40, "xp_gain_mult": 0.15}
 	magnet.color = Color(1.00, 0.72, 0.35)
 	magnet.color_secondary = Color(0.60, 0.85, 1.00)
 	magnet.rarity = 1
