@@ -24,8 +24,11 @@ extends PowerBase
 ## upgrade and left the blade permanently short; a cooldown passive is where
 ## "swing faster" belongs.
 
-const BASE_REACH := 132.0
-const BASE_ARC := 2.05
+const BASE_REACH := 138.0
+## Deliberately narrow. A wide sweep covers more ground but stops reading as a
+## cut - it looks like the character is spinning a disc. A quadrant-ish arc
+## travelled quickly is what a sword swing looks like.
+const BASE_ARC := 1.35
 
 var _handedness: float = 1.0
 
@@ -34,9 +37,11 @@ func get_reach() -> float:
 	return BASE_REACH * get_area()
 
 
-## Widens from a little over a quadrant toward a half-circle as the blade levels.
+## Widens a little with level, but never past a bit over a half-circle: past
+## that the cut loses its direction and the weapon stops being something the
+## player aims with their feet.
 func get_arc() -> float:
-	return minf(PI * 0.95, BASE_ARC + 0.14 * float(level - 1))
+	return minf(PI * 0.62, BASE_ARC + 0.10 * float(level - 1))
 
 
 func _on_reached_max_level() -> void:
@@ -72,8 +77,8 @@ func _swing(dir: Vector2) -> void:
 		"position": player.global_position,
 		"follow": player,
 		"reach": reach,
-		"sweep_time": 0.10,
-		"life": 0.24,
+		"sweep_time": 0.065,
+		"life": 0.20,
 		"crit_chance": get_crit_chance(),
 		"crit_damage": get_crit_damage(),
 		"knockback": get_knockback(),

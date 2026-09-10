@@ -12,14 +12,27 @@ signal ultimate_state_changed(ready_ratio: float, active: bool)
 
 const CONTACT_TICK := 0.30
 const DEATH_FADE := 0.4
-## Movement feel. The stick is sampled raw, then smoothed twice: once on the
-## input itself (which removes thumb jitter and the step a touch stick makes
-## when it re-centres) and once on the velocity (which gives the character
-## weight). Both are fast enough that the character still answers within a
-## couple of frames — the goal is to take the chatter out, not the response.
-const INPUT_SMOOTH := 26.0
-const ACCELERATION := 3400.0
-const BRAKING := 4200.0
+## Movement feel.
+##
+## The stick is sampled raw, then smoothed — but heading and strength are
+## smoothed separately. Lerping the input *vector* drags it through the origin
+## on a reversal, so the character briefly has no heading at all and coasts;
+## rotating the heading instead keeps full strength the whole way round, which
+## is most of the difference between a flick back the way you came feeling
+## crisp and feeling mushy.
+##
+## Everything here is fast enough to answer within a couple of frames. The goal
+## is to take the chatter out of a thumb on glass, not the response.
+const INPUT_SMOOTH := 34.0
+## Radians per second the heading may turn. A full about-face takes ~0.19s.
+const TURN_RATE := 16.5
+const ACCELERATION := 5200.0
+const BRAKING := 6400.0
+## Extra grip when the stick opposes current travel, as a multiple of
+## ACCELERATION at a dead reversal. Without it a change of direction spends the
+## whole turn coasting the old way, which reads as unresponsive rather than
+## heavy.
+const TURN_GRIP := 1.6
 ## Below this input magnitude the stick counts as released.
 const INPUT_EPSILON := 0.06
 
@@ -139,8 +152,8 @@ func _physics_process(delta: float) -> void:
 ## The stick is folded together with the keyboard, smoothed, and then turned into
 ## an acceleration rather than an instant velocity. Braking is quicker than
 ## acceleration, which is what makes stopping feel deliberate instead of floaty,
-## and the heading is smoothed separately so a flick across the stick curves the
-## character around rather than teleporting its facing.
+## and reversing is quicker than either, so turning round does not cost the
+## player a half second of coasting the old way.
 func _step_movement(delta: float) -> void:
 	var raw := move_input
 	if raw.length_squared() < 0.01:
@@ -148,14 +161,33 @@ func _step_movement(delta: float) -> void:
 	raw = raw.limit_length(1.0)
 
 	var blend := clampf(delta * INPUT_SMOOTH, 0.0, 1.0)
-	move_dir = move_dir.lerp(raw, blend)
-	if move_dir.length() < INPUT_EPSILON and raw.length_squared() < 0.0001:
+	var want_len := raw.length()
+	var have_len := move_dir.length()
+	var new_len := lerpf(have_len, want_len, blend)
+	if want_len > INPUT_EPSILON:
+		var want_dir := raw / want_len
+		if have_len > 0.001:
+			var turn := clampf((move_dir / have_len).angle_to(want_dir),
+				-TURN_RATE * delta, TURN_RATE * delta)
+			move_dir = (move_dir / have_len).rotated(turn) * new_len
+		else:
+			move_dir = want_dir * new_len
+	elif have_len > 0.001:
+		# Stick released: keep the heading, bleed the strength away.
+		move_dir = (move_dir / have_len) * new_len
+	if move_dir.length() < INPUT_EPSILON and want_len < 0.0001:
 		move_dir = Vector2.ZERO
 
 	var speed := _base_speed * (stats.get_stat(&"move_speed_mult") if stats != null else 1.0)
 	var target := move_dir * speed
-	var rate := ACCELERATION if target.length_squared() > 1.0 else BRAKING
 	var travel := velocity - _knockback
+	var rate := BRAKING
+	if target.length_squared() > 1.0:
+		rate = ACCELERATION
+		if travel.length_squared() > 1.0:
+			# 0 when the stick agrees with current travel, 1 at a dead reversal.
+			var opposition := 0.5 - 0.5 * travel.normalized().dot(target.normalized())
+			rate += ACCELERATION * TURN_GRIP * opposition
 	travel = travel.move_toward(target, rate * delta)
 	velocity = travel + _knockback
 	_knockback = _knockback.lerp(Vector2.ZERO, clampf(delta * 8.0, 0.0, 1.0))
@@ -164,7 +196,7 @@ func _step_movement(delta: float) -> void:
 	# cuts at an angle the character was not visibly moving in.
 	if move_dir.length_squared() > 0.02:
 		var want := move_dir.normalized()
-		facing = facing.slerp(want, clampf(delta * 18.0, 0.0, 1.0)).normalized()
+		facing = facing.slerp(want, clampf(delta * 26.0, 0.0, 1.0)).normalized()
 	move_and_slide()
 	visual.call("set_motion", move_dir, travel, delta)
 

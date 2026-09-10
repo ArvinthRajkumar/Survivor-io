@@ -46,9 +46,12 @@ var _stuck_timer: float = 0.0
 
 
 func _ready() -> void:
-	# Only the watchdog needs to run while paused; everything else in _process
-	# checks the pause state itself.
-	process_mode = Node.PROCESS_MODE_ALWAYS
+	# The watchdog is the only thing here that has to run while the tree is
+	# paused, and it gets its own node for it. Setting PROCESS_MODE_ALWAYS on the
+	# scene root instead was a real bug: children default to
+	# PROCESS_MODE_INHERIT, so the whole world - enemies, projectiles, the
+	# player - kept simulating through every level-up.
+	_install_pause_watchdog()
 	level = RunManager.level_data
 	if level == null:
 		push_error("GameScene: no level configured; returning to the menu.")
@@ -99,7 +102,6 @@ func _connect_signals() -> void:
 
 
 func _process(delta: float) -> void:
-	_watch_for_stuck_pause(delta)
 	if get_tree().paused:
 		return
 	if player == null or not is_instance_valid(player):
@@ -119,11 +121,23 @@ func _process(delta: float) -> void:
 		_open_upgrade_panel()
 
 
-## Runs while the tree is paused (see _ready), which is the only time it can do
-## its job: if the game is paused but nothing is on screen that could release
-## that pause, the player has no way out except killing the app. Rather than
-## trust every open/close pair to be perfectly balanced, this notices the state
-## and recovers from it.
+## A node whose only job is to run the watchdog below while the rest of the
+## scene is frozen. It is created in code rather than placed in the scene so the
+## pairing with _watch_for_stuck_pause cannot be broken by editing the .tscn.
+func _install_pause_watchdog() -> void:
+	var watchdog := Node.new()
+	watchdog.name = "PauseWatchdog"
+	watchdog.set_script(preload("res://scripts/game/PauseWatchdog.gd"))
+	watchdog.process_mode = Node.PROCESS_MODE_ALWAYS
+	watchdog.call("bind", _watch_for_stuck_pause)
+	add_child(watchdog)
+
+
+## Runs while the tree is paused (driven by PauseWatchdog), which is the only
+## time it can do its job: if the game is paused but nothing is on screen that
+## could release that pause, the player has no way out except killing the app.
+## Rather than trust every open/close pair to be perfectly balanced, this
+## notices the state and recovers from it.
 func _watch_for_stuck_pause(delta: float) -> void:
 	if not get_tree().paused or RunManager.finished:
 		_stuck_timer = 0.0

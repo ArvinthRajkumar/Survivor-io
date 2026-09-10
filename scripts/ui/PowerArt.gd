@@ -206,36 +206,53 @@ static func draw_slash(ci: CanvasItem, c: Vector2, reach: float, arc: float,
 	if fade <= 0.01 or arc <= 0.06 or reach <= 1.0:
 		return
 	arc = minf(arc, TAU - 0.14)
-	# The crescent grows outward and thins as it dissipates.
-	var outer := reach * (0.82 + 0.26 * t)
-	# A ribbon, not a wedge: a thick filled cone reads as a shape sitting on the
-	# ground, while a thin band with a hot edge reads as something that moved.
-	var inner := outer * (0.78 + 0.18 * t)
-	var steps := 16
+
+	# The tip travels a circle of fixed radius, because that is what the end of a
+	# blade does. What varies is the ribbon's *thickness*: near nothing at both
+	# ends, widest around the middle of the sweep. That lens shape is the whole
+	# difference between "a blade was drawn through here" and the slice of a
+	# ring this used to draw, which read as a cone of damage sitting on the
+	# ground.
+	var outer := reach * (0.92 + 0.10 * t)
+	var thickest := reach * (0.20 + 0.11 * t)
+	var steps := 24
 	var band := PackedVector2Array()
 	for i in steps + 1:
 		var a := facing - arc * 0.5 + arc * float(i) / float(steps)
 		band.append(c + Vector2(cos(a), sin(a)) * outer)
 	for i in range(steps, -1, -1):
-		var a2 := facing - arc * 0.5 + arc * float(i) / float(steps)
-		band.append(c + Vector2(cos(a2), sin(a2)) * inner)
-	ci.draw_colored_polygon(band, Color(secondary.r, secondary.g, secondary.b, 0.30 * fade * fade))
+		var u := float(i) / float(steps)
+		var a2 := facing - arc * 0.5 + arc * u
+		band.append(c + Vector2(cos(a2), sin(a2)) * (outer - thickest * _taper(u)))
+	ci.draw_colored_polygon(band, Color(secondary.r, secondary.g, secondary.b, 0.38 * fade * fade))
 
-	# Bright cutting edge on the outside of the band.
-	var lead := PackedVector2Array()
+	# The cutting edge itself: the same lens, a fraction of the thickness, in
+	# near-white. Drawn as a polygon rather than a polyline because a polyline is
+	# one constant width from end to end and would blunt both tips.
+	var edge_w := thickest * 0.42
+	var edge := PackedVector2Array()
 	for i in steps + 1:
 		var a3 := facing - arc * 0.5 + arc * float(i) / float(steps)
-		lead.append(c + Vector2(cos(a3), sin(a3)) * outer)
-	ci.draw_polyline(lead, Color(secondary.r, secondary.g, secondary.b, 0.95 * fade),
-		maxf(1.5, reach * 0.055 * fade), true)
-	ci.draw_polyline(lead, Color(1, 1, 1, 0.75 * fade * fade), maxf(1.0, reach * 0.022), true)
+		edge.append(c + Vector2(cos(a3), sin(a3)) * outer)
+	for i in range(steps, -1, -1):
+		var u2 := float(i) / float(steps)
+		var a4 := facing - arc * 0.5 + arc * u2
+		edge.append(c + Vector2(cos(a4), sin(a4)) * (outer - edge_w * _taper(u2)))
+	ci.draw_colored_polygon(edge, Color(1, 1, 1, 0.85 * fade))
 
 	# Sparks flying off the leading tip.
 	var tip := c + Vector2(cos(facing + arc * 0.5), sin(facing + arc * 0.5)) * outer
 	for i in 3:
-		var sa := facing + arc * 0.5 + (float(i) - 1.0) * 0.35
-		ci.draw_line(tip, tip + Vector2(cos(sa), sin(sa)) * reach * 0.20 * fade,
+		var sa := facing + arc * 0.5 + (float(i) - 1.0) * 0.30
+		ci.draw_line(tip, tip + Vector2(cos(sa), sin(sa)) * reach * 0.18 * fade,
 			Color(1, 1, 1, 0.5 * fade), 2.0, true)
+
+
+## Thickness profile along the sweep, 0 at the ends and 1 in the middle. The
+## floor keeps the two edges from meeting exactly at the tips, where coincident
+## vertices would give the triangulator a degenerate polygon.
+static func _taper(u: float) -> float:
+	return 0.06 + 0.94 * pow(sin(PI * clampf(u, 0.0, 1.0)), 0.65)
 
 
 ## A hex-lattice bubble: two counter-rotating hex rings plus a bright core.
