@@ -13,13 +13,28 @@ var evolved: bool = false
 ## Heroes use their own shape vocabulary (0..4 = triangle, diamond, pentagon,
 ## hexagon, star) rather than the weapon icon set.
 var portrait_mode: bool = false
+## Second colour, used by the chibi portraits for trim and headgear.
+var icon_secondary: Color = Palette.ACCENT_WARM
+var _phase: float = 0.0
 
 
-func setup(color: Color, shape: int, current_level: int = 0, maximum: int = 0) -> void:
+func setup(color: Color, shape: int, current_level: int = 0, maximum: int = 0,
+		secondary: Color = Palette.ACCENT_WARM) -> void:
 	icon_color = color
 	shape_id = shape
 	level = current_level
 	max_level = maximum
+	icon_secondary = secondary
+	queue_redraw()
+
+
+func _process(delta: float) -> void:
+	# Portraits blink and sway; nothing else here animates, so the per-frame
+	# redraw is only paid where it buys something.
+	if not portrait_mode:
+		set_process(false)
+		return
+	_phase += delta
 	queue_redraw()
 
 
@@ -83,22 +98,13 @@ func _draw_shape(center: Vector2, radius: float) -> void:
 			_poly(center, pts, fill, false)
 
 
-func _draw_portrait(center: Vector2, radius: float, fill: Color) -> void:
-	var points: PackedVector2Array
-	match shape_id:
-		0:
-			points = Draw2D.polygon_points(3, radius, -PI * 0.5)
-		1:
-			points = Draw2D.polygon_points(4, radius, 0.0)
-		3:
-			points = Draw2D.polygon_points(6, radius, 0.0)
-		4:
-			points = Draw2D.star_points(5, radius * 1.15, radius * 0.5, -PI * 0.5)
-		_:
-			points = Draw2D.polygon_points(5, radius, -PI * 0.5)
-	_poly(center, points, fill)
-	Draw2D.ring(self, center, radius * 1.35, Color(icon_color.r, icon_color.g, icon_color.b, 0.35), 2.0)
-	draw_circle(center, radius * 0.22, Color(1, 1, 1, 0.85))
+## Operatives are drawn as chibi busts rather than as their roster polygon, so
+## the person you pick on this screen is the person you see on the field.
+func _draw_portrait(center: Vector2, radius: float, _fill: Color) -> void:
+	Draw2D.ring(self, center, radius * 1.42,
+		Color(icon_color.r, icon_color.g, icon_color.b, 0.28), 2.0)
+	HeroPortrait.draw_bust(self, center + Vector2(0.0, radius * 0.10), radius * 1.20,
+		icon_color, icon_secondary, shape_id, _phase)
 
 
 func _poly(center: Vector2, points: PackedVector2Array, fill: Color, offset: bool = true) -> void:

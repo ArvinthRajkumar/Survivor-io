@@ -28,7 +28,7 @@ func _make_hero_card(hero: HeroData) -> Button:
 	var unlocked := hero.unlocked_by_default or SaveManager.is_hero_unlocked(hero.id)
 	var selected := GameManager.selected_hero != null and GameManager.selected_hero.id == hero.id
 	var accent := hero.accent if unlocked else Color(0.35, 0.38, 0.45)
-	var card := make_card(accent, 340)
+	var card := make_card(accent, 380)
 
 	var rank := SaveManager.get_hero_rank(hero.id)
 	var note := ""
@@ -41,15 +41,18 @@ func _make_hero_card(hero: HeroData) -> Button:
 		note = "Tap to select   -   RANK %d / %d" % [rank, hero.max_rank]
 
 	var text_box := fill_card(card, accent, hero.portrait_shape, hero.display_name,
-		hero.role if unlocked else "Encrypted personnel file", note, true)
+		hero.role if unlocked else "Encrypted personnel file", note, true,
+		hero.accent_secondary if unlocked else Color(0.45, 0.48, 0.55))
 
 	if unlocked:
 		text_box.add_child(UITheme.make_label(
-			"Passive - %s: %s" % [hero.passive_name, hero.passive_description], 22, Palette.TEXT_DIM))
+			"Passive - %s: %s" % [hero.passive_name, hero.passive_description],
+			UITheme.SIZE_SMALL, Palette.TEXT_DIM))
 		text_box.add_child(UITheme.make_label(
-			"Ultimate - %s: %s" % [hero.ultimate_name, hero.ultimate_description], 22, accent))
+			"Ultimate - %s: %s" % [hero.ultimate_name, hero.ultimate_description],
+			UITheme.SIZE_SMALL, accent))
 	else:
-		text_box.add_child(UITheme.make_label(hero.description, 22, Palette.TEXT_DIM))
+		text_box.add_child(UITheme.make_label(hero.description, UITheme.SIZE_SMALL, Palette.TEXT_DIM))
 
 	if unlocked:
 		card.pressed.connect(_on_select.bind(hero))
@@ -65,7 +68,7 @@ func _make_rank_row(hero: HeroData) -> Control:
 	if not (hero.unlocked_by_default or SaveManager.is_hero_unlocked(hero.id)):
 		return null
 	var rank := SaveManager.get_hero_rank(hero.id)
-	var button := UITheme.make_button("", 88)
+	var button := UITheme.make_button("", UITheme.SECONDARY_BUTTON_HEIGHT)
 	if rank >= hero.max_rank:
 		button.text = "Rank %d - fully trained" % rank
 		button.disabled = true
@@ -73,7 +76,7 @@ func _make_rank_row(hero: HeroData) -> Control:
 	var cost := hero.rank_cost_at(rank)
 	button.text = "Train to rank %d   (%s cr + %d rs)" % [
 		rank + 1, MathUtil.format_number(cost.x), cost.y]
-	button.add_theme_font_size_override("font_size", 26)
+	button.add_theme_font_size_override("font_size", UITheme.SIZE_LABEL)
 	button.disabled = not SaveManager.can_afford(cost.x, cost.y)
 	button.tooltip_text = hero.describe_rank_step()
 	button.pressed.connect(_on_train.bind(hero))

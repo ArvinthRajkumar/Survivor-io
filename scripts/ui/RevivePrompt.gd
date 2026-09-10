@@ -13,20 +13,21 @@ var _accept: Button
 
 
 func _build_content() -> void:
-	content.add_child(UITheme.make_title("YOU FELL", 56, Palette.DANGER))
+	content.add_child(UITheme.make_title("YOU FELL", UITheme.SIZE_SCREEN_TITLE, Palette.DANGER))
 	var body := UITheme.make_label(
-		"Revive with half health and clear the space around you.", 28, Palette.TEXT_DIM)
+		"Revive with half health and clear the space around you.",
+		UITheme.SIZE_LABEL, Palette.TEXT_DIM)
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	content.add_child(body)
 
-	_countdown = UITheme.make_title("8", 72, Palette.ACCENT)
+	_countdown = UITheme.make_title("8", 78, Palette.ACCENT)
 	content.add_child(_countdown)
 
 	_accept = UITheme.make_button("Revive")
 	_accept.pressed.connect(_on_accept)
 	content.add_child(_accept)
 
-	var decline := UITheme.make_button("Give Up", 92)
+	var decline := UITheme.make_button("Give Up", UITheme.SECONDARY_BUTTON_HEIGHT)
 	decline.add_theme_color_override("font_color", Palette.TEXT_DIM)
 	decline.pressed.connect(_on_decline)
 	content.add_child(decline)

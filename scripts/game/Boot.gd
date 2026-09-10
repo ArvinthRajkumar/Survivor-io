@@ -1,6 +1,6 @@
 extends Control
 ## First scene loaded. Waits for the content database, applies saved settings and
-## routes to the main menu (or the tutorial on a fresh profile).
+## routes straight to the main menu.
 
 @onready var _title: Label = $Center/Box/Title
 @onready var _subtitle: Label = $Center/Box/Subtitle
@@ -13,7 +13,7 @@ var _done: bool = false
 func _ready() -> void:
 	_title.text = "LAST LIGHT"
 	_subtitle.text = "S W A R M F A L L"
-	_status.text = TipBook.random()
+	_status.text = "Loading"
 	_title.add_theme_color_override("font_color", Palette.ACCENT)
 	_subtitle.add_theme_color_override("font_color", Palette.TEXT_DIM)
 	_status.add_theme_color_override("font_color", Palette.TEXT_DIM)

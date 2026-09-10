@@ -2,7 +2,7 @@ class_name GenUpgrades
 extends RefCounted
 ## Authoring source for permanent Research Lab research.
 ##
-## In-run upgrades live in GenPowers now (Powers and Passive Abilities share the
+## In-run upgrades live in GenPowers now (Powers and Passives share the
 ## six run slots); everything here is bought with meta currency between runs and
 ## folded into PlayerStats when a run is configured.
 

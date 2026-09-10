@@ -8,7 +8,7 @@ victory screen. The swarm gets denser and harder for as long as you stay alive, 
 only question is how long that is.
 
 Between level-ups you build a loadout out of **twelve upgrades** — seven Powers and five
-Passive Abilities — but you may only ever own **six of them**. Nothing can be swapped
+Passives — but you may only ever own **six of them**. Nothing can be swapped
 out, so every pick is a commitment. The katana is free: it is granted before the run
 starts, spends none of the six slots, and levels like anything else.
 
@@ -65,8 +65,8 @@ letterboxing.
 
 - **F5** runs from `Boot`, which loads the content database and drops you at the main
   menu.
-- On a first run you land on Neon Ruins with Nova, and a three-page tutorial overlay
-  appears once.
+- On a first run you land on Neon Ruins with Nova. There is no tutorial or tip screen:
+  the run starts the moment you tap DEPLOY.
 - On desktop, **WASD / arrow keys** also move the player, **Space** fires the
   ultimate, and **Escape** pauses — handy for testing without a touchscreen.
 
@@ -99,7 +99,7 @@ scenes/
   enemies/   Enemy.tscn, Boss.tscn
   combat/    Projectile.tscn, DamageZone.tscn, EnemyProjectile.tscn
   powers/    SlashArc, Companion, SawBlade, DrillBody, ThrownBottle, LaserStrike
-  ui/        HUD, UpgradePanel, PauseMenu, Results, RevivePrompt, Tutorial
+  ui/        HUD, UpgradePanel, PauseMenu, Results, RevivePrompt
   levels/    Hazard.tscn
   fx/        DamageNumber, HitSpark, Burst
   pickups/   XPShard, Pickup
@@ -108,7 +108,7 @@ scripts/
              RunManager, GameManager
   systems/   EnemyDirector, WaveDirector, ProjectileSystem, EffectSpawner,
              HazardSystem, UpgradeSystem, HeroPassives, PowerLoadout,
-             TipBook, PerfMonitor
+             PerfMonitor
   components/ HealthComponent, PlayerStats
   data/      HeroData, PowerData, UpgradeData, EnemyData, WaveData, LevelData,
              RelicData      (the Resource types content is authored in)
@@ -129,7 +129,7 @@ resources/
 assets/
   icons/     icon.svg
 data/        (reserved for shipped JSON; the save file lives in user://)
-tools/       content generator, soak harness, character preview
+tools/       content generator, soak harness, character and portrait previews
 ```
 
 ### Autoloads
@@ -192,7 +192,7 @@ follows the thumb past the edge of the ring so a long swipe never runs out of st
 the per-level curves, so a behaviour only implements what makes it different —
 `_on_setup()`, `_on_level_changed()`, and an optional `_on_reached_max_level()` hook for
 powers whose top level changes their rules (the Drone starts aiming; the Spinners stop
-retracting). Passive Abilities share the same resource type with no behaviour at all:
+retracting). Passives share the same resource type with no behaviour at all:
 they are pure `stat_flats` / `stat_multipliers` bundles applied to `PlayerStats`.
 
 **The six-slot rule.** `PowerLoadout` holds what has been picked and enforces the cap.
@@ -235,7 +235,7 @@ godot --headless --path . --script res://tools/generate_content.gd
 | File | Content |
 | --- | --- |
 | `tools/gen/GenHeroes.gd` | The five operatives, their stats, passives and ultimates |
-| `tools/gen/GenPowers.gd` | The katana, seven Powers and five Passive Abilities, with level curves |
+| `tools/gen/GenPowers.gd` | The katana, seven Powers and five Passives, with level curves |
 | `tools/gen/GenUpgrades.gd` | Eight Research Lab (meta) upgrades |
 | `tools/gen/GenEnemies.gd` | 28 enemy archetypes (five per sector, plus mid-boss and boss) |
 | `tools/gen/GenLevels.gd` | Four sectors: palette, hazards, wave script, boss timings |
@@ -261,13 +261,19 @@ It cuts along the direction you are moving — standing still keeps the last hea
 backing off a crowd and stopping leaves your edge pointed at it. Swings alternate
 handedness, so holding a direction reads as a combo rather than one animation looping.
 
+Every swing is three attacks at once: a front cut along the direction of travel, a
+mirrored back cut so a crowd that has wrapped around you is not a blind spot, and a
+lighter full-circle pressure pulse layered underneath.
+
+Levelling buys **reach, arc and damage — never swing rate, and never extra cuts.**
+Making the base weapon fire faster made every level-up feel like the same upgrade and
+left the blade permanently short; "swing faster" is what a cooldown Passive is for.
+
 | Level | What changes |
 | --- | --- |
-| 1 | One cut per swing, a little over a quadrant wide |
-| 2 | More damage, a wider arc and faster recovery |
-| 3 | A second cut follows every swing |
-| 4 | More damage and longer reach |
-| 5 | The third cut becomes a full spin that clears every side at once |
+| 1 | Base reach, an arc a little over a quadrant wide |
+| 2-4 | Each level: more damage, more reach, a wider arc |
+| 5 | The full-circle pulse comes up to full damage instead of half |
 
 It runs to level 5 like everything else, but it costs none of the six slots.
 
@@ -286,7 +292,7 @@ number, so maxing something feels different rather than just bigger.
 | **Laser** | Orbital strikes rake the ground around you in rotating patterns | 3 beams → 5, far heavier damage |
 | **Spinners** | Saw blades orbit you, cutting in bursts and retracting between them | 2 blades → 6, and they never stop spinning |
 
-### Passive Abilities
+### Passives
 
 No behaviour of their own — they bend the numbers every power reads.
 
@@ -355,7 +361,7 @@ godot --path . -- --perf
 godot --path . -- --screen=lab
 
 # Save PNG screenshots of the running game into user://
-godot --path . -- --shot --screen=game --no-tutorial
+godot --path . -- --shot --screen=game
 
 # Autopilot movement but leave the choices to a human (useful for inspecting UI)
 godot --path . -- --pilot
@@ -369,6 +375,17 @@ a handful of poses — idle, running sideways, running away from the camera, and
 ```bash
 godot --path . --script res://tools/preview_visual.gd
 ```
+
+The roster portraits are drawn in code too. `tools/preview_portraits.gd` puts all five
+busts in a row on a flat background so they can be compared without unlocking anyone,
+and writes `user://portraits.png`:
+
+```bash
+godot --path . --script res://tools/preview_portraits.gd
+```
+
+Worth running after any change to `HeroPortrait`: a polygon Godot refuses to
+triangulate fails silently in-game (outline drawn, no fill) but prints an error here.
 
 `tools/soak.ps1` sweeps combinations and reports a win rate — use it to judge balance
 changes, because a single run is dominated by RNG:

@@ -1,7 +1,7 @@
 class_name GenPowers
 extends RefCounted
 ## Authoring source for the katana every operative carries plus the twelve
-## choosable upgrades: seven Powers and five Passive Abilities. The player may
+## choosable upgrades: seven Powers and five Passives. The player may
 ## own six of the twelve in total, so each one has to be worth a permanent slot
 ## rather than a filler pick. The katana is granted and spends none of them.
 ##
@@ -45,21 +45,24 @@ static func _innate() -> Array[PowerData]:
 	var katana := _base(&"katana", "Katana", -1)
 	katana.behavior = PowerData.Behavior.KATANA
 	katana.description = "The blade you carry in. It cuts along the direction you are moving."
-	katana.tooltip = "Cuts where you move. Combo grows with level."
+	katana.tooltip = "Cuts where you move. Levels add reach and damage."
 	katana.damage = 22.0
-	katana.damage_per_level = 9.0
+	katana.damage_per_level = 14.0
 	katana.cooldown = 0.72
-	katana.cooldown_mult_per_level = 0.90
+	# Levelling buys reach and damage only. Swinging faster is what a cooldown
+	# passive is for; making the base weapon also do it turned every level-up
+	# into the same "more swings per second" and left the blade feeling short.
+	katana.cooldown_mult_per_level = 1.0
 	katana.count = 1
-	katana.count_at_levels = PackedInt32Array([3, 5])
-	katana.area_per_level = 0.09
+	katana.count_at_levels = PackedInt32Array()
+	katana.area_per_level = 0.22
 	katana.knockback = 190.0
 	katana.hit_interval = 0.0
 	katana.level_notes = PackedStringArray([
-		"+9 damage, wider arc and faster recovery",
-		"A second cut follows every swing",
-		"+9 damage, longer reach",
-		"Third cut becomes a full spin that clears every side",
+		"+14 damage, longer reach",
+		"+14 damage, longer reach and a wider arc",
+		"+14 damage, longer reach",
+		"+14 damage, and the outward pulse hits at full force",
 	])
 	katana.color = Color(0.78, 0.88, 1.00)
 	katana.color_secondary = Color(1.00, 0.78, 0.36)
@@ -248,7 +251,7 @@ static func _powers() -> Array[PowerData]:
 	return out
 
 
-# --- Passive Abilities ------------------------------------------------------
+# --- Passives ------------------------------------------------------
 
 static func _passive(id: StringName, name: String, order: int) -> PowerData:
 	var power := _base(id, name, order)

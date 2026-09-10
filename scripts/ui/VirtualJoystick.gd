@@ -119,6 +119,14 @@ func _end() -> void:
 	released.emit()
 
 
+## Releases the stick without waiting for a touch-up event. A dialog opening
+## mid-drag means that touch-up is never delivered to this control.
+func cancel() -> void:
+	if not _active and _direction == Vector2.ZERO:
+		return
+	_end()
+
+
 func get_direction() -> Vector2:
 	return _direction
 

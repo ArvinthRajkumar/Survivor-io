@@ -3,7 +3,7 @@ extends RefCounted
 ## What the player has chosen this run, and the six-slot rule that makes those
 ## choices matter.
 ##
-## Powers and Passive Abilities share one pool of slots. Once MAX_SLOTS entries
+## Powers and Passives share one pool of slots. Once MAX_SLOTS entries
 ## are owned the offer generator stops proposing new ones entirely — from that
 ## point a level-up can only deepen what you already have. Nothing can be
 ## swapped out, so an early pick is a commitment.

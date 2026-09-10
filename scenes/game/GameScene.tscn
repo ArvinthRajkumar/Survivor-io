@@ -13,7 +13,6 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="10_pause"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Results.tscn" id="11_results"]
 [ext_resource type="PackedScene" path="res://scenes/ui/RevivePrompt.tscn" id="12_revive"]
-[ext_resource type="PackedScene" path="res://scenes/ui/Tutorial.tscn" id="13_tutorial"]
 
 [node name="GameScene" type="Node2D"]
 script = ExtResource("1_game")
@@ -66,4 +65,3 @@ layer = 10
 
 [node name="RevivePrompt" parent="UI" instance=ExtResource("12_revive")]
 
-[node name="Tutorial" parent="UI" instance=ExtResource("13_tutorial")]

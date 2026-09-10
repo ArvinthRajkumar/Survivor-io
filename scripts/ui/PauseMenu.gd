@@ -8,10 +8,10 @@ var _stats_box: VBoxContainer
 
 
 func _build_content() -> void:
-	content.add_child(UITheme.make_title("PAUSED", 56, Palette.ACCENT))
+	content.add_child(UITheme.make_title("PAUSED", UITheme.SIZE_SCREEN_TITLE, Palette.ACCENT))
 
 	_stats_box = VBoxContainer.new()
-	_stats_box.add_theme_constant_override("separation", 8)
+	_stats_box.add_theme_constant_override("separation", UITheme.GAP_TIGHT)
 	content.add_child(_stats_box)
 
 	var resume := UITheme.make_button("Resume")
@@ -21,20 +21,18 @@ func _build_content() -> void:
 	content.add_child(_make_toggle("Music", "music_volume"))
 	content.add_child(_make_toggle("Sound", "sfx_volume"))
 
-	var quit := UITheme.make_button("Abandon Run", 92)
+	var quit := UITheme.make_button("Abandon Run", UITheme.SECONDARY_BUTTON_HEIGHT)
 	quit.add_theme_color_override("font_color", Palette.DANGER)
 	quit.pressed.connect(_on_quit)
 	content.add_child(quit)
 
 
 ## Volume toggles here are binary; the full sliders live in the settings screen.
-func _make_toggle(label: String, key: String) -> CheckButton:
-	var toggle := CheckButton.new()
-	toggle.text = label
-	toggle.focus_mode = Control.FOCUS_NONE
-	toggle.button_pressed = float(SaveManager.get_setting(key, 0.8)) > 0.01
-	toggle.toggled.connect(_on_toggle.bind(key))
-	return toggle
+## Built from the same helper the settings page uses, so they are the same
+## control in both places.
+func _make_toggle(label: String, key: String) -> Control:
+	return UITheme.make_toggle_row(label, float(SaveManager.get_setting(key, 0.8)) > 0.01,
+		_on_toggle.bind(key))
 
 
 func _on_toggle(pressed: bool, key: String) -> void:

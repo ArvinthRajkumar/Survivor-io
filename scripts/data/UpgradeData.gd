@@ -2,7 +2,7 @@ class_name UpgradeData
 extends Resource
 ## A permanent Research Lab upgrade, bought with credits between runs.
 ##
-## In-run offers — Powers and Passive Abilities alike — are built from PowerData
+## In-run offers — Powers and Passives alike — are built from PowerData
 ## instead; this resource only covers the meta progression.
 
 enum Kind { PASSIVE_ITEM, HEAL, CREDITS }

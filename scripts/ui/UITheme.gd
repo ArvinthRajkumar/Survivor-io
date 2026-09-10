@@ -9,10 +9,52 @@ extends RefCounted
 const CORNER := 18
 const BORDER := 2
 
+## One type scale for the whole app. Every screen pulls its sizes from here
+## rather than hard-coding numbers, which is what keeps the menus, the pause
+## dialog, the settings page and the in-run panels looking like one product
+## instead of five that were written on different days.
+const SIZE_SCREEN_TITLE := 64
+const SIZE_TITLE := 52
+const SIZE_HEADING := 40
+const SIZE_BODY := 32
+const SIZE_LABEL := 28
+const SIZE_SMALL := 24
+const SIZE_TINY := 20
+
+## Shared spacing, so gaps between sections match across screens.
+const GAP_SECTION := 26
+const GAP_ROW := 14
+const GAP_TIGHT := 8
+
+## Content is centred inside this width on any screen wider than it, so a
+## tablet or a landscape phone does not stretch a menu into one long line.
+const CONTENT_MAX_WIDTH := 900
+
+## Minimum height for a primary tap target. Anything the thumb has to find in a
+## hurry gets this; secondary rows get SECONDARY_BUTTON_HEIGHT.
+const BUTTON_HEIGHT := 118
+const SECONDARY_BUTTON_HEIGHT := 96
+
+
+## The one Theme instance the whole app shares.
+##
+## Assigning it to the window root is not enough on its own: Controls parented
+## under a CanvasLayer (which is where every in-run dialog lives) do not inherit
+## it, so the pause menu, the level-up panel and the HUD were falling back to
+## Godot's stock button and panel styling — small text on flat grey. Anything
+## under a CanvasLayer sets `theme = UITheme.shared()` on its own root.
+static var _shared: Theme
+
+
+static func shared() -> Theme:
+	if _shared == null:
+		_shared = build()
+	return _shared
+
 
 static func build() -> Theme:
 	var theme := Theme.new()
-	theme.default_font_size = 30
+	theme.default_font_size = SIZE_BODY
 
 	_style_button(theme)
 	_style_panel(theme)
@@ -51,7 +93,7 @@ static func _style_button(theme: Theme) -> void:
 	theme.set_color("font_hover_color", "Button", Color.WHITE)
 	theme.set_color("font_pressed_color", "Button", Palette.ACCENT)
 	theme.set_color("font_disabled_color", "Button", Palette.TEXT_DIM)
-	theme.set_font_size("font_size", "Button", 34)
+	theme.set_font_size("font_size", "Button", SIZE_HEADING - 4)
 
 
 static func _style_panel(theme: Theme) -> void:
@@ -63,9 +105,9 @@ static func _style_panel(theme: Theme) -> void:
 
 static func _style_label(theme: Theme) -> void:
 	theme.set_color("font_color", "Label", Palette.TEXT)
-	theme.set_font_size("font_size", "Label", 30)
+	theme.set_font_size("font_size", "Label", SIZE_BODY)
 	theme.set_color("font_color", "RichTextLabel", Palette.TEXT)
-	theme.set_font_size("normal_font_size", "RichTextLabel", 28)
+	theme.set_font_size("normal_font_size", "RichTextLabel", SIZE_LABEL)
 
 
 static func _style_progress(theme: Theme) -> void:
@@ -98,7 +140,7 @@ static func _style_slider(theme: Theme) -> void:
 
 static func _style_check(theme: Theme) -> void:
 	theme.set_color("font_color", "CheckButton", Palette.TEXT)
-	theme.set_font_size("font_size", "CheckButton", 30)
+	theme.set_font_size("font_size", "CheckButton", SIZE_BODY)
 
 
 static func _style_scroll(theme: Theme) -> void:
@@ -111,7 +153,7 @@ static func _style_scroll(theme: Theme) -> void:
 
 
 ## A large, thumb-friendly primary button.
-static func make_button(text: String, min_height: int = 108) -> Button:
+static func make_button(text: String, min_height: int = BUTTON_HEIGHT) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.custom_minimum_size = Vector2(0, min_height)
@@ -119,7 +161,42 @@ static func make_button(text: String, min_height: int = 108) -> Button:
 	return button
 
 
-static func make_title(text: String, size: int = 56, color: Color = Palette.TEXT) -> Label:
+## The standard container for one row of settings or stats: same fill, border
+## and padding as every other panel in the app, so a slider row, a toggle row
+## and a pair of choice buttons all read as the same kind of object.
+static func make_row_panel() -> PanelContainer:
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel",
+		panel_box(Color(0.09, 0.11, 0.17, 0.92), Color(0.24, 0.34, 0.48, 0.75)))
+	return panel
+
+
+## One toggle row: label on the left, switch hard right, inside the standard row
+## panel. Shared by the settings page and the pause dialog so a toggle looks the
+## same wherever the player meets it. `on_toggled` receives the new state.
+static func make_toggle_row(text: String, pressed: bool, on_toggled: Callable) -> PanelContainer:
+	var panel := make_row_panel()
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", GAP_ROW)
+	panel.add_child(row)
+
+	var label := make_label(text, SIZE_BODY, Palette.TEXT, false)
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(label)
+
+	# The switch carries no text of its own, so every row's label is drawn by the
+	# same make_label call at the same size and colour.
+	var check := CheckButton.new()
+	check.focus_mode = Control.FOCUS_NONE
+	check.custom_minimum_size = Vector2(0, 64)
+	check.button_pressed = pressed
+	check.toggled.connect(on_toggled)
+	row.add_child(check)
+	return panel
+
+
+static func make_title(text: String, size: int = SIZE_TITLE, color: Color = Palette.TEXT) -> Label:
 	var label := Label.new()
 	label.text = text
 	label.add_theme_font_size_override("font_size", size)
@@ -128,7 +205,7 @@ static func make_title(text: String, size: int = 56, color: Color = Palette.TEXT
 	return label
 
 
-static func make_label(text: String, size: int = 26, color: Color = Palette.TEXT_DIM,
+static func make_label(text: String, size: int = SIZE_LABEL, color: Color = Palette.TEXT_DIM,
 		wrap: bool = true) -> Label:
 	var label := Label.new()
 	label.text = text

@@ -3,7 +3,7 @@ extends RefCounted
 ## Builds the choices shown on level-up and applies the picked one.
 ##
 ## Two rules shape every offer set:
-##  * Powers and Passive Abilities share six slots. While slots remain, offers
+##  * Powers and Passives share six slots. While slots remain, offers
 ##    mix new entries with upgrades to what you own. Once all six are taken the
 ##    pool collapses to owned-and-not-yet-maxed entries only — nothing can be
 ##    swapped out, so the panel stops teasing options you can never take.
@@ -69,7 +69,7 @@ static func _build_pool(loadout: PowerLoadout) -> Array[Dictionary]:
 		if owned:
 			tag = "MAX LEVEL" if next_level >= data.max_level else "LEVEL %d" % next_level
 		else:
-			tag = "NEW POWER" if data.is_power() else "NEW ABILITY"
+			tag = "NEW POWER" if data.is_power() else "NEW PASSIVE"
 		pool.append({
 			"kind": OfferKind.LEVEL if owned else OfferKind.NEW,
 			"category": int(data.category),

@@ -11,8 +11,8 @@ extends Control
 ## the health bar, two labelled slot rows and the ultimate button. The rows keep
 ## the two upgrade categories visually grouped instead of interleaved in pick
 ## order: Powers (the innate katana first, then any chosen Powers) on top,
-## Passive Abilities below. Everything is one thumb's reach from the bottom of a
-## phone screen.
+## Passives below. Everything is one thumb's reach from the bottom of a phone
+## screen.
 
 signal pause_pressed
 signal joystick_moved(direction: Vector2)
@@ -68,6 +68,9 @@ var _phase: float = 0.0
 
 
 func _ready() -> void:
+	# Same CanvasLayer caveat as the dialogs: without this the HUD would fall
+	# back to Godot's default font sizes instead of the app's type scale.
+	theme = UITheme.shared()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	joystick.moved.connect(_on_joystick_moved)
@@ -270,7 +273,7 @@ func _build_console() -> void:
 		maxi(0, ContentDB.active_power_list.size() - 1))
 	var passive_capacity := mini(PowerLoadout.MAX_SLOTS, ContentDB.passive_list.size())
 	_power_slots = _build_slot_row(column, "POWERS", power_capacity, true)
-	_passive_slots = _build_slot_row(column, "PASSIVE ABILITIES", passive_capacity, false)
+	_passive_slots = _build_slot_row(column, "PASSIVES", passive_capacity, false)
 
 	_build_ultimate()
 
@@ -448,6 +451,15 @@ func _on_ultimate_pressed() -> void:
 
 func _on_joystick_moved(direction: Vector2) -> void:
 	joystick_moved.emit(direction)
+
+
+## Drops any touch the stick is holding. Called when a dialog takes over: the
+## finger that was steering never delivers its release once the tree pauses, and
+## a stick still holding that touch both keeps steering and can swallow the next
+## tap meant for the dialog.
+func cancel_touch() -> void:
+	if joystick != null and is_instance_valid(joystick):
+		joystick.cancel()
 
 
 # --- Boss -------------------------------------------------------------------

@@ -7,6 +7,9 @@ extends Node2D
 
 const PLAYER_SCENE := preload("res://scenes/player/Player.tscn")
 const AUTOSAVE_INTERVAL := 15.0
+## How long the tree may sit paused with no dialog visible before the watchdog
+## treats it as a fault. Comfortably longer than any one-frame handover.
+const STUCK_PAUSE_GRACE := 1.5
 
 @onready var background: Node2D = $BackgroundLayer/Background
 @onready var world: Node2D = $World
@@ -23,7 +26,6 @@ const AUTOSAVE_INTERVAL := 15.0
 @onready var pause_menu: Control = $UI/PauseMenu
 @onready var results_screen: Control = $UI/Results
 @onready var revive_prompt: Control = $UI/RevivePrompt
-@onready var tutorial: Control = $UI/Tutorial
 
 var player: Player
 var level: LevelData
@@ -38,9 +40,15 @@ var _autopilot_time: float = 0.0
 ## Endless runs are long, so the run state is checkpointed periodically as well
 ## as on shutdown - a crash or a force-quit then costs at most this many seconds.
 var _autosave_timer: float = AUTOSAVE_INTERVAL
+## Watchdog for the one failure the player cannot do anything about: the tree
+## left paused with nothing on screen to un-pause it. See _watch_for_stuck_pause.
+var _stuck_timer: float = 0.0
 
 
 func _ready() -> void:
+	# Only the watchdog needs to run while paused; everything else in _process
+	# checks the pause state itself.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	level = RunManager.level_data
 	if level == null:
 		push_error("GameScene: no level configured; returning to the menu.")
@@ -55,7 +63,6 @@ func _ready() -> void:
 
 	_connect_signals()
 	hud.call("bind", player, level)
-	tutorial.call("maybe_show")
 
 	_autopilot = DevTools.pilot
 	AudioManager.play_music(&"battle")
@@ -92,6 +99,9 @@ func _connect_signals() -> void:
 
 
 func _process(delta: float) -> void:
+	_watch_for_stuck_pause(delta)
+	if get_tree().paused:
+		return
 	if player == null or not is_instance_valid(player):
 		return
 	_update_camera(delta)
@@ -107,6 +117,32 @@ func _process(delta: float) -> void:
 	# Level-ups queue up while a panel is already open.
 	if not _upgrade_open and RunManager.pending_level_ups > 0 and not RunManager.finished:
 		_open_upgrade_panel()
+
+
+## Runs while the tree is paused (see _ready), which is the only time it can do
+## its job: if the game is paused but nothing is on screen that could release
+## that pause, the player has no way out except killing the app. Rather than
+## trust every open/close pair to be perfectly balanced, this notices the state
+## and recovers from it.
+func _watch_for_stuck_pause(delta: float) -> void:
+	if not get_tree().paused or RunManager.finished:
+		_stuck_timer = 0.0
+		return
+	# Any of these being on screen means the pause is legitimate and someone is
+	# being asked to make a decision.
+	var owned := pause_menu.visible or results_screen.visible or revive_prompt.visible
+	if not owned:
+		owned = bool(upgrade_panel.call("is_awaiting_choice"))
+	if owned:
+		_stuck_timer = 0.0
+		return
+	_stuck_timer += delta
+	if _stuck_timer < STUCK_PAUSE_GRACE:
+		return
+	_stuck_timer = 0.0
+	push_warning("GameScene: paused with no dialog on screen; releasing.")
+	_upgrade_open = false
+	GameManager.clear_stuck_pause()
 
 
 ## The pause key lives here rather than in GameManager: pausing the tree without
@@ -201,18 +237,30 @@ func _on_leveled_up(_new_level: int) -> void:
 func _open_upgrade_panel() -> void:
 	if not RunManager.consume_level_up():
 		return
-	_upgrade_open = true
 	var extra := int(RunManager.relic_special_value(&"extra_choice"))
 	var offers := UpgradeSystem.generate(3 + extra)
+	if offers.is_empty():
+		# Nothing to choose means nothing to tap, which would freeze the run
+		# behind an empty panel. Skip the level-up rather than open one.
+		push_warning("GameScene: level-up produced no offers; skipping.")
+		return
+	_upgrade_open = true
+	# The stick keeps whatever touch it was holding when the tree paused, and
+	# that touch never gets its release. Dropping it here means the next tap
+	# starts clean on the panel instead of being swallowed by the joystick.
+	hud.call("cancel_touch")
 	GameManager.request_pause("levelup")
 	upgrade_panel.call("open", offers, RunManager.player_level)
 
 
 func _on_upgrade_chosen(offer: Dictionary) -> void:
-	var line := UpgradeSystem.apply(offer)
-	hud.call("push_log", line)
+	# Un-pause first. Applying an upgrade runs power behaviour code, and if any
+	# of that fails the run must still be playable rather than frozen behind a
+	# panel that has already dismissed itself.
 	_upgrade_open = false
 	GameManager.release_pause("levelup")
+	var line := UpgradeSystem.apply(offer)
+	hud.call("push_log", line)
 	AudioManager.play_sfx(&"ui_confirm")
 
 

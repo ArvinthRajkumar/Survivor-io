@@ -5,31 +5,29 @@ func get_screen_title() -> String:
 	return "LAST LIGHT"
 
 
+func get_screen_subtitle() -> String:
+	return "SWARMFALL"
+
+
 func _build_content() -> void:
-	title_label.add_theme_font_size_override("font_size", 64)
-
-	var subtitle := UITheme.make_label("SWARMFALL", 34, Palette.ACCENT_WARM)
-	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	body.add_child(subtitle)
-
 	GameManager.restore_last_selection()
 
 	# An interrupted endless run takes priority over everything else on screen.
 	if GameManager.has_resumable_run():
 		body.add_child(_make_resume_card())
-		var resume := UITheme.make_button("RESUME RUN", 130)
-		resume.add_theme_font_size_override("font_size", 42)
+		var resume := UITheme.make_button("RESUME RUN", 138)
+		resume.add_theme_font_size_override("font_size", UITheme.SIZE_HEADING + 6)
 		resume.add_theme_color_override("font_color", Palette.GOLD)
 		resume.pressed.connect(_on_resume)
 		body.add_child(resume)
-		var discard := UITheme.make_button("Start a new run instead", 84)
-		discard.add_theme_font_size_override("font_size", 26)
+		var discard := UITheme.make_button("Start a new run instead", UITheme.SECONDARY_BUTTON_HEIGHT)
+		discard.add_theme_font_size_override("font_size", UITheme.SIZE_LABEL)
 		discard.pressed.connect(_on_discard_and_deploy)
 		body.add_child(discard)
 	else:
 		body.add_child(_make_summary())
-		var deploy := UITheme.make_button("DEPLOY", 130)
-		deploy.add_theme_font_size_override("font_size", 44)
+		var deploy := UITheme.make_button("DEPLOY", 138)
+		deploy.add_theme_font_size_override("font_size", UITheme.SIZE_HEADING + 8)
 		deploy.pressed.connect(_on_deploy)
 		body.add_child(deploy)
 
@@ -44,10 +42,12 @@ func _build_content() -> void:
 	var best := SaveManager.get_best_time_overall()
 	if best > 0.0:
 		var best_label := UITheme.make_label(
-			"Best survival: %s" % MathUtil.format_time(best), 26, Palette.GOLD)
+			"Best survival: %s" % MathUtil.format_time(best), UITheme.SIZE_BODY, Palette.GOLD, false)
+		best_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		footer.add_child(best_label)
 
-	var stats := UITheme.make_label(_profile_line(), 24, Palette.TEXT_DIM)
+	var stats := UITheme.make_label(_profile_line(), UITheme.SIZE_SMALL, Palette.TEXT_DIM, false)
+	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	footer.add_child(stats)
 
 
@@ -55,12 +55,13 @@ func _make_summary() -> Control:
 	var hero := GameManager.selected_hero
 	var level := GameManager.selected_level
 	var accent: Color = hero.accent if hero != null else Palette.ACCENT
-	var card := make_card(accent, 190)
+	var card := make_card(accent, 210)
 	card.disabled = true
 	fill_card(card, accent, hero.portrait_shape if hero != null else 2,
 		hero.display_name if hero != null else "No operative",
 		level.display_name if level != null else "No sector",
-		"Tap DEPLOY to start the run", true)
+		"Tap DEPLOY to start the run", true,
+		hero.accent_secondary if hero != null else Palette.ACCENT_WARM)
 	return card
 
 
@@ -70,7 +71,7 @@ func _make_resume_card() -> Control:
 	var hero := ContentDB.get_hero(StringName(saved.get("hero", "")))
 	var level := ContentDB.get_level(StringName(saved.get("level", "")))
 	var accent: Color = hero.accent if hero != null else Palette.GOLD
-	var card := make_card(accent, 200)
+	var card := make_card(accent, 220)
 	card.disabled = true
 	var saved_loadout := saved.get("loadout", {}) as Dictionary
 	# The katana is granted, so it never counts against the six.
@@ -83,7 +84,7 @@ func _make_resume_card() -> Control:
 		"Survived %s · level %d · %d/%d slots used" % [
 			MathUtil.format_time(float(saved.get("elapsed", 0.0))),
 			int(saved.get("player_level", 1)), slots, PowerLoadout.MAX_SLOTS],
-		true)
+		true, hero.accent_secondary if hero != null else Palette.ACCENT_WARM)
 	return card
 
 

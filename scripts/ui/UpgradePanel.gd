@@ -9,14 +9,18 @@ extends Control
 
 signal choice_made(offer: Dictionary)
 
-## Tall enough for a two-line description; the button cannot grow to fit its
-## own contents, so anything longer is clamped rather than allowed to spill past
-## the card border.
-const CARD_HEIGHT := 202
+## Tall enough for the title plus a clamped description. The button cannot grow
+## to fit its own contents, so the text is trimmed rather than allowed to spill
+## past the card border.
+const CARD_HEIGHT := 236
 const DESCRIPTION_LINES := 2
 
 var _offers: Array[Dictionary] = []
 var _rerolls: int = 0
+## Set the moment a card is taken. A second tap landing in the same frame (or a
+## stray press on a card that is still being freed) would otherwise apply the
+## same upgrade twice and consume a level-up that was never granted.
+var _choice_taken: bool = false
 
 var _title: Label
 var _slot_line: Label
@@ -28,6 +32,8 @@ var _phase: float = 0.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	# Parented to a CanvasLayer, so the window root's theme does not reach it.
+	theme = UITheme.shared()
 	visible = false
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build()
@@ -61,10 +67,10 @@ func _build() -> void:
 	root.alignment = BoxContainer.ALIGNMENT_CENTER
 	margin.add_child(root)
 
-	_title = UITheme.make_title("LEVEL UP", 62, Palette.ACCENT)
+	_title = UITheme.make_title("LEVEL UP", UITheme.SIZE_SCREEN_TITLE, Palette.ACCENT)
 	root.add_child(_title)
 
-	_slot_line = UITheme.make_label("", 26, Palette.TEXT_DIM, false)
+	_slot_line = UITheme.make_label("", UITheme.SIZE_LABEL, Palette.TEXT_DIM, false)
 	_slot_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(_slot_line)
 
@@ -81,12 +87,13 @@ func _build() -> void:
 	_cards_box.add_theme_constant_override("separation", 16)
 	root.add_child(_cards_box)
 
-	_reroll_button = UITheme.make_button("Reroll (0)", 88)
+	_reroll_button = UITheme.make_button("Reroll (0)", UITheme.SECONDARY_BUTTON_HEIGHT)
 	_reroll_button.pressed.connect(_on_reroll)
 	root.add_child(_reroll_button)
 
 
 func open(offers: Array[Dictionary], player_level: int) -> void:
+	_choice_taken = false
 	_offers = offers
 	_title.text = "LEVEL %d" % player_level
 	_rerolls = int(RunManager.relic_special_value(&"reroll"))
@@ -133,7 +140,11 @@ func _draw_slot_pips() -> void:
 
 
 func _populate() -> void:
+	# Removed from the tree immediately, not just queued: queue_free() defers to
+	# the end of the frame, which would leave the previous set of cards laid out
+	# alongside the new ones and still able to take a tap.
 	for child in _cards_box.get_children():
+		_cards_box.remove_child(child)
 		child.queue_free()
 	for offer in _offers:
 		_cards_box.add_child(_make_card(offer))
@@ -190,17 +201,39 @@ func _make_card(offer: Dictionary) -> Control:
 	tag_row.add_theme_constant_override("separation", 10)
 	tag_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	text_box.add_child(tag_row)
-	tag_row.add_child(_make_chip("POWER" if is_power else "ABILITY",
+	tag_row.add_child(_make_chip("POWER" if is_power else "PASSIVE",
 		color if is_power else Palette.RESEARCH))
-	tag_row.add_child(UITheme.make_label(String(offer.get("tag", "")), 22, accent, false))
+	tag_row.add_child(UITheme.make_label(String(offer.get("tag", "")),
+		UITheme.SIZE_SMALL, accent, false))
 
-	text_box.add_child(UITheme.make_label(String(offer.get("title", "")), 38, Palette.TEXT, false))
+	text_box.add_child(UITheme.make_label(String(offer.get("title", "")),
+		UITheme.SIZE_HEADING, Palette.TEXT, false))
 
-	var description := UITheme.make_label(String(offer.get("subtitle", "")), 24, Palette.TEXT_DIM)
+	# The right-hand column used to be mostly empty. It now carries what the
+	# pick actually does: the per-level note for something already owned, or the
+	# power's own description for something new — whichever is present.
+	var description := UITheme.make_label(_describe(offer), UITheme.SIZE_SMALL, Palette.TEXT_DIM)
 	description.max_lines_visible = DESCRIPTION_LINES
 	description.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	# A wrapped Label reports almost no minimum height until it has been given a
+	# width, and inside a shrink-wrapped column that rounds down to nothing —
+	# which is why the description was invisible. Reserving the two lines it is
+	# allowed to use keeps it on screen and keeps the card a fixed size.
+	description.custom_minimum_size = Vector2(0, UITheme.SIZE_SMALL * 2.4)
+	description.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text_box.add_child(description)
 	return button
+
+
+## Short line describing a pick. Falls back through the offer's fields so a card
+## is never left with a blank half.
+func _describe(offer: Dictionary) -> String:
+	for key in ["subtitle", "tooltip"]:
+		var text := String(offer.get(key, "")).strip_edges()
+		if not text.is_empty():
+			return text
+	var data := ContentDB.get_power(StringName(offer.get("id", &"")))
+	return data.description if data != null else ""
 
 
 ## Small pill used for the category badge.
@@ -209,7 +242,7 @@ func _make_chip(text: String, color: Color) -> Control:
 	chip.add_theme_stylebox_override("panel",
 		UITheme.panel_box(Color(color.r * 0.22, color.g * 0.24, color.b * 0.30, 0.95), color, 10, 1))
 	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var label := UITheme.make_label(text, 19, color, false)
+	var label := UITheme.make_label(text, UITheme.SIZE_TINY, color, false)
 	chip.add_child(label)
 	return chip
 
@@ -222,14 +255,24 @@ func pick_first() -> void:
 
 
 func _on_card_pressed(offer: Dictionary) -> void:
+	if _choice_taken:
+		return
+	_choice_taken = true
 	visible = false
 	choice_made.emit(offer)
+
+
+## True while the panel is showing a choice nobody has taken yet. GameScene uses
+## this to tell "waiting on the player" apart from "stuck".
+func is_awaiting_choice() -> bool:
+	return visible and not _choice_taken
 
 
 func _on_reroll() -> void:
 	if _rerolls <= 0:
 		return
 	_rerolls -= 1
+	_choice_taken = false
 	_refresh_reroll()
 	var extra := int(RunManager.relic_special_value(&"extra_choice"))
 	_offers = UpgradeSystem.generate(3 + extra)

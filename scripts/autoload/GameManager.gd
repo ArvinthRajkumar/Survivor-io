@@ -37,7 +37,7 @@ func _ready() -> void:
 	# One generated theme on the window root styles every Control in the game.
 	var root := get_tree().root
 	if root != null:
-		root.theme = UITheme.build()
+		root.theme = UITheme.shared()
 	RunManager.run_finished.connect(_on_run_finished)
 
 
@@ -180,6 +180,16 @@ func is_paused_by(source: String) -> bool:
 func _clear_pause() -> void:
 	_pause_sources.clear()
 	get_tree().paused = false
+
+
+## Recovery hatch for the level scene's watchdog: drops every pause source and
+## resumes. Only ever called once the scene has established that nothing on
+## screen is waiting for the player, so there is no decision left to lose.
+func clear_stuck_pause() -> void:
+	_clear_pause()
+	RunManager.resume_clock()
+	if state == State.PAUSED or state == State.LEVEL_UP:
+		set_state(State.PLAYING)
 
 
 # --- Run events -------------------------------------------------------------

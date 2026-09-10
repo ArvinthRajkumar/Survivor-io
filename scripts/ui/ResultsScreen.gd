@@ -7,32 +7,27 @@ signal menu_requested
 var _title: Label
 var _stats_box: VBoxContainer
 var _reward_box: VBoxContainer
-var _tip: Label
 
 
 func _build_content() -> void:
-	_title = UITheme.make_title("RUN OVER", 60, Palette.ACCENT)
+	_title = UITheme.make_title("RUN OVER", UITheme.SIZE_SCREEN_TITLE, Palette.ACCENT)
 	content.add_child(_title)
 
 	_stats_box = VBoxContainer.new()
-	_stats_box.add_theme_constant_override("separation", 6)
+	_stats_box.add_theme_constant_override("separation", UITheme.GAP_TIGHT)
 	content.add_child(_stats_box)
 
 	content.add_child(HSeparator.new())
 
 	_reward_box = VBoxContainer.new()
-	_reward_box.add_theme_constant_override("separation", 6)
+	_reward_box.add_theme_constant_override("separation", UITheme.GAP_TIGHT)
 	content.add_child(_reward_box)
-
-	_tip = UITheme.make_label("", 23, Palette.TEXT_DIM)
-	_tip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	content.add_child(_tip)
 
 	var retry := UITheme.make_button("Run Again")
 	retry.pressed.connect(_on_retry)
 	content.add_child(retry)
 
-	var menu := UITheme.make_button("Main Menu", 92)
+	var menu := UITheme.make_button("Main Menu", UITheme.SECONDARY_BUTTON_HEIGHT)
 	menu.pressed.connect(_on_menu)
 	content.add_child(menu)
 
@@ -67,7 +62,7 @@ func show_results(results: Dictionary) -> void:
 	add_stat_row(_stats_box, "Bosses felled", str(int(results.get("boss_kills", 0))))
 	add_stat_row(_stats_box, "Damage dealt", MathUtil.format_number(int(results.get("damage", 0.0))))
 
-	_reward_box.add_child(UITheme.make_label("REWARDS", 26, Palette.TEXT_DIM))
+	_reward_box.add_child(UITheme.make_label("REWARDS", UITheme.SIZE_LABEL, Palette.TEXT_DIM))
 	add_stat_row(_reward_box, "Credits",
 		"+" + MathUtil.format_number(int(results.get("credits", 0))), Palette.GOLD)
 	add_stat_row(_reward_box, "Research samples",
@@ -76,7 +71,6 @@ func show_results(results: Dictionary) -> void:
 		add_stat_row(_reward_box, "Milestone bonus", "x1.4", Palette.ACCENT)
 	if bool(results.get("first_clear", false)):
 		add_stat_row(_reward_box, "First clear bonus", "x1.5", Palette.ACCENT)
-	_tip.text = TipBook.random()
 	open()
 
 

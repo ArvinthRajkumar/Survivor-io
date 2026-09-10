@@ -1,46 +1,61 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <!-- Last Light: Swarmfall - original app icon, drawn as plain vectors. -->
+  <!--
+    Last Light: Swarmfall app mark.
+
+    One idea, readable at 48px: a katana mid-cut, with the streak of the cut
+    sweeping behind it. The mark this replaced was a thin outlined pentagon with
+    small floating dots - exactly the kind of detail that dissolves into mush at
+    launcher size.
+
+    Two construction rules keep it legible small:
+      * the sword is laid out along a single axis (65 degrees above horizontal)
+        so blade, guard, grip and pommel line up as one object;
+      * the streak is a tapered ribbon, not a circular crescent. A crescent at
+        this size reads as a moon, which is a different game entirely.
+  -->
   <defs>
-    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
-      <stop offset="0%" stop-color="#132038"/>
-      <stop offset="100%" stop-color="#070910"/>
-    </radialGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#5ce6ff" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#5ce6ff" stop-opacity="0"/>
-    </radialGradient>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16294a"/>
+      <stop offset="1" stop-color="#070b16"/>
+    </linearGradient>
+    <linearGradient id="streak" x1="0.05" y1="0.7" x2="0.95" y2="0.3">
+      <stop offset="0" stop-color="#1fb9e0" stop-opacity="0.35"/>
+      <stop offset="0.55" stop-color="#66ecff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0.1" y1="1" x2="0.8" y2="0">
+      <stop offset="0" stop-color="#8093b4"/>
+      <stop offset="0.45" stop-color="#dde7fa"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
   </defs>
 
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#field)"/>
 
-  <!-- Faint grid, matching the Neon Ruins backdrop. -->
-  <g stroke="#2f6f96" stroke-opacity="0.28" stroke-width="2">
-    <path d="M0 128H512M0 256H512M0 384H512M128 0V512M256 0V512M384 0V512"/>
+  <!-- Sector grid, matching the in-game backdrop. Very low contrast: it is
+       texture, not detail that has to survive downscaling. -->
+  <g stroke="#2d5f86" stroke-opacity="0.18" stroke-width="3">
+    <path d="M128 0V512M256 0V512M384 0V512M0 128H512M0 256H512M0 384H512"/>
   </g>
 
-  <circle cx="256" cy="256" r="190" fill="url(#glow)"/>
+  <!-- The cut: wide where the sweep began, tapering to a point, and crossing
+       the blade at a clearly different angle. Run parallel to the blade it just
+       reads as a second sword. -->
+  <path d="M-24 268 Q223 167 452 150 Q239 204 20 356 Z" fill="url(#streak)"/>
 
-  <!-- The swarm closing in from the corners. -->
-  <g fill="#ff3f66" fill-opacity="0.92">
-    <path d="M96 96l34 20-34 20-34-20z"/>
-    <path d="M416 96l34 20-34 20-34-20z"/>
-    <path d="M96 396l34 20-34 20-34-20z"/>
-    <path d="M416 396l34 20-34 20-34-20z"/>
-    <path d="M256 62l30 18-30 18-30-18z"/>
-    <path d="M62 256l18 30-18 30-18-30z" transform="translate(6,0)"/>
-    <path d="M432 256l18 30-18 30-18-30z"/>
-    <path d="M256 428l30 18-30 18-30-18z"/>
+  <!-- Blade. Both edges curve the same way and by the same amount, which is
+       what makes it read as a katana rather than a straight sword. -->
+  <path d="M194 320 Q259 172 364 42 L372 46 Q285 184 238 340 Z" fill="url(#steel)"/>
+  <!-- Bright cutting edge, inset so it stops at the point instead of
+       overshooting it into a cross. -->
+  <path d="M232 337 Q278 181 365 43" fill="none" stroke="#ffffff"
+        stroke-opacity="0.92" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- Tsuba, grip and pommel, all on the same axis as the blade. -->
+  <path d="M170 316 L258 357 L268 336 L180 296 Z" fill="#ffb648"/>
+  <path d="M206 326 L224 334 L188 410 L170 402 Z" fill="#c8801f"/>
+  <g stroke="#f8d493" stroke-width="7" stroke-linecap="round">
+    <path d="M200 344 L217 352M191 366 L208 374"/>
   </g>
-
-  <!-- The last light: an orbiting guard ring around a bright core. -->
-  <circle cx="256" cy="256" r="132" fill="none" stroke="#ffa947" stroke-opacity="0.35" stroke-width="4"/>
-  <g fill="#ffa947">
-    <circle cx="256" cy="124" r="16"/>
-    <circle cx="370" cy="322" r="16"/>
-    <circle cx="142" cy="322" r="16"/>
-  </g>
-
-  <polygon points="256,150 348,217 313,325 199,325 164,217"
-           fill="#123449" stroke="#5ce6ff" stroke-width="14" stroke-linejoin="round"/>
-  <circle cx="256" cy="256" r="34" fill="#eafcff"/>
+  <circle cx="179" cy="406" r="19" fill="#ffb648"/>
 </svg>

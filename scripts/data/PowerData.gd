@@ -1,6 +1,6 @@
 class_name PowerData
 extends Resource
-## One entry in the upgrade pool — either an active Power or a Passive Ability.
+## One entry in the upgrade pool — either an active Power or a Passive.
 ##
 ## Both categories share this resource so the loadout, the offer generator and
 ## the HUD can treat them uniformly; the only real difference is that a Power

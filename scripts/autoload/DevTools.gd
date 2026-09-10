@@ -10,7 +10,6 @@ extends Node
 ##   godot --path . -- --seed=12345          fix the run RNG seed
 ##   godot --path . -- --meta=4             pretend every lab upgrade is level 4
 ##   godot --path . -- --pilot               autopilot movement, manual choices
-##   godot --path . -- --no-tutorial        suppress the first-run overlay
 ##
 ## Screens: menu, hero, level, lab, settings, game.
 
