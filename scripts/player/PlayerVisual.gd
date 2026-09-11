@@ -847,16 +847,45 @@ func _draw_hair_back(head: Vector2, tilt: float) -> void:
 	shell.append(shell[0] + drop)
 	draw_colored_polygon(shell, _hair)
 
-	# Two strands that lag behind the head as it moves.
+	# Two strands that lag behind the head as it moves. Baby's are long, heavy
+	# and swing wide, because her hair is what identifies her in the portrait
+	# and the character in the run has to be the same person.
 	var sway := sin(_phase * 3.4) * 2.0 + _lean * 12.0
+	var long := hero_shape == 5
 	for side in [-1.0, 1.0]:
 		var root := head + Vector2(side * HEAD_RADIUS * 0.92, -HEAD_RADIUS * 0.1)
-		var tip := root + Vector2(side * 4.0 - sway, HEAD_RADIUS * 0.95)
+		var tip := root + Vector2(side * (8.0 if long else 4.0) - sway,
+			HEAD_RADIUS * (1.85 if long else 0.95))
+		if long:
+			var mid := root.lerp(tip, 0.55) + Vector2(side * 3.0, 0.0)
+			var fall := PackedVector2Array([
+				root + Vector2(side * -1.0, 0.0), mid, tip,
+			])
+			draw_polyline(fall, _hair, 8.0, true)
+			draw_polyline(fall, _hair.lightened(0.16), 2.4, true)
+			continue
 		draw_line(root, tip, _hair, 5.0, true)
 		draw_line(root, tip, _hair.lightened(0.12), 2.0, true)
 
 
 func _draw_hair_front(head: Vector2, tilt: float) -> void:
+	if hero_shape == 5:
+		# Baby has no fringe: her hair is swept straight back off a tall
+		# forehead, and a chibi fringe on her reads as a different character.
+		var cap := PackedVector2Array()
+		for i in 13:
+			var a := PI * 0.98 + PI * 1.04 * float(i) / 12.0
+			cap.append(head + Vector2(cos(a), sin(a)).rotated(tilt) * HEAD_RADIUS * 1.04)
+		# The hairline has to stay clear of the arc it closes against — a return
+		# point sitting on the arc radius makes the outline touch itself, and
+		# Godot then refuses to triangulate the whole cap.
+		for v in [Vector2(0.90, -0.20), Vector2(0.60, -0.56), Vector2(0.0, -0.50),
+				Vector2(-0.60, -0.56), Vector2(-0.90, -0.20)]:
+			cap.append(head + ((v as Vector2) * HEAD_RADIUS).rotated(tilt))
+		draw_colored_polygon(cap, _hair)
+		draw_arc(head + Vector2(0.0, -HEAD_RADIUS * 0.16), HEAD_RADIUS * 0.80,
+			PI * 1.16, PI * 1.56, 8, _hair.lightened(0.26), 2.6, true)
+		return
 	# Bangs: overlapping wedges across the brow, uneven so it looks cut, not drawn.
 	var widths := [0.95, 0.55, 0.15, -0.3, -0.75]
 	for i in widths.size():

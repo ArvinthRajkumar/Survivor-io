@@ -42,6 +42,13 @@ static func draw_bust(ci: CanvasItem, c: Vector2, r: float, accent: Color,
 	var head := c + Vector2(0.0, -r * 0.16)
 	var head_r := r * 0.62
 
+	# Baby is a likeness of a specific person, not a variation on the shared
+	# chibi. That construction averages faces toward a template, which is
+	# exactly what destroys a likeness, so she has her own geometry entirely.
+	if variant == 5:
+		BabyPortrait.draw_bust(ci, c, r, phase)
+		return
+
 	var skin := _skin_of(variant)
 	_draw_shoulders(ci, c, r, accent, secondary, variant)
 	_draw_hair_back(ci, head, head_r, hair, variant, phase)
