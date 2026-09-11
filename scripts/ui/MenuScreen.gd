@@ -205,6 +205,10 @@ func fill_card(card: Button, icon_color: Color, shape: int, title: String,
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	icon.portrait_mode = portrait
+	# Operative portraits are drawn larger than their tile and cropped by it,
+	# the way a character card is framed. Without this the hair spills over the
+	# card text beside it.
+	icon.clip_contents = portrait
 	row.add_child(icon)
 	icon.setup(icon_color, shape, 0, 0, icon_secondary)
 

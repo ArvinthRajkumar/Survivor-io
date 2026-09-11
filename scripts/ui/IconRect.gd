@@ -101,10 +101,13 @@ func _draw_shape(center: Vector2, radius: float) -> void:
 ## Operatives are drawn as chibi busts rather than as their roster polygon, so
 ## the person you pick on this screen is the person you see on the field.
 func _draw_portrait(center: Vector2, radius: float, _fill: Color) -> void:
-	Draw2D.ring(self, center, radius * 1.42,
-		Color(icon_color.r, icon_color.g, icon_color.b, 0.28), 2.0)
-	HeroPortrait.draw_bust(self, center + Vector2(0.0, radius * 0.10), radius * 1.20,
+	# Framed like a character card: the bust is drawn well over tile size and
+	# cropped by it (the tile sets clip_contents), so the head fills the plate
+	# instead of floating in the middle of it.
+	HeroPortrait.draw_bust(self, center + Vector2(0.0, radius * 0.54), radius * 1.74,
 		icon_color, icon_secondary, shape_id, _phase)
+	Draw2D.ring(self, center, radius * 1.42,
+		Color(icon_color.r, icon_color.g, icon_color.b, 0.18), 2.0)
 
 
 func _poly(center: Vector2, points: PackedVector2Array, fill: Color, offset: bool = true) -> void:

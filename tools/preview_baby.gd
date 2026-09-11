@@ -24,10 +24,10 @@ func _initialize() -> void:
 
 
 func _draw_all() -> void:
-	BabyPortrait.draw_bust(_canvas, Vector2(170.0, 230.0), 150.0, 1.7)
-	BabyPortrait.draw_bust(_canvas, Vector2(360.0, 110.0), 74.0, 1.7)
-	BabyPortrait.draw_bust(_canvas, Vector2(360.0, 260.0), 38.0, 1.7)
-	BabyPortrait.draw_bust(_canvas, Vector2(360.0, 350.0), 20.0, 1.7)
+	BabyPortrait.draw_bust(_canvas, Vector2(216.0, 300.0), 175.0, 1.7)
+	BabyPortrait.draw_bust(_canvas, Vector2(70.0, 690.0), 60.0, 1.7)
+	BabyPortrait.draw_bust(_canvas, Vector2(200.0, 700.0), 38.0, 1.7)
+	BabyPortrait.draw_bust(_canvas, Vector2(300.0, 706.0), 20.0, 1.7)
 
 
 func _process(_delta: float) -> bool:
