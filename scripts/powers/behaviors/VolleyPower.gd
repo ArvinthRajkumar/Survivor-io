@@ -33,7 +33,22 @@ func _fire() -> void:
 		cfg["position"] = origin
 		cfg["direction"] = _direction_for(i, count, aim)
 		spawn_projectile(cfg)
+	_play_pose(aim)
 	play_sound(&"shoot", -14.0)
+
+
+## A gun kicks, a thrown blade goes over the shoulder. Reading the pose off the
+## motion rather than off the weapon id means a new power in this family gets
+## the right animation for free.
+func _play_pose(aim: Vector2) -> void:
+	if player == null or player.visual == null:
+		return
+	var pose := PlayerVisual.Pose.SHOOT
+	if data.motion == Projectile.Motion.BOOMERANG:
+		pose = PlayerVisual.Pose.THROW
+	elif data.on_hit == Projectile.OnHit.EXPLODE:
+		pose = PlayerVisual.Pose.THROW
+	player.visual.call("play_attack", pose, aim, 1.0, 2.0, false)
 
 
 ## Where the volley as a whole is pointed. RADIAL ignores this.

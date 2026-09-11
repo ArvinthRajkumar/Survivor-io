@@ -33,4 +33,6 @@ func _fire() -> void:
 		cfg["ramp_to"] = FALLOFF_END
 		cfg["ramp_near_mult"] = NEAR_MULT
 		spawn_projectile(cfg)
+	if player.visual != null:
+		player.visual.call("play_attack", PlayerVisual.Pose.DRAW, aim, 1.0, 2.0, false)
 	play_sound(&"shoot", -13.0)

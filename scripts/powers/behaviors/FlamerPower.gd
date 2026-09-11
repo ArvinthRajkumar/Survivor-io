@@ -33,4 +33,6 @@ func _fire() -> void:
 			"color2": data.color_secondary,
 			"source_id": get_instance_id(),
 		})
+	if player.visual != null:
+		player.visual.call("play_attack", PlayerVisual.Pose.SPRAY, dir, 1.0, 2.0, false)
 	play_sound(&"shoot", -18.0)

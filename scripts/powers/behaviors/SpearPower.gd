@@ -57,5 +57,5 @@ func _thrust() -> void:
 		"source_id": get_instance_id(),
 	})
 	if player.visual != null:
-		player.visual.call("play_slash", dir, 1.0, ARC, false)
+		player.visual.call("play_attack", PlayerVisual.Pose.THRUST, dir, 1.0, ARC, false)
 	play_sound(&"shoot", -15.0)

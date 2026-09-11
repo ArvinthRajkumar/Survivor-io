@@ -18,8 +18,10 @@ and everything picked starts at its final level — and the swarm opens at the p
 ordinary run reaches six minutes in, hitting harder and taking more killing.
 
 Everything in the project is original. There are no imported textures, fonts, or audio
-files: all visuals are drawn procedurally with Godot's 2D draw calls, and every sound
-effect and music loop is synthesised into a buffer at boot (`AudioManager`).
+files: every visual is drawn with Godot's 2D draw calls and every sound effect and music
+loop is synthesised into a buffer at boot (`AudioManager`). The one binary asset,
+`assets/sprites/creatures.png`, is itself generated from code by `tools/bake_creatures.gd`
+and can be rebuilt at any time.
 
 ---
 
@@ -134,8 +136,9 @@ resources/
 assets/
   icons/     icon.svg
 data/        (reserved for shipped JSON; the save file lives in user://)
-tools/       content generator, soak harness, and art previews for the
-             character, the roster portraits, the cut, the icons and the swarm
+tools/       content generator, soak harness, the creature atlas baker, and art
+             previews for the operative, their weapons, the roster portraits,
+             the cut, the icons and the swarm
 ```
 
 ### Autoloads
@@ -359,25 +362,65 @@ also pierces and throws what it hits.
 
 ### The swarm
 
-Twenty-eight enemy archetypes share **six body plans**, keyed to `EnemyData.shape`. They
-replaced flat polygons — a triangle, a hexagon, a star — which told the player nothing
-except "hostile". Six is enough that a charger can be told from a shooter before it
-arrives, which is the only thing the art has to achieve; twenty-eight bespoke drawings
-would not be maintainable and would not read any better at 20 px.
+Twenty-eight enemy archetypes share **six body plans**, keyed to `EnemyData.shape`. Six is
+enough that a charger can be told from a shooter before it arrives, which is the only
+thing the art has to achieve; twenty-eight bespoke creatures would not be maintainable and
+would read no better at 20px.
 
 | Body plan | Silhouette | Wears it |
 | --- | --- | --- |
 | **Scuttler** | Low six-legged insect, all legs and almost no body | The fast, flimsy ones |
 | **Sentry** | Armoured biped with a shoulder cannon it visibly aims | Shooters and emplacements |
-| **Brute** | Top-heavy, two thick fists, a stomping gait | The heavyweights and bosses |
+| **Brute** | Broad-shouldered, pinched at the waist, two heavy fists | The heavyweights and bosses |
 | **Wisp** | Floating bell with trailing tendrils; bobs rather than walks | Drifters and splitters |
 | **Ocular** | A single eye inside a cage of spinning plates | The stranger sectors' enemies |
 | **Maw** | Four-legged jaw that opens on the wind-up and snaps shut | The things that run you down |
 
-Each has a walk cycle driven by distance covered (a slowed enemy visibly slows its legs
-rather than running on the spot), a wind-up and strike for melee, and a recoil plus muzzle
-flash for ranged. Everything is drawn front-facing and flipped horizontally, so the swarm
-reads as characters the way the operative does rather than as shapes seen from overhead.
+They are **baked sprites**, not procedural drawings. `tools/bake_creatures.gd` renders six
+body plans x four states (move, wind-up, strike, shoot) x eight frames through a
+SubViewport into a 2048x1536 atlas, and `CreatureSprite` draws one textured quad per
+enemy.
+
+That is not an optimisation bolted onto working art — it is the fix for a design that was
+wrong in both directions at once. A procedural body is 7-18 draw commands, and the
+renderer resubmits every one of them each frame whether or not `_draw` re-ran. Metering
+redraws down to 11Hz therefore saved only the GDScript, while the animation visibly
+stepped and the draw cost was paid in full regardless. Measured in the same soak, baking
+took the frame from ~1400 draw calls to ~300 *and* moved the gait from 11fps to the frame
+rate.
+
+Colour is a per-archetype `modulate` over a luminance bake, so one 400KB sheet dresses the
+whole roster. The first design baked each of the three roles — body, edge, accent — into
+its own colour channel and recombined them in a shader, which would have let a creature
+carry a body colour and an edge colour that were genuinely different. It does not work: a
+per-instance `ShaderMaterial`'s uniforms do not reliably reach the renderer for a pooled
+node configured before it enters the tree, and the creatures render as the raw mask in
+flat red, green and blue. Tinting also batches, which 260 unique materials never could.
+
+> **Re-import after baking.** Godot serves the *imported* copy of a texture, so a freshly
+> baked PNG that has not been re-imported is invisible to the game — it keeps drawing the
+> previous bake, which looks exactly like the new art having had no effect. Run
+> `godot --path . --editor --quit-after 400` after `bake_creatures.gd`.
+
+### The operative
+
+Drawn live rather than baked: there is only ever one of them, so the per-frame cost that
+made the swarm untenable is irrelevant here, and live drawing is what lets the character
+respond continuously to speed, acceleration and the direction of a swing.
+
+Each of the eight starting weapons has its own attack — a katana swings, a spear thrusts,
+a revolver kicks and flashes, a bow draws and looses, a chakram goes over the shoulder, a
+hammer comes down overhead, a flamethrower is held forward and shakes. A player who has
+picked one of eight weapons should be able to see which one they picked without reading
+the HUD. The weapon in the hand is drawn from the same geometry as its card icon, and the
+one they are not using is stowed on their back — a scabbard, a holster, a strung bow, a
+fuel tank.
+
+Passives with a shape worth drawing get one too: Ablative Shell orbits armour plates at
+hip height, Vital Weave lifts motes off the operative as it heals, Long Fuse gutters
+embers at their feet, Omen Dice throws an occasional gold glint, and Split Barrel adds a
+second muzzle flash to every shot. A passive that only exists in a stat sheet may as well
+not have been picked.
 
 ### Sectors
 
@@ -462,11 +505,24 @@ godot --path . --script res://tools/preview_portraits.gd
 Worth running after any change to `HeroPortrait`: a polygon Godot refuses to
 triangulate fails silently in-game (outline drawn, no fill) but prints an error here.
 
-The swarm is drawn in code too. `tools/preview_enemies.gd` puts all six body plans down
-the page, each one walking, winding up, striking and shooting:
+The swarm has two harnesses, because it has two halves. `tools/bake_creatures.gd` builds
+the atlas, and `tools/preview_creatures.gd` shows it back the way the game draws it —
+through `CreatureSprite`, tinted, at the sizes enemies actually appear at:
 
 ```bash
-godot --path . --script res://tools/preview_enemies.gd
+godot --path . --rendering-driver opengl3 --script res://tools/bake_creatures.gd
+godot --path . --editor --quit-after 400          # re-import, or the bake is invisible
+godot --path . --rendering-driver opengl3 --script res://tools/preview_creatures.gd
+```
+
+The preview is the only view that exercises the atlas, the tint and the frame indexing
+together; a contact sheet made straight from the PNG proves none of them.
+
+`tools/preview_weapons.gd` steps the operative through all eight weapon animations, which
+are otherwise on screen for a fifth of a second with the screen full of enemies:
+
+```bash
+godot --path . --rendering-driver opengl3 --script res://tools/preview_weapons.gd
 ```
 
 `tools/preview_icons.gd` does the same for all forty power, passive and weapon icons, and
@@ -595,16 +651,11 @@ Things a shipping build would still want, listed honestly:
 - **Not tested on real hardware.** All verification here was headless plus windowed
   desktop runs. The frame-rate targets above are design budgets, not measurements from
   a phone.
-- **The animated swarm has not been measured on a device.** A polygon body was about
-  two draw calls; a creature is roughly 7 (wisp, scuttler) to 18 (brute, ocular), even
-  after batching every limb into one `draw_multiline` per body, dropping the sub-pixel
-  eye detail below 5px, and metering redraws to ~11Hz on a stagger. Batching alone took
-  a measured ~35% off the frame's draw count at the same enemy count. But the container
-  this was built in renders through llvmpipe, where the absolute numbers mean nothing,
-  so the polygon-vs-creature comparison was never made end to end. This is the first
-  thing to check on hardware. If it does not hold, the lever is a reduced-detail body
-  for small enemies — the brute and the ocular are where the cost is — rather than
-  going back to polygons.
+- **The swarm has not been measured on a device.** Baking took the frame from ~1400 draw
+  calls to ~300 at the same enemy count, which is the number that matters and is
+  measurable anywhere. Frame *times* are not: the container this was built in renders
+  through llvmpipe, where they mean nothing. A creature is now one quad, so the remaining
+  risk is fill rate rather than draw count.
 - **No localisation.** All strings are inline English.
 - **Audio is functional, not final.** The synthesised loops do their job but are a
   placeholder for composed music.

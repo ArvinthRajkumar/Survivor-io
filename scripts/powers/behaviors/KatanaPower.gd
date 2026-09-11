@@ -105,7 +105,7 @@ func _swing(dir: Vector2) -> void:
 	# hands is always in step with the front cut — the one visible attack that
 	# actually has an arm behind it.
 	if player.visual != null:
-		player.visual.call("play_slash", dir, _handedness, arc, false)
+		player.visual.call("play_attack", PlayerVisual.Pose.SWING, dir, _handedness, arc, false)
 	play_sound(&"shoot", -16.0)
 
 

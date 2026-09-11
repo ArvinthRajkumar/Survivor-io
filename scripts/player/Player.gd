@@ -88,10 +88,23 @@ func setup(hero_data: HeroData, player_stats: PlayerStats) -> void:
 	health.damage_reduction = stats.get_stat(&"damage_reduction")
 	health.invuln_time = 0.55
 	visual.call("configure", hero_data)
+	# The weapon chosen before the run decides what is stowed on the operative's
+	# back and what appears in their hands when they attack.
+	visual.call("set_weapon", RunManager.loadout.innate_id)
+	# Passives with a visible tell show on the operative as soon as they are
+	# picked, so the loadout is readable off the character and not only the HUD.
+	var loadout := RunManager.loadout
+	if not loadout.changed.is_connected(_refresh_passive_tells):
+		loadout.changed.connect(_refresh_passive_tells)
+	_refresh_passive_tells()
 	powers.setup(self, stats)
 	ultimate.setup(self, hero_data)
 	stats.changed.connect(_on_stats_changed)
 	_refresh_from_stats()
+
+
+func _refresh_passive_tells() -> void:
+	visual.call("set_passive_tells", RunManager.loadout.get_ids_of(PowerData.Category.PASSIVE))
 
 
 func _on_stats_changed() -> void:

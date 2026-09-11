@@ -20,6 +20,10 @@ func _fire() -> void:
 		_smash(radius * 1.55, get_damage() * 0.45, get_knockback() * 0.7)
 	if EffectSpawner.instance != null:
 		EffectSpawner.instance.spawn_death_burst(player.global_position, data.color_secondary, radius)
+	if player.visual != null:
+		var face := player.move_dir.normalized() if player.is_moving() else player.facing
+		player.visual.call("play_attack", PlayerVisual.Pose.SMASH,
+			face if face.length_squared() > 0.01 else Vector2.RIGHT, 1.0, 2.0, false)
 	GameManager.request_shake(0.35)
 	play_sound(&"shoot", -8.0)
 
