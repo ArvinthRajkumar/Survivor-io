@@ -35,7 +35,7 @@ func _ready() -> void:
 	_visual = preload("res://scripts/player/PlayerVisual.gd").new()
 	# Larger than in play: at run scale the character is a thumbnail, and this is
 	# the one place in the app where there is room to actually look at them.
-	_visual.scale = Vector2(3.3, 3.3)
+	_visual.scale = Vector2(4.1, 4.1)
 	add_child(_visual)
 	set_hero(_hero)
 
