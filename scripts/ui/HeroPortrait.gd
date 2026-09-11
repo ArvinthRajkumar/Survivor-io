@@ -8,9 +8,9 @@ extends RefCounted
 ## apart: hair, headgear, expression and the kit on their shoulders. That is
 ## deliberate — five unrelated silhouettes would look like five games.
 ##
-## Baby is the exception and has her own geometry in BabyPortrait: she has to
-## be a specific person off a specific photograph, and the shared construction
-## averages faces toward a template, which is exactly what destroys a likeness.
+## Baby is the exception and is not drawn here at all. She is a supplied
+## illustration rather than a construction, so BabySprite cuts her out of the
+## character sheet and animates the pieces; see tools/cut_baby.py.
 ##
 ## Everything is scaled from `r`, so one function draws a 40px roster thumbnail
 ## and a 200px card portrait.
@@ -42,7 +42,7 @@ static func _skin_of(variant: int) -> Color:
 			return Color(0.975, 0.870, 0.805)
 		5:
 			# Baby: sampled off the reference photograph.
-			return BabyPortrait.SKIN
+			return BabySprite.SKIN
 		_:
 			return SKIN
 
@@ -60,7 +60,7 @@ static func _hair_of(accent: Color, variant: int) -> Color:
 		4:
 			return Color(0.23, 0.16, 0.33)          # Rift - dark violet
 		5:
-			return BabyPortrait.HAIR                # Baby - warm near-black
+			return BabySprite.HAIR                  # Baby - warm near-black
 		_:
 			return Color(0.17, 0.21, 0.33)          # Nova - navy
 
@@ -70,7 +70,7 @@ static func _hair_of(accent: Color, variant: int) -> Color:
 static func draw_bust(ci: CanvasItem, c: Vector2, r: float, accent: Color,
 		secondary: Color, variant: int, phase: float = 0.0) -> void:
 	if variant == 5:
-		BabyPortrait.draw_bust(ci, c, r, phase)
+		BabySprite.draw_bust(ci, c, r, phase)
 		return
 
 	var hair := _hair_of(accent, variant)

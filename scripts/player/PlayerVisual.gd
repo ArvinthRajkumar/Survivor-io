@@ -37,6 +37,10 @@ const HIP_Y := 14.0
 const STEP_RATE := 10.5
 const SCARF_SEGMENTS := 7
 const SCARF_LENGTH := 6.0
+## Baby's sprite: how tall she is drawn and where her feet land relative to the
+## body origin, matched to the procedural cast so the two share a shadow.
+const BABY_HEIGHT := 94.0
+const BABY_FOOT_Y := 38.0
 const MAX_DUST := 10
 const TRAIL_LENGTH := 7
 
@@ -66,6 +70,23 @@ var _death_time: float = 0.0
 var _blink: float = 0.0
 var _next_blink: float = 2.0
 
+## Secondary motion. Hair and cloth do not travel with the body: they lag it,
+## overshoot when it stops and settle afterwards. One critically-ish damped
+## spring, integrated per frame, drives all of it. This is the single biggest
+## thing that makes a small character look alive rather than like a sticker
+## being slid around the screen, and it costs two vectors.
+var _drag: Vector2 = Vector2.ZERO
+var _drag_vel: Vector2 = Vector2.ZERO
+## Idle breath, and a vertical spring that takes a kick on every footfall.
+var _breath: float = 0.0
+var _bounce: float = 0.0
+var _bounce_vel: float = 0.0
+## World velocity, kept so the spring has something to chase.
+var _vel: Vector2 = Vector2.ZERO
+## Where the operative is looking, in head radii. Follows the facing normally
+## and snaps to the aim while attacking.
+var _gaze: Vector2 = Vector2.ZERO
+
 ## How the operative uses whatever they are holding. The weapon decides which
 ## of these it plays; several weapons share one.
 enum Pose { SWING, THRUST, SHOOT, DRAW, THROW, SMASH, SPRAY }
@@ -79,6 +100,8 @@ var _slash_sign: float = 1.0
 var _slash_arc: float = 2.0
 var _slash_spin: bool = false
 var _lunge: Vector2 = Vector2.ZERO
+## Where the lunge is heading once the anticipation frame has passed.
+var _wind: Vector2 = Vector2.ZERO
 ## Which weapon is in the operative's hands, as a PowerData id. Drives both the
 ## thing drawn in the hand and the thing stowed on the back.
 var _weapon: StringName = &"katana"
@@ -111,10 +134,6 @@ func configure(hero: HeroData) -> void:
 		# reads as a different person without needing a separate palette.
 		_hair = Color(accent.r * 0.30 + 0.06, accent.g * 0.26 + 0.07, accent.b * 0.34 + 0.12)
 		_skin = HeroPortrait._skin_of(hero_shape)
-		if hero_shape == 5:
-			# Baby's hair is the warm near-black sampled off her photograph
-			# rather than a cast of her accent - it is her whole silhouette.
-			_hair = BabyPortrait.HAIR
 	queue_redraw()
 
 
@@ -128,6 +147,7 @@ func set_motion(dir: Vector2, velocity: Vector2, delta: float) -> void:
 	_lean = clampf(dir.x * 0.20, -0.24, 0.24)
 	# Acceleration drives squash and stretch: speeding up stretches the body
 	# along its travel, slamming to a stop squashes it.
+	_vel = velocity
 	var accel := (speed - _last_speed) / maxf(0.0001, delta)
 	_last_speed = speed
 	_squash = clampf(lerpf(_squash, clampf(accel / 5200.0, -0.22, 0.22), clampf(delta * 9.0, 0.0, 1.0)), -0.3, 0.3)
@@ -166,8 +186,11 @@ func play_attack(pose: int, dir: Vector2, handedness: float = 1.0, arc: float = 
 	if absf(_slash_dir.x) > 0.2:
 		_facing = signf(_slash_dir.x)
 	# A short lunge sells the commitment. A shot recoils backward instead.
+	# The lunge starts *against* the strike: a frame of anticipation is what
+	# makes a hit feel like it was thrown rather than teleported into place.
 	var push: float = POSE_LUNGE[pose]
-	_lunge = _slash_dir * push
+	_lunge = _slash_dir * -push * 0.45
+	_wind = _slash_dir * push
 
 
 ## Kept for the katana, which is the one weapon whose behaviour predates poses.
@@ -208,7 +231,13 @@ func _process(delta: float) -> void:
 		_hurt_flash = maxf(0.0, _hurt_flash - delta * 3.2)
 	if _slash_time > 0.0:
 		_slash_time = maxf(0.0, _slash_time - delta)
-	_lunge = _lunge.lerp(Vector2.ZERO, clampf(delta * 9.0, 0.0, 1.0))
+	if _wind != Vector2.ZERO:
+		# Snap through the anticipation into the lunge, then let it decay.
+		_lunge = _lunge.lerp(_wind, clampf(delta * 26.0, 0.0, 1.0))
+		if _lunge.distance_to(_wind) < _wind.length() * 0.18:
+			_wind = Vector2.ZERO
+	else:
+		_lunge = _lunge.lerp(Vector2.ZERO, clampf(delta * 9.0, 0.0, 1.0))
 	if _dead:
 		_death_time = minf(1.0, _death_time + delta * 2.2)
 	else:
@@ -223,10 +252,40 @@ func _process(delta: float) -> void:
 	_lean = lerpf(_lean, 0.0, clampf(delta * 6.0, 0.0, 1.0))
 	_squash = lerpf(_squash, 0.0, clampf(delta * 5.0, 0.0, 1.0))
 
+	_tick_secondary(delta)
 	_tick_blink(delta)
 	_tick_dust(delta)
 	_tick_motes(delta)
 	queue_redraw()
+
+
+## Everything that follows the body rather than being driven by it.
+func _tick_secondary(delta: float) -> void:
+	var step := clampf(delta, 0.0, 1.0 / 30.0)
+
+	# Hair lag. The target is behind the direction of travel, so the mass
+	# streams out behind a sprint and swings across the body on a direction
+	# change. Damping is deliberately light: the overshoot when she stops is
+	# the part that reads.
+	var target := (-_vel * 0.021).limit_length(9.0)
+	_drag_vel += (target - _drag) * 46.0 * step
+	_drag_vel /= 1.0 + 8.5 * step
+	_drag += _drag_vel * step
+	_drag = _drag.limit_length(11.0)
+
+	# Breath, and the vertical spring the footfalls kick.
+	_breath = sin(_phase * 1.9)
+	_bounce_vel -= _bounce * 150.0 * step
+	_bounce_vel /= 1.0 + 11.0 * step
+	_bounce += _bounce_vel * step
+
+	# Gaze: toward the aim while swinging, otherwise the way she is walking.
+	var want := Vector2(_facing * 0.55, 0.0)
+	if _slash_time > 0.0:
+		want = Vector2(_slash_dir.x, _slash_dir.y * 0.6) * 0.85
+	elif _thrust > 0.2:
+		want = Vector2(_facing * 0.7, -0.12)
+	_gaze = _gaze.lerp(want, clampf(delta * 9.0, 0.0, 1.0))
 
 
 func _tick_blink(delta: float) -> void:
@@ -238,10 +297,13 @@ func _tick_blink(delta: float) -> void:
 		_blink = maxf(0.0, _blink - delta)
 
 
-## A puff of dust each time a foot passes through the bottom of its arc.
+## A puff of dust each time a foot passes through the bottom of its arc, and a
+## kick to the vertical spring so the body compresses on the plant.
 func _emit_step_dust(before: float, after: float) -> void:
 	if _thrust < 0.35 or _dead:
 		return
+	if int(floor(after / PI)) != int(floor(before / PI)):
+		_bounce_vel += 1.35 * _thrust
 	var side := int(floor(after / PI))
 	if side == _last_step_side or int(floor(before / PI)) == side:
 		return
@@ -344,7 +406,9 @@ func _draw() -> void:
 	if _dead:
 		tint = tint.darkened(0.45)
 
-	var bob := sin(_phase * 2.4) * 1.5 * (1.0 - _thrust) + absf(sin(_step)) * -3.0 * _thrust
+	# Idle breath, the run's vertical bob, and the spring each footfall kicks.
+	var bob := _breath * 1.2 * (1.0 - _thrust) + absf(sin(_step)) * -3.4 * _thrust
+	bob += _bounce * 2.2
 	var slump := _death_time * 15.0
 	var origin := Vector2(0.0, bob + slump) + _lunge
 	var lean := _lean + _death_time * 0.5 * _facing + _slash_lean()
@@ -356,22 +420,30 @@ func _draw() -> void:
 	if _thrust > 0.3 and not _dead:
 		_draw_speed_trail(tint)
 
-	# Squash and stretch is applied to everything above the shadow so the
-	# character deforms as one body rather than in pieces.
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0 - _squash, 1.0 + _squash))
+	# Squash and stretch is applied to everything above the shadow so the body
+	# deforms as one. On top of the acceleration term, the run squashes into
+	# each footfall and the idle breath swells the chest a little.
+	var gait := (1.0 - absf(sin(_step))) * 0.045 * _thrust
+	var puff := _breath * 0.012 * (1.0 - _thrust)
+	var sq := clampf(_squash + gait - puff, -0.30, 0.30)
 
-	if _slash_time <= 0.0 and not _dead:
-		_draw_sheath(origin, lean, tint)
-	_draw_scarf_tail()
-	_draw_arm(origin, lean, swing, tint, true)
-	_draw_leg(origin, lean, -swing, tint, true)
-	_draw_torso(origin, lean, tint)
-	_draw_leg(origin, lean, swing, tint, false)
-	_draw_collar(origin, lean)
-	_draw_head(origin, lean, tint)
-	_draw_sword_arm(origin, lean, swing, tint)
-
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	if hero_shape == 5:
+		# Baby is the supplied illustration, rigged rather than redrawn, so she
+		# carries her own squash instead of the canvas transform doing it.
+		_draw_baby(origin, lean, sq)
+	else:
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(1.0 - sq, 1.0 + sq))
+		if _slash_time <= 0.0 and not _dead:
+			_draw_sheath(origin, lean, tint)
+		_draw_scarf_tail()
+		_draw_arm(origin, lean, swing, tint, true)
+		_draw_leg(origin, lean, -swing, tint, true)
+		_draw_torso(origin, lean, tint)
+		_draw_leg(origin, lean, swing, tint, false)
+		_draw_collar(origin, lean)
+		_draw_head(origin, lean, tint)
+		_draw_sword_arm(origin, lean, swing, tint)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	_draw_passive_motes()
 	if _shielded:
@@ -582,7 +654,7 @@ func _draw_torso(origin: Vector2, lean: float, tint: Color) -> void:
 		Vector2(-w * 0.96, -h * 0.02), Vector2(-w * 0.74, -h * 0.50),
 	]:
 		shell.append((v as Vector2).rotated(lean) + centre)
-	var body := Chibi.smooth_closed(shell, 6)
+	var body := Chibi.smooth_closed(shell, 4)
 
 	# Dark contour a shade wider than the body. The operative is a small light
 	# shape on a dark field with a hundred enemies passing behind, and without
@@ -598,7 +670,7 @@ func _draw_torso(origin: Vector2, lean: float, tint: Color) -> void:
 	for v in [Vector2(-w * 0.34, -h * 0.56), Vector2(w * 0.34, -h * 0.56),
 			Vector2(w * 0.24, h * 0.62), Vector2(-w * 0.24, h * 0.62)]:
 		front.append((v as Vector2).rotated(lean) + centre)
-	Chibi.form(self, Chibi.smooth_closed(front, 5), tint.darkened(0.66), 0.24, 0.26, 0.30)
+	Chibi.form(self, Chibi.smooth_closed(front, 4), tint.darkened(0.66), 0.24, 0.26, 0.30)
 	_draw_emblem(centre + Vector2(0.0, -h * 0.14).rotated(lean), lean)
 
 	# Belt: a rounded band, not a line.
@@ -607,7 +679,7 @@ func _draw_torso(origin: Vector2, lean: float, tint: Color) -> void:
 			Vector2(w * 1.00, h * 0.34), Vector2(w * 0.98, h * 0.52),
 			Vector2(0.0, h * 0.58), Vector2(-w * 0.98, h * 0.52)]:
 		belt.append((v as Vector2).rotated(lean) + centre)
-	Chibi.form(self, Chibi.smooth_closed(belt, 5), accent_secondary.darkened(0.34),
+	Chibi.form(self, Chibi.smooth_closed(belt, 4), accent_secondary.darkened(0.34),
 		0.22, 0.24, 0.28)
 	Chibi.ball(self, Vector2(0.0, h * 0.44).rotated(lean) + centre, 3.0, accent_secondary)
 	# Light down the near shoulder.
@@ -671,11 +743,34 @@ func _draw_sword_arm(origin: Vector2, lean: float, swing: float, tint: Color) ->
 
 	var t := 1.0 - clampf(_slash_time / _slash_span, 0.0, 1.0)   # 0 -> 1 across the attack
 	var shoulder := origin + Vector2(BODY_WIDTH * 0.9, -BODY_HEIGHT * 0.35).rotated(lean)
+	var swept := _pose_sweep(t)
+	var angle := swept.x
+	var reach := swept.y
+
+	var hand := shoulder + Vector2(cos(angle), sin(angle)) * reach
+	var color := tint.darkened(0.36)
+	var elbow := shoulder.lerp(hand, 0.55)
+	Chibi.capsule(self, shoulder, elbow, 3.5, 2.8, color)
+	Chibi.capsule(self, elbow, hand, 2.8, 2.4, color)
+	# The off hand comes up to steady a two-handed weapon.
+	if _pose == Pose.SHOOT or _pose == Pose.DRAW or _pose == Pose.SMASH or _pose == Pose.SPRAY:
+		var off := origin + Vector2(-BODY_WIDTH * 0.9, -BODY_HEIGHT * 0.35).rotated(lean)
+		var off_elbow := off.lerp(hand, 0.45) + Vector2(0.0, 3.0)
+		Chibi.capsule(self, off, off_elbow, 3.3, 2.7, color.darkened(0.18))
+		Chibi.capsule(self, off_elbow, hand.lerp(off, 0.22), 2.7, 2.4, color.darkened(0.18))
+	Chibi.ball(self, hand, 3.3, accent_secondary.darkened(0.36))
+
+	_draw_held_weapon(hand, angle, t)
+
+
+## Where the weapon points and how far out it is held, `t` through the attack.
+## Returned as (angle, reach) so the arm rig and the sprite rig can share one
+## definition of what each pose actually does - they draw the body completely
+## differently, but a hammer has to fall the same way for both.
+func _pose_sweep(t: float) -> Vector2:
 	var aim := _slash_dir.angle()
 	var angle := aim
 	var reach := 17.0
-	# Where the weapon sits relative to the hand, and how far along the arm it
-	# is held. Every pose answers those two questions differently.
 	match _pose:
 		Pose.THRUST:
 			# Out fast, back slow: a spear is committed on the way in.
@@ -688,14 +783,15 @@ func _draw_sword_arm(origin: Vector2, lean: float, swing: float, tint: Color) ->
 			reach = 18.0 - 3.0 * kick
 		Pose.DRAW:
 			# Pull back past halfway, then loose.
-			var pull := t / 0.62 if t < 0.62 else 1.0 - (t - 0.62) / 0.38
-			angle = aim
-			reach = 20.0 - 9.0 * clampf(pull, 0.0, 1.0)
+			var pull := clampf(t / 0.62, 0.0, 1.0)
+			var loose := clampf((t - 0.62) / 0.38, 0.0, 1.0)
+			angle = aim + _slash_sign * 0.30 * pull * (1.0 - loose)
+			reach = 19.0 - 5.0 * pull * (1.0 - loose)
 		Pose.THROW:
-			# Over the shoulder and down across the body.
-			var eased_t := 1.0 - pow(1.0 - t, 2.2)
-			angle = aim - _slash_sign * (1.9 - 2.6 * eased_t)
-			reach = 15.0 + 7.0 * sin(eased_t * PI)
+			# Over the shoulder and away.
+			var whip := 1.0 - pow(1.0 - t, 2.2)
+			angle = lerpf(aim - _slash_sign * 1.5, aim + _slash_sign * 0.35, whip)
+			reach = 14.0 + 8.0 * sin(whip * PI)
 		Pose.SMASH:
 			# Up over the head, then straight down. The pause at the top is what
 			# makes a hammer feel heavy.
@@ -714,21 +810,32 @@ func _draw_sword_arm(origin: Vector2, lean: float, swing: float, tint: Color) ->
 			if _slash_spin:
 				angle = aim + _slash_sign * TAU * eased
 			reach = 17.0 + 6.0 * sin(eased * PI)
+	return Vector2(angle, reach)
 
-	var hand := shoulder + Vector2(cos(angle), sin(angle)) * reach
-	var color := tint.darkened(0.36)
-	var elbow := shoulder.lerp(hand, 0.55)
-	Chibi.capsule(self, shoulder, elbow, 3.5, 2.8, color)
-	Chibi.capsule(self, elbow, hand, 2.8, 2.4, color)
-	# The off hand comes up to steady a two-handed weapon.
-	if _pose == Pose.SHOOT or _pose == Pose.DRAW or _pose == Pose.SMASH or _pose == Pose.SPRAY:
-		var off := origin + Vector2(-BODY_WIDTH * 0.9, -BODY_HEIGHT * 0.35).rotated(lean)
-		var off_elbow := off.lerp(hand, 0.45) + Vector2(0.0, 3.0)
-		Chibi.capsule(self, off, off_elbow, 3.3, 2.7, color.darkened(0.18))
-		Chibi.capsule(self, off_elbow, hand.lerp(off, 0.22), 2.7, 2.4, color.darkened(0.18))
-	Chibi.ball(self, hand, 3.3, accent_secondary.darkened(0.36))
 
-	_draw_held_weapon(hand, angle, t)
+## Baby is the one operative who is not drawn: she is the supplied illustration,
+## cut into an upper body and two legs and animated as a paper doll. Everything
+## around her - the shadow, the dust, the passive tells, the weapon in her hand
+## - is the same code the rest of the cast uses.
+func _draw_baby(origin: Vector2, lean: float, squash: float) -> void:
+	var body := Color.WHITE
+	if _hurt_flash > 0.0:
+		body = body.lerp(Palette.DANGER, _hurt_flash * 0.55)
+	if _dead:
+		body = Color(0.52, 0.52, 0.60)
+	# A narrower stride than the procedural cast walks with: her legs are a real
+	# pair of legs and at a wide swing they cross through each other.
+	var swing := sin(_step) * 0.30 * _thrust
+	var ground := origin + Vector2(0.0, BABY_FOOT_Y)
+	BabySprite.draw_figure(self, ground, BABY_HEIGHT, _facing,
+		lean + _slash_lean() * 0.6, squash, swing, _drag, body)
+	if _slash_time <= 0.0:
+		return
+	var t := 1.0 - clampf(_slash_time / _slash_span, 0.0, 1.0)
+	var swept := _pose_sweep(t)
+	var hand := BabySprite.hand_at(ground, BABY_HEIGHT, _facing)
+	hand += Vector2(cos(swept.x), sin(swept.x)) * swept.y * 0.34
+	_draw_held_weapon(hand, swept.x, t)
 
 
 ## The weapon itself, drawn from the same geometry as its HUD icon so the thing
@@ -790,10 +897,13 @@ func _muzzle_flash(at: Vector2, t: float, fade: float) -> void:
 ## run and the person on the card are the same person: a rounded skull under a
 ## solid mass of hair, with the forehead painted back over the hair to cut the
 ## hairline. Cutting the hairline into the hair shape instead makes the spline
-## overshoot into a hard peak - see BabyPortrait for the long version.
+## overshoot into a hard peak.
 func _draw_head(origin: Vector2, lean: float, tint: Color) -> void:
+	# The head trails the body a little. A head that moves in perfect lockstep
+	# with the hips is the tell that a character is one rigid sprite.
 	var head := origin + Vector2(0.0, -BODY_HEIGHT - HEAD_RADIUS * 0.92).rotated(lean * 0.6)
-	var tilt := lean * 0.5
+	head += Vector2(_drag.x * 0.16, _drag.y * 0.10)
+	var tilt := lean * 0.5 + clampf(_drag.x * 0.012, -0.10, 0.10)
 	var r := HEAD_RADIUS
 
 	_draw_hair_back(head, tilt)
@@ -819,19 +929,14 @@ func _draw_head(origin: Vector2, lean: float, tint: Color) -> void:
 	_draw_face(head, skin)
 
 	# Headband in the secondary accent - the readable "operative" cue, and what
-	# keeps the silhouette distinct from the enemy shapes. Baby wears a thin one
-	# and a bindi instead, which is what identifies her at this size.
-	if hero_shape == 5:
-		Chibi.ball(self, head + Vector2(r * 0.06, -r * 0.30).rotated(tilt), r * 0.075,
-			Color(0.16, 0.05, 0.07), Vector2.ONE, 0.0, 0.0, 0.10)
-	else:
-		var band := PackedVector2Array()
-		for v in [Vector2(-0.98, -0.34), Vector2(0.0, -0.50), Vector2(0.98, -0.36),
-				Vector2(0.96, -0.16), Vector2(0.0, -0.30), Vector2(-0.96, -0.14)]:
-			band.append(head + ((v as Vector2) * r).rotated(tilt))
-		Chibi.form(self, Chibi.smooth_closed(band, 6), accent_secondary, 0.26, 0.28, 0.32)
-		Chibi.ball(self, head + Vector2(r * 0.30 * _facing, -r * 0.36).rotated(tilt),
-			r * 0.10, Color(1, 1, 1, 0.9))
+	# keeps the silhouette distinct from the enemy shapes.
+	var band := PackedVector2Array()
+	for v in [Vector2(-0.98, -0.34), Vector2(0.0, -0.50), Vector2(0.98, -0.36),
+			Vector2(0.96, -0.16), Vector2(0.0, -0.30), Vector2(-0.96, -0.14)]:
+		band.append(head + ((v as Vector2) * r).rotated(tilt))
+	Chibi.form(self, Chibi.smooth_closed(band, 4), accent_secondary, 0.26, 0.28, 0.32)
+	Chibi.ball(self, head + Vector2(r * 0.30 * _facing, -r * 0.36).rotated(tilt),
+		r * 0.10, Color(1, 1, 1, 0.9))
 
 
 ## The skull outline, scaled: rounded, widest at the cheekbone, closing to a
@@ -844,7 +949,7 @@ func _head_ring(head: Vector2, tilt: float, k: float) -> PackedVector2Array:
 			Vector2(-0.62, 0.76), Vector2(-0.94, 0.30), Vector2(-1.00, -0.28),
 			Vector2(-0.68, -0.90)]:
 		ctrl.append(head + ((v as Vector2) * r).rotated(tilt))
-	return Chibi.smooth_closed(ctrl, 6)
+	return Chibi.smooth_closed(ctrl, 4)
 
 
 ## The mass behind the head, plus the strands that lag as she moves. Baby's are
@@ -852,10 +957,11 @@ func _head_ring(head: Vector2, tilt: float, k: float) -> PackedVector2Array:
 ## the character in the run has to be the same person.
 func _draw_hair_back(head: Vector2, tilt: float) -> void:
 	var r := HEAD_RADIUS
-	var long := hero_shape == 5
-	var sway := sin(_phase * 3.4) * 0.06 + _lean * 0.34
-	var drop: float = 1.72 if long else 1.05
-	var wide: float = 1.20 if long else 1.16
+	# The spring does the work; the sine is only a breeze on top of it so the
+	# hair is never completely still.
+	var sway := sin(_phase * 2.6) * 0.035 + _drag.x / r * 0.62
+	var drop := 1.05
+	var wide := 1.16
 
 	var ctrl := PackedVector2Array()
 	for v in [Vector2(0.00, -1.26), Vector2(0.78, -1.06), Vector2(wide, -0.30),
@@ -865,21 +971,7 @@ func _draw_hair_back(head: Vector2, tilt: float) -> void:
 			Vector2(-0.78, -1.06)]:
 		var p: Vector2 = v
 		ctrl.append(head + Vector2(p.x * r + sway * r * p.y * 0.30, p.y * r).rotated(tilt))
-	Chibi.form(self, Chibi.smooth_closed(ctrl, 6), _hair, 0.28, 0.22, 0.42)
-
-	if not long:
-		return
-	# Two heavy locks falling in front of the shoulders, swinging behind the
-	# body as it moves.
-	for side in [-1.0, 1.0]:
-		var lock := PackedVector2Array()
-		for v in [Vector2(side * 0.84, -0.80), Vector2(side * 1.22, -0.06),
-				Vector2(side * 1.14, 0.94), Vector2(side * 1.26, 1.84),
-				Vector2(side * 0.98, 2.52), Vector2(side * 0.70, 2.16),
-				Vector2(side * 0.84, 1.28), Vector2(side * 0.92, 0.30)]:
-			var q: Vector2 = v
-			lock.append(head + Vector2(q.x * r - sway * r * q.y * 0.34, q.y * r).rotated(tilt))
-		Chibi.form(self, Chibi.smooth_closed(lock, 6), _hair, 0.24, 0.20, 0.40)
+	Chibi.form(self, Chibi.smooth_closed(ctrl, 4), _hair, 0.28, 0.22, 0.42)
 
 
 ## The hair over the skull, then the forehead painted back over it. The
@@ -894,7 +986,7 @@ func _draw_hair_front(head: Vector2, tilt: float) -> void:
 			Vector2(-0.92, -0.10), Vector2(-1.06, 0.46), Vector2(-1.22, 0.12),
 			Vector2(-1.16, -0.60), Vector2(-0.80, -1.16)]:
 		crown.append(head + ((v as Vector2) * r).rotated(tilt))
-	Chibi.form(self, Chibi.smooth_closed(crown, 6), _hair, 0.24, 0.20, 0.44)
+	Chibi.form(self, Chibi.smooth_closed(crown, 4), _hair, 0.24, 0.20, 0.44)
 
 	var skin := _skin
 	if _hurt_flash > 0.0:
@@ -902,16 +994,14 @@ func _draw_hair_front(head: Vector2, tilt: float) -> void:
 	if _dead:
 		skin = skin.darkened(0.35)
 
-	# Baby has no fringe at all: her hairline runs right back off a tall
-	# forehead. Everyone else wears a lower one.
-	var line: float = -0.78 if hero_shape == 5 else -0.58
+	var line := -0.58
 	var brow := PackedVector2Array()
 	for v in [Vector2(0.00, line), Vector2(0.42, line + 0.05), Vector2(0.74, line + 0.22),
 			Vector2(0.92, line + 0.52), Vector2(0.94, 0.30), Vector2(0.00, 0.44),
 			Vector2(-0.94, 0.30), Vector2(-0.92, line + 0.52),
 			Vector2(-0.74, line + 0.22), Vector2(-0.42, line + 0.05)]:
 		brow.append(head + ((v as Vector2) * r).rotated(tilt))
-	Chibi.form(self, Chibi.smooth_closed(brow, 6), skin, 0.12, 0.22, 0.26)
+	Chibi.form(self, Chibi.smooth_closed(brow, 4), skin, 0.12, 0.22, 0.26)
 	# Occlusion from the hair onto the skin it overhangs.
 	Chibi.soft(self, head + Vector2(0.0, line * r).rotated(tilt), r * 0.86, r * 0.26,
 		Color(0.20, 0.12, 0.10, 0.38), 22)
@@ -926,7 +1016,7 @@ func _draw_hair_front(head: Vector2, tilt: float) -> void:
 func _draw_face(head: Vector2, skin: Color) -> void:
 	var r := HEAD_RADIUS
 	var eye_y := head.y + r * 0.14
-	var look := Vector2(_facing * 0.55, 0.0)
+	var look := _gaze
 	var ink := Color(0.10, 0.09, 0.14)
 
 	if _dead:
@@ -940,8 +1030,6 @@ func _draw_face(head: Vector2, skin: Color) -> void:
 	var hurt := _hurt_flash > 0.25
 	var open := 1.0 if _blink <= 0.0 else 0.08
 	var iris := accent.lerp(Color(0.30, 0.20, 0.14), 0.55)
-	if hero_shape == 5:
-		iris = Color(0.355, 0.215, 0.140)
 
 	for side in [-1.0, 1.0]:
 		var e := Vector2(head.x + side * r * 0.40, eye_y)
