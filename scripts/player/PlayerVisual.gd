@@ -27,10 +27,13 @@ extends Node2D
 ## flash_hurt / set_shielded / set_dead — so Player.gd never has to know how any
 ## of it works.
 
-const HEAD_RADIUS := 20.0
-const BODY_WIDTH := 14.0
-const BODY_HEIGHT := 17.0
-const HIP_Y := 11.0
+# Chibi proportions, about two and a half heads tall. The head used to be so
+# large and sat so low that it covered the torso outright; the body needs to be
+# visible under it for any of the animation to read.
+const HEAD_RADIUS := 17.0
+const BODY_WIDTH := 12.5
+const BODY_HEIGHT := 21.0
+const HIP_Y := 14.0
 const STEP_RATE := 10.5
 const SCARF_SEGMENTS := 7
 const SCARF_LENGTH := 6.0
@@ -109,9 +112,9 @@ func configure(hero: HeroData) -> void:
 		_hair = Color(accent.r * 0.30 + 0.06, accent.g * 0.26 + 0.07, accent.b * 0.34 + 0.12)
 		_skin = HeroPortrait._skin_of(hero_shape)
 		if hero_shape == 5:
-			# Baby's hair is near-black rather than a cast of her accent, which
-			# is the whole point of her silhouette.
-			_hair = Color(0.07, 0.06, 0.09)
+			# Baby's hair is the warm near-black sampled off her photograph
+			# rather than a cast of her accent - it is her whole silhouette.
+			_hair = BabyPortrait.HAIR
 	queue_redraw()
 
 
@@ -431,14 +434,14 @@ func _slash_lean() -> float:
 	return _slash_sign * 0.42 * t * t
 
 
+
+## A soft contact shadow that fades out at its edge. A hard-edged ellipse under
+## a rounded character is the single most obvious tell that the art is flat.
 func _draw_shadow(slump: float) -> void:
 	var lift := 1.0 - clampf(absf(sin(_step)) * _thrust * 0.22, 0.0, 0.25)
-	var pts := PackedVector2Array()
-	for i in 14:
-		var a := TAU * float(i) / 14.0
-		pts.append(Vector2(cos(a) * 19.0 * lift, sin(a) * 6.5 * lift) + Vector2(0.0, 30.0 + slump * 0.4))
-	draw_colored_polygon(pts, Color(0.0, 0.0, 0.0, 0.30))
-
+	var at := Vector2(0.0, 40.0 + slump * 0.4)
+	Chibi.soft(self, at, 21.0 * lift, 7.4 * lift, Color(0.0, 0.0, 0.0, 0.34), 28)
+	Chibi.soft(self, at, 12.0 * lift, 4.2 * lift, Color(0.0, 0.0, 0.0, 0.22), 20)
 
 func _draw_dust() -> void:
 	for puff in _dust:
@@ -562,49 +565,54 @@ func _draw_scarf_tail() -> void:
 		draw_polyline(right, cloth.darkened(0.35), 1.6, true)
 
 
+
+## The body: one rounded volume, shaded, with the jacket read as a lighter
+## panel over it rather than as an outline around it.
 func _draw_torso(origin: Vector2, lean: float, tint: Color) -> void:
-	var top := origin + Vector2(0.0, -BODY_HEIGHT * 0.5)
-	var centre := top + Vector2(0.0, BODY_HEIGHT * 0.5)
+	var centre := origin
+	var w := BODY_WIDTH
+	var h := BODY_HEIGHT
 
-	# Jacket: narrow at the shoulders, flaring to the hem.
-	var shell := PackedVector2Array([
-		Vector2(-BODY_WIDTH * 0.84, -BODY_HEIGHT * 0.55),
-		Vector2(BODY_WIDTH * 0.84, -BODY_HEIGHT * 0.55),
-		Vector2(BODY_WIDTH * 1.06, BODY_HEIGHT * 0.42),
-		Vector2(BODY_WIDTH * 0.92, BODY_HEIGHT * 0.66),
-		Vector2(-BODY_WIDTH * 0.92, BODY_HEIGHT * 0.66),
-		Vector2(-BODY_WIDTH * 1.06, BODY_HEIGHT * 0.42),
-	])
-	var body := PackedVector2Array()
-	for p in shell:
-		body.append(p.rotated(lean) + centre)
-	var torso_contour := PackedVector2Array()
+	var shell := PackedVector2Array()
+	for v in [
+		Vector2(0.0, -h * 0.62), Vector2(w * 0.74, -h * 0.50),
+		Vector2(w * 0.96, -h * 0.02), Vector2(w * 1.04, h * 0.44),
+		Vector2(w * 0.84, h * 0.70), Vector2(0.0, h * 0.78),
+		Vector2(-w * 0.84, h * 0.70), Vector2(-w * 1.04, h * 0.44),
+		Vector2(-w * 0.96, -h * 0.02), Vector2(-w * 0.74, -h * 0.50),
+	]:
+		shell.append((v as Vector2).rotated(lean) + centre)
+	var body := Chibi.smooth_closed(shell, 6)
+
+	# Dark contour a shade wider than the body. The operative is a small light
+	# shape on a dark field with a hundred enemies passing behind, and without
+	# it the silhouette dissolves into whatever is underneath.
+	var contour := PackedVector2Array()
 	for p in body:
-		torso_contour.append(centre + (p - centre) * 1.10)
-	draw_colored_polygon(torso_contour, Color(0.05, 0.06, 0.11, 0.85))
-	Draw2D.neon_polygon(self, body, tint.darkened(0.58), tint, 2.6)
+		contour.append(centre + (p - centre) * 1.11)
+	Chibi.flat(self, contour, Color(0.05, 0.06, 0.11, 0.85))
+	Chibi.form(self, body, tint.darkened(0.42), 0.30, 0.34, 0.34)
 
-	# Shaded half, so the body has a light direction instead of reading flat.
-	var shade := PackedVector2Array()
-	for p in [shell[0], Vector2(0.0, -BODY_HEIGHT * 0.55), Vector2(0.0, BODY_HEIGHT * 0.66), shell[4], shell[5]]:
-		shade.append((p as Vector2).rotated(lean) + centre)
-	draw_colored_polygon(shade, Color(0.0, 0.0, 0.0, 0.16))
+	# Open jacket front: a lighter panel down the middle, narrower at the hem.
+	var front := PackedVector2Array()
+	for v in [Vector2(-w * 0.34, -h * 0.56), Vector2(w * 0.34, -h * 0.56),
+			Vector2(w * 0.24, h * 0.62), Vector2(-w * 0.24, h * 0.62)]:
+		front.append((v as Vector2).rotated(lean) + centre)
+	Chibi.form(self, Chibi.smooth_closed(front, 5), tint.darkened(0.66), 0.24, 0.26, 0.30)
+	_draw_emblem(centre + Vector2(0.0, -h * 0.14).rotated(lean), lean)
 
-	# Open jacket, undershirt, and the roster emblem — always visible since the
-	# operative always faces the camera.
-	var lapel := PackedVector2Array()
-	for p in [Vector2(-5.5, -BODY_HEIGHT * 0.55), Vector2(5.5, -BODY_HEIGHT * 0.55),
-			Vector2(3.0, BODY_HEIGHT * 0.6), Vector2(-3.0, BODY_HEIGHT * 0.6)]:
-		lapel.append((p as Vector2).rotated(lean) + centre)
-	draw_colored_polygon(lapel, tint.darkened(0.75))
-	_draw_emblem(centre + Vector2(0.0, -BODY_HEIGHT * 0.12).rotated(lean), lean)
-
-	# Belt across the hips.
-	var belt_l := Vector2(-BODY_WIDTH * 1.0, BODY_HEIGHT * 0.44).rotated(lean) + centre
-	var belt_r := Vector2(BODY_WIDTH * 1.0, BODY_HEIGHT * 0.44).rotated(lean) + centre
-	draw_line(belt_l, belt_r, accent_secondary.darkened(0.32), 3.2, true)
-	draw_circle(belt_l.lerp(belt_r, 0.5), 2.8, accent_secondary)
-
+	# Belt: a rounded band, not a line.
+	var belt := PackedVector2Array()
+	for v in [Vector2(-w * 1.00, h * 0.34), Vector2(0.0, h * 0.40),
+			Vector2(w * 1.00, h * 0.34), Vector2(w * 0.98, h * 0.52),
+			Vector2(0.0, h * 0.58), Vector2(-w * 0.98, h * 0.52)]:
+		belt.append((v as Vector2).rotated(lean) + centre)
+	Chibi.form(self, Chibi.smooth_closed(belt, 5), accent_secondary.darkened(0.34),
+		0.22, 0.24, 0.28)
+	Chibi.ball(self, Vector2(0.0, h * 0.44).rotated(lean) + centre, 3.0, accent_secondary)
+	# Light down the near shoulder.
+	Chibi.soft(self, Vector2(-w * 0.44, -h * 0.30).rotated(lean) + centre, w * 0.52,
+		h * 0.40, Color(1.0, 0.96, 0.90, 0.16))
 
 func _draw_emblem(centre: Vector2, lean: float) -> void:
 	var emblem: PackedVector2Array
@@ -625,32 +633,34 @@ func _draw_emblem(centre: Vector2, lean: float) -> void:
 	draw_colored_polygon(placed, accent_secondary)
 
 
+
+## A leg as two tapered capsules and a rounded boot. Constant-width lines with
+## square ends are half of why the old character read as a stick figure.
 func _draw_leg(origin: Vector2, lean: float, swing: float, tint: Color, far: bool) -> void:
-	var hip := origin + Vector2((-5.0 if far else 5.0) * _facing, HIP_Y).rotated(lean)
-	var knee := hip + Vector2(swing * 7.0, 8.5)
-	var foot := knee + Vector2(swing * 9.5, 9.0 - absf(swing) * 2.0)
-	var color := tint.darkened(0.68 if far else 0.48)
-	draw_line(hip, knee, color, 7.0, true)
-	draw_line(knee, foot, color, 6.4, true)
-	# Boot: a sole wedge rather than a stub, so the foot reads at a glance.
-	var toe := foot + Vector2(4.5 * _facing, 0.5)
-	draw_line(foot + Vector2(-1.5 * _facing, 0.0), toe,
-		accent_secondary.darkened(0.28 if far else 0.1), 7.0, true)
-	draw_line(foot + Vector2(-2.0 * _facing, 3.0), toe + Vector2(0.0, 3.0),
-		Color(0.08, 0.09, 0.13), 2.4, true)
+	var hip := origin + Vector2((-5.2 if far else 5.2) * _facing, HIP_Y).rotated(lean)
+	var knee := hip + Vector2(swing * 7.5, 10.0)
+	var foot := knee + Vector2(swing * 10.5, 11.0 - absf(swing) * 2.4)
+	var color := tint.darkened(0.70 if far else 0.52)
+	Chibi.capsule(self, hip, knee, 4.0, 3.2, color)
+	Chibi.capsule(self, knee, foot, 3.2, 2.8, color)
+	# Boot: a rounded cuff and a sole that runs out to a toe.
+	var boot := accent_secondary.darkened(0.62 if far else 0.46)
+	Chibi.capsule(self, foot + Vector2(-0.8 * _facing, -1.2),
+		foot + Vector2(4.0 * _facing, 1.0), 3.4, 2.7, boot)
+	Chibi.soft(self, foot + Vector2(1.4 * _facing, 2.8), 4.6, 1.6,
+		Color(0.05, 0.05, 0.09, 0.5), 16)
 
 
+## An arm as two tapered capsules and a rounded glove.
 func _draw_arm(origin: Vector2, lean: float, swing: float, tint: Color, far: bool) -> void:
 	var side := -1.0 if far else 1.0
-	var shoulder := origin + Vector2(BODY_WIDTH * 0.92 * side, -BODY_HEIGHT * 0.35).rotated(lean)
-	var elbow := shoulder + Vector2(swing * 5.0 + 2.0 * side, 7.0)
-	var hand := elbow + Vector2(swing * 7.0 + 1.5 * side, 7.5)
-	var color := tint.darkened(0.62 if far else 0.38)
-	draw_line(shoulder, elbow, color, 6.0, true)
-	draw_line(elbow, hand, color, 5.4, true)
-	# Glove.
-	draw_circle(hand, 3.8, accent_secondary.darkened(0.3 if far else 0.08))
-
+	var shoulder := origin + Vector2(BODY_WIDTH * 0.94 * side, -BODY_HEIGHT * 0.34).rotated(lean)
+	var elbow := shoulder + Vector2(swing * 5.0 + 2.4 * side, 6.4)
+	var hand := elbow + Vector2(swing * 6.4 + 1.6 * side, 6.6)
+	var color := tint.darkened(0.64 if far else 0.40)
+	Chibi.capsule(self, shoulder, elbow, 3.5, 2.8, color)
+	Chibi.capsule(self, elbow, hand, 2.8, 2.4, color)
+	Chibi.ball(self, hand, 3.2, accent_secondary.darkened(0.56 if far else 0.40))
 
 ## The near arm, which is also the sword arm. Outside a swing it just swings
 ## with the walk cycle; during one it drives the blade through its arc.
@@ -706,14 +716,17 @@ func _draw_sword_arm(origin: Vector2, lean: float, swing: float, tint: Color) ->
 			reach = 17.0 + 6.0 * sin(eased * PI)
 
 	var hand := shoulder + Vector2(cos(angle), sin(angle)) * reach
-	var color := tint.darkened(0.34)
-	draw_line(shoulder, shoulder.lerp(hand, 0.55), color, 6.0, true)
-	draw_line(shoulder.lerp(hand, 0.55), hand, color, 5.4, true)
+	var color := tint.darkened(0.36)
+	var elbow := shoulder.lerp(hand, 0.55)
+	Chibi.capsule(self, shoulder, elbow, 3.5, 2.8, color)
+	Chibi.capsule(self, elbow, hand, 2.8, 2.4, color)
 	# The off hand comes up to steady a two-handed weapon.
 	if _pose == Pose.SHOOT or _pose == Pose.DRAW or _pose == Pose.SMASH or _pose == Pose.SPRAY:
 		var off := origin + Vector2(-BODY_WIDTH * 0.9, -BODY_HEIGHT * 0.35).rotated(lean)
-		draw_line(off, hand.lerp(off, 0.25), color, 5.0, true)
-	draw_circle(hand, 3.8, accent_secondary)
+		var off_elbow := off.lerp(hand, 0.45) + Vector2(0.0, 3.0)
+		Chibi.capsule(self, off, off_elbow, 3.3, 2.7, color.darkened(0.18))
+		Chibi.capsule(self, off_elbow, hand.lerp(off, 0.22), 2.7, 2.4, color.darkened(0.18))
+	Chibi.ball(self, hand, 3.3, accent_secondary.darkened(0.36))
 
 	_draw_held_weapon(hand, angle, t)
 
@@ -772,17 +785,18 @@ func _muzzle_flash(at: Vector2, t: float, fade: float) -> void:
 		draw_circle(twin, 3.0 * punch, Color(1, 1, 1, 0.75 * punch))
 
 
+
+## The head, built the same way as the roster portraits so the person in the
+## run and the person on the card are the same person: a rounded skull under a
+## solid mass of hair, with the forehead painted back over the hair to cut the
+## hairline. Cutting the hairline into the hair shape instead makes the spline
+## overshoot into a hard peak - see BabyPortrait for the long version.
 func _draw_head(origin: Vector2, lean: float, tint: Color) -> void:
-	var head := origin + Vector2(0.0, -BODY_HEIGHT - HEAD_RADIUS * 0.55).rotated(lean * 0.6)
+	var head := origin + Vector2(0.0, -BODY_HEIGHT - HEAD_RADIUS * 0.92).rotated(lean * 0.6)
 	var tilt := lean * 0.5
+	var r := HEAD_RADIUS
 
-	# Hair mass behind the face, with a couple of loose strands that sway.
 	_draw_hair_back(head, tilt)
-
-	# Ears.
-	for side in [-1.0, 1.0]:
-		draw_circle(head + Vector2(side * HEAD_RADIUS * 0.94, HEAD_RADIUS * 0.06), 3.2,
-			_skin.darkened(0.08))
 
 	var skin := _skin
 	if _hurt_flash > 0.0:
@@ -790,193 +804,206 @@ func _draw_head(origin: Vector2, lean: float, tint: Color) -> void:
 	if _dead:
 		skin = skin.darkened(0.35)
 
-	# Head shape: a slightly squared circle reads more like a face than a ball.
-	var face := PackedVector2Array()
-	for i in 16:
-		var a := TAU * float(i) / 16.0
-		var r := HEAD_RADIUS * (1.0 - 0.06 * cos(a * 2.0))
-		face.append(head + Vector2(cos(a) * r, sin(a) * r * 0.98))
-	# A dark contour under the head, drawn a shade wider than the head itself.
-	# The operative is a light shape on a dark field with a hundred enemies
-	# behind them, and a contour is what stops the face dissolving into whatever
-	# is passing underneath it.
+	var face := _head_ring(head, tilt, 1.0)
 	var contour := PackedVector2Array()
 	for p in face:
-		contour.append(head + (p - head) * 1.09)
-	draw_colored_polygon(contour, Color(0.05, 0.06, 0.11, 0.85))
-	draw_colored_polygon(face, skin)
-	# Light from above: a shadow under the jaw and a rim along the crown.
-	var jaw := PackedVector2Array()
-	var crown := PackedVector2Array()
-	for p in face:
-		if p.y > head.y + HEAD_RADIUS * 0.34:
-			jaw.append(p)
-		if p.y < head.y - HEAD_RADIUS * 0.62:
-			crown.append(p)
-	if jaw.size() >= 3:
-		draw_colored_polygon(jaw, Color(0.0, 0.0, 0.0, 0.13))
-	if crown.size() >= 3:
-		draw_colored_polygon(crown, Color(1.0, 1.0, 1.0, 0.10))
-
-	_draw_face(head, skin)
-	_draw_hair_front(head, tilt)
-
-	# Headband in the secondary accent — the readable "operative" cue, and what
-	# keeps the silhouette distinct from the enemy shapes. Baby wears a thinner
-	# one and a bindi instead, which is what identifies her at this size.
-	var band := 2.4 if hero_shape == 5 else 4.2
-	draw_line(head + Vector2(-HEAD_RADIUS * 0.95, -HEAD_RADIUS * 0.42),
-		head + Vector2(HEAD_RADIUS * 0.95, -HEAD_RADIUS * 0.46),
-		accent_secondary, band, true)
-	if hero_shape == 5:
-		draw_circle(head + Vector2(0.0, -HEAD_RADIUS * 0.18), 2.2, Color(0.24, 0.06, 0.12))
-	else:
-		draw_circle(head + Vector2(HEAD_RADIUS * 0.30 * _facing, -HEAD_RADIUS * 0.44), 3.0,
-			Color(1, 1, 1, 0.85))
-
-
-func _draw_hair_back(head: Vector2, tilt: float) -> void:
-	var shell := PackedVector2Array()
-	for i in 16:
-		var a := PI * 0.92 + PI * 1.16 * float(i) / 15.0
-		shell.append(head + Vector2(cos(a), sin(a)).rotated(tilt) * HEAD_RADIUS * 1.12)
-	# Close the shape off the ends of the arc rather than at fixed points: a
-	# tilted head would otherwise fold the outline back through itself.
-	var drop := Vector2(0.0, HEAD_RADIUS * 0.52).rotated(tilt)
-	shell.append(shell[shell.size() - 1] + drop)
-	shell.append(shell[0] + drop)
-	draw_colored_polygon(shell, _hair)
-
-	# Two strands that lag behind the head as it moves. Baby's are long, heavy
-	# and swing wide, because her hair is what identifies her in the portrait
-	# and the character in the run has to be the same person.
-	var sway := sin(_phase * 3.4) * 2.0 + _lean * 12.0
-	var long := hero_shape == 5
+		contour.append(head + (p - head) * 1.10)
+	Chibi.flat(self, contour, Color(0.05, 0.06, 0.11, 0.85))
+	Chibi.form(self, face, skin, 0.18, 0.28, 0.30)
+	# Ears, tucked at the hairline.
 	for side in [-1.0, 1.0]:
-		var root := head + Vector2(side * HEAD_RADIUS * 0.92, -HEAD_RADIUS * 0.1)
-		var tip := root + Vector2(side * (8.0 if long else 4.0) - sway,
-			HEAD_RADIUS * (1.85 if long else 0.95))
-		if long:
-			var mid := root.lerp(tip, 0.55) + Vector2(side * 3.0, 0.0)
-			var fall := PackedVector2Array([
-				root + Vector2(side * -1.0, 0.0), mid, tip,
-			])
-			draw_polyline(fall, _hair, 8.0, true)
-			draw_polyline(fall, _hair.lightened(0.16), 2.4, true)
-			continue
-		draw_line(root, tip, _hair, 5.0, true)
-		draw_line(root, tip, _hair.lightened(0.12), 2.0, true)
+		Chibi.ball(self, head + Vector2(side * r * 1.00, r * 0.14).rotated(tilt), r * 0.13,
+			skin.darkened(0.16), Vector2(0.78, 1.14))
 
+	_draw_hair_front(head, tilt)
+	_draw_face(head, skin)
 
-func _draw_hair_front(head: Vector2, tilt: float) -> void:
+	# Headband in the secondary accent - the readable "operative" cue, and what
+	# keeps the silhouette distinct from the enemy shapes. Baby wears a thin one
+	# and a bindi instead, which is what identifies her at this size.
 	if hero_shape == 5:
-		# Baby has no fringe: her hair is swept straight back off a tall
-		# forehead, and a chibi fringe on her reads as a different character.
-		var cap := PackedVector2Array()
-		for i in 13:
-			var a := PI * 0.98 + PI * 1.04 * float(i) / 12.0
-			cap.append(head + Vector2(cos(a), sin(a)).rotated(tilt) * HEAD_RADIUS * 1.04)
-		# The hairline has to stay clear of the arc it closes against — a return
-		# point sitting on the arc radius makes the outline touch itself, and
-		# Godot then refuses to triangulate the whole cap.
-		for v in [Vector2(0.90, -0.20), Vector2(0.60, -0.56), Vector2(0.0, -0.50),
-				Vector2(-0.60, -0.56), Vector2(-0.90, -0.20)]:
-			cap.append(head + ((v as Vector2) * HEAD_RADIUS).rotated(tilt))
-		draw_colored_polygon(cap, _hair)
-		draw_arc(head + Vector2(0.0, -HEAD_RADIUS * 0.16), HEAD_RADIUS * 0.80,
-			PI * 1.16, PI * 1.56, 8, _hair.lightened(0.26), 2.6, true)
+		Chibi.ball(self, head + Vector2(r * 0.06, -r * 0.30).rotated(tilt), r * 0.075,
+			Color(0.16, 0.05, 0.07), Vector2.ONE, 0.0, 0.0, 0.10)
+	else:
+		var band := PackedVector2Array()
+		for v in [Vector2(-0.98, -0.34), Vector2(0.0, -0.50), Vector2(0.98, -0.36),
+				Vector2(0.96, -0.16), Vector2(0.0, -0.30), Vector2(-0.96, -0.14)]:
+			band.append(head + ((v as Vector2) * r).rotated(tilt))
+		Chibi.form(self, Chibi.smooth_closed(band, 6), accent_secondary, 0.26, 0.28, 0.32)
+		Chibi.ball(self, head + Vector2(r * 0.30 * _facing, -r * 0.36).rotated(tilt),
+			r * 0.10, Color(1, 1, 1, 0.9))
+
+
+## The skull outline, scaled: rounded, widest at the cheekbone, closing to a
+## soft chin. `k` scales it about the head centre.
+func _head_ring(head: Vector2, tilt: float, k: float) -> PackedVector2Array:
+	var r := HEAD_RADIUS * k
+	var ctrl := PackedVector2Array()
+	for v in [Vector2(0.00, -1.06), Vector2(0.68, -0.90), Vector2(1.00, -0.28),
+			Vector2(0.94, 0.30), Vector2(0.62, 0.76), Vector2(0.00, 0.98),
+			Vector2(-0.62, 0.76), Vector2(-0.94, 0.30), Vector2(-1.00, -0.28),
+			Vector2(-0.68, -0.90)]:
+		ctrl.append(head + ((v as Vector2) * r).rotated(tilt))
+	return Chibi.smooth_closed(ctrl, 6)
+
+
+## The mass behind the head, plus the strands that lag as she moves. Baby's are
+## long and heavy, because her hair is what identifies her in the portrait and
+## the character in the run has to be the same person.
+func _draw_hair_back(head: Vector2, tilt: float) -> void:
+	var r := HEAD_RADIUS
+	var long := hero_shape == 5
+	var sway := sin(_phase * 3.4) * 0.06 + _lean * 0.34
+	var drop: float = 1.72 if long else 1.05
+	var wide: float = 1.20 if long else 1.16
+
+	var ctrl := PackedVector2Array()
+	for v in [Vector2(0.00, -1.26), Vector2(0.78, -1.06), Vector2(wide, -0.30),
+			Vector2(wide * 0.96, drop * 0.50), Vector2(wide * 0.62, drop * 0.90),
+			Vector2(0.00, drop), Vector2(-wide * 0.62, drop * 0.90),
+			Vector2(-wide * 0.96, drop * 0.50), Vector2(-wide, -0.30),
+			Vector2(-0.78, -1.06)]:
+		var p: Vector2 = v
+		ctrl.append(head + Vector2(p.x * r + sway * r * p.y * 0.30, p.y * r).rotated(tilt))
+	Chibi.form(self, Chibi.smooth_closed(ctrl, 6), _hair, 0.28, 0.22, 0.42)
+
+	if not long:
 		return
-	# Bangs: overlapping wedges across the brow, uneven so it looks cut, not drawn.
-	var widths := [0.95, 0.55, 0.15, -0.3, -0.75]
-	for i in widths.size():
-		var x: float = float(widths[i]) * HEAD_RADIUS
-		var drop := HEAD_RADIUS * (0.30 + 0.16 * float((i * 3) % 4) / 3.0)
-		var wedge := PackedVector2Array([
-			head + Vector2(x - HEAD_RADIUS * 0.30, -HEAD_RADIUS * 0.72).rotated(tilt * 0.4),
-			head + Vector2(x + HEAD_RADIUS * 0.34, -HEAD_RADIUS * 0.78).rotated(tilt * 0.4),
-			head + Vector2(x + HEAD_RADIUS * 0.16, -HEAD_RADIUS * 0.72 + drop).rotated(tilt * 0.4),
-		])
-		draw_colored_polygon(wedge, _hair)
-	# Highlight band catching the light.
-	draw_arc(head + Vector2(0.0, -HEAD_RADIUS * 0.20), HEAD_RADIUS * 0.78,
-		PI * 1.18, PI * 1.62, 8, _hair.lightened(0.30), 3.0, true)
+	# Two heavy locks falling in front of the shoulders, swinging behind the
+	# body as it moves.
+	for side in [-1.0, 1.0]:
+		var lock := PackedVector2Array()
+		for v in [Vector2(side * 0.84, -0.80), Vector2(side * 1.22, -0.06),
+				Vector2(side * 1.14, 0.94), Vector2(side * 1.26, 1.84),
+				Vector2(side * 0.98, 2.52), Vector2(side * 0.70, 2.16),
+				Vector2(side * 0.84, 1.28), Vector2(side * 0.92, 0.30)]:
+			var q: Vector2 = v
+			lock.append(head + Vector2(q.x * r - sway * r * q.y * 0.34, q.y * r).rotated(tilt))
+		Chibi.form(self, Chibi.smooth_closed(lock, 6), _hair, 0.24, 0.20, 0.40)
 
 
+## The hair over the skull, then the forehead painted back over it. The
+## hairline is therefore the outline of the forehead, which is a shape that can
+## be drawn to look like one.
+func _draw_hair_front(head: Vector2, tilt: float) -> void:
+	var r := HEAD_RADIUS
+	var crown := PackedVector2Array()
+	for v in [Vector2(0.02, -1.30), Vector2(0.76, -1.14), Vector2(1.14, -0.60),
+			Vector2(1.22, 0.12), Vector2(1.06, 0.46), Vector2(0.92, -0.10),
+			Vector2(0.50, -0.44), Vector2(0.00, -0.52), Vector2(-0.50, -0.44),
+			Vector2(-0.92, -0.10), Vector2(-1.06, 0.46), Vector2(-1.22, 0.12),
+			Vector2(-1.16, -0.60), Vector2(-0.80, -1.16)]:
+		crown.append(head + ((v as Vector2) * r).rotated(tilt))
+	Chibi.form(self, Chibi.smooth_closed(crown, 6), _hair, 0.24, 0.20, 0.44)
+
+	var skin := _skin
+	if _hurt_flash > 0.0:
+		skin = skin.lerp(Palette.DANGER, _hurt_flash * 0.55)
+	if _dead:
+		skin = skin.darkened(0.35)
+
+	# Baby has no fringe at all: her hairline runs right back off a tall
+	# forehead. Everyone else wears a lower one.
+	var line: float = -0.78 if hero_shape == 5 else -0.58
+	var brow := PackedVector2Array()
+	for v in [Vector2(0.00, line), Vector2(0.42, line + 0.05), Vector2(0.74, line + 0.22),
+			Vector2(0.92, line + 0.52), Vector2(0.94, 0.30), Vector2(0.00, 0.44),
+			Vector2(-0.94, 0.30), Vector2(-0.92, line + 0.52),
+			Vector2(-0.74, line + 0.22), Vector2(-0.42, line + 0.05)]:
+		brow.append(head + ((v as Vector2) * r).rotated(tilt))
+	Chibi.form(self, Chibi.smooth_closed(brow, 6), skin, 0.12, 0.22, 0.26)
+	# Occlusion from the hair onto the skin it overhangs.
+	Chibi.soft(self, head + Vector2(0.0, line * r).rotated(tilt), r * 0.86, r * 0.26,
+		Color(0.20, 0.12, 0.10, 0.38), 22)
+	# One soft sheen across the crown, offset to the light side.
+	Chibi.rim_light(self, head + Vector2(-r * 0.06, -r * 0.10), r * 0.96, r * 0.98,
+		PI * 1.10, PI * 1.60, Color(_hair.lightened(0.42), 0.55), r * 0.15)
+
+
+## The face. Big glossy eyes, a tiny nose and a small mouth, and an expression
+## that changes with what the operative is doing - the whole point of a chibi
+## is that you can read its mood from across the screen.
 func _draw_face(head: Vector2, skin: Color) -> void:
-	var eye_y := head.y + HEAD_RADIUS * 0.06
-	var look := Vector2(_facing * HEAD_RADIUS * 0.11, 0.0)
-	var ink := Color(0.08, 0.10, 0.17)
+	var r := HEAD_RADIUS
+	var eye_y := head.y + r * 0.14
+	var look := Vector2(_facing * 0.55, 0.0)
+	var ink := Color(0.10, 0.09, 0.14)
 
 	if _dead:
 		for side in [-1.0, 1.0]:
-			var e := Vector2(head.x + side * HEAD_RADIUS * 0.38, eye_y)
-			draw_line(e - Vector2(3.6, 3.6), e + Vector2(3.6, 3.6), ink, 2.6, true)
-			draw_line(e - Vector2(3.6, -3.6), e + Vector2(3.6, -3.6), ink, 2.6, true)
+			var e := Vector2(head.x + side * r * 0.40, eye_y)
+			for d in [Vector2(1.0, 1.0), Vector2(1.0, -1.0)]:
+				Chibi.taper(self, PackedVector2Array([e - (d as Vector2) * 4.0,
+					e + (d as Vector2) * 4.0]), ink, 2.8, 1.0, 1.0)
 		return
 
 	var hurt := _hurt_flash > 0.25
-	var open := 1.0 if _blink <= 0.0 else 0.15
-	for side in [-1.0, 1.0]:
-		var e := Vector2(head.x + side * HEAD_RADIUS * 0.38, eye_y) + look
-		if hurt:
-			# Screwed-up eyes while taking a hit.
-			draw_line(e - Vector2(4.0, 2.6 * side), e + Vector2(4.0, 2.6 * side), ink, 2.8, true)
-			continue
-		if open < 0.5:
-			draw_line(e - Vector2(4.0, 0.0), e + Vector2(4.0, 0.0), ink, 2.6, true)
-			continue
-		# Big chibi eye: dark iris, bright catchlight, soft lower rim.
-		draw_circle(e, HEAD_RADIUS * 0.19, ink)
-		draw_circle(e + Vector2(0.0, HEAD_RADIUS * 0.05), HEAD_RADIUS * 0.10,
-			accent.lerp(Color.WHITE, 0.25))
-		draw_circle(e + Vector2(-1.4, -1.8), HEAD_RADIUS * 0.07, Color(1, 1, 1, 0.95))
-		# Brow, angled by mood.
-		var brow_y := eye_y - HEAD_RADIUS * 0.30
-		draw_line(Vector2(e.x - 4.4, brow_y + (1.2 if side < 0.0 else 0.0)),
-			Vector2(e.x + 4.4, brow_y + (0.0 if side < 0.0 else 1.2)), _hair, 2.4, true)
+	var open := 1.0 if _blink <= 0.0 else 0.08
+	var iris := accent.lerp(Color(0.30, 0.20, 0.14), 0.55)
+	if hero_shape == 5:
+		iris = Color(0.355, 0.215, 0.140)
 
-	# Cheeks and mouth.
 	for side in [-1.0, 1.0]:
-		draw_circle(Vector2(head.x + side * HEAD_RADIUS * 0.66, eye_y + HEAD_RADIUS * 0.24),
-			HEAD_RADIUS * 0.13, Color(1.0, 0.55, 0.55, 0.22))
-	var mouth := Vector2(head.x + look.x * 0.5, eye_y + HEAD_RADIUS * 0.44)
+		var e := Vector2(head.x + side * r * 0.40, eye_y)
+		if hurt:
+			# Screwed up against the hit.
+			var shut := PackedVector2Array([
+				e + Vector2(-r * 0.24, r * 0.06 * side), e + Vector2(0.0, -r * 0.05),
+				e + Vector2(r * 0.24, r * 0.06 * side)])
+			Chibi.taper(self, Chibi.smooth_open(shut, 5), ink, r * 0.10, 0.4, 1.0)
+			continue
+		Chibi.eye(self, e, r * 0.27, r * 0.245, iris, look, open, ink, side)
+		if open > 0.5:
+			var b := PackedVector2Array()
+			var lift: float = -0.02 if _slash_time > 0.0 else 0.0
+			for v in [Vector2(0.16, -0.20 + lift), Vector2(0.40, -0.30 + lift),
+					Vector2(0.64, -0.29), Vector2(0.80, -0.20)]:
+				b.append(Vector2(head.x + side * (v as Vector2).x * r,
+					eye_y + (v as Vector2).y * r))
+			Chibi.taper(self, Chibi.smooth_open(b, 6), _hair.lightened(0.12), r * 0.10, 0.45, 1.0)
+
+	for side2 in [-1.0, 1.0]:
+		Chibi.soft(self, Vector2(head.x + side2 * r * 0.62, eye_y + r * 0.22), r * 0.20,
+			r * 0.14, Color(1.0, 0.52, 0.48, 0.24), 18)
+
+	# Nose: a soft shadow, which is all a chibi face needs.
+	Chibi.soft(self, Vector2(head.x + look.x * r * 0.04, eye_y + r * 0.26), r * 0.085,
+		r * 0.060, Color(0.42, 0.24, 0.17, 0.55), 14)
+
+	var mouth := Vector2(head.x + look.x * r * 0.05, eye_y + r * 0.46)
 	if hurt:
-		draw_colored_polygon(PackedVector2Array([
-			mouth + Vector2(-3.2, 0.0), mouth + Vector2(3.2, 0.0), mouth + Vector2(0.0, 4.2)]), ink)
+		Chibi.form(self, Chibi.smooth_closed(PackedVector2Array([
+			mouth + Vector2(-3.4, -0.4), mouth + Vector2(3.4, -0.4),
+			mouth + Vector2(0.0, 4.4)]), 5), Color(0.34, 0.12, 0.14), 0.12, 0.30, 0.30)
 	elif _slash_time > 0.0:
 		# A clenched, determined line while swinging.
-		draw_line(mouth - Vector2(2.8, 0.0), mouth + Vector2(2.8, 0.0), ink, 1.8, true)
+		Chibi.taper(self, PackedVector2Array([mouth - Vector2(3.0, 0.0),
+			mouth + Vector2(3.0, -0.6)]), ink, 2.0, 0.6, 1.0)
 	else:
-		draw_arc(mouth - Vector2(0.0, 2.0), 3.4, PI * 0.15, PI * 0.85, 6, ink, 2.0, true)
-
-	# Nose: a single dot, which is all a chibi face needs.
-	draw_circle(Vector2(head.x + look.x, eye_y + HEAD_RADIUS * 0.24), 1.3,
-		skin.darkened(0.22))
-
+		var smile := Chibi.smooth_open(PackedVector2Array([
+			mouth + Vector2(-3.2, -0.8), mouth + Vector2(0.0, 1.4),
+			mouth + Vector2(3.2, -0.8)]), 6)
+		Chibi.taper(self, smile, ink, 2.2, 0.35, 1.0)
 
 ## The knot the scarf is tied in, sitting on the collarbone. It is deliberately
 ## small: anything bigger swallows the chin and the character loses its face.
 func _draw_collar(origin: Vector2, lean: float) -> void:
 	var neck := origin + Vector2(0.0, -BODY_HEIGHT * 0.46).rotated(lean)
-	var wrap := PackedVector2Array()
-	for i in 12:
-		var a := TAU * float(i) / 12.0
-		wrap.append(neck + Vector2(cos(a) * 9.5, sin(a) * 4.6).rotated(lean))
 	var shade := accent_secondary if not _dead else accent_secondary.darkened(0.5)
-	draw_colored_polygon(wrap, shade)
-	draw_line(neck + Vector2(-8.0, 1.6).rotated(lean), neck + Vector2(8.0, 1.6).rotated(lean),
-		shade.darkened(0.35), 2.0, true)
+	Chibi.form(self, Chibi.ellipse(neck, 9.8, 4.9, 28, lean), shade, 0.24, 0.30, 0.34)
+	Chibi.soft(self, neck + Vector2(0.0, 2.0).rotated(lean), 8.0, 2.4,
+		Color(0.0, 0.0, 0.0, 0.28), 18)
 	if _hurt_flash > 0.0:
-		draw_colored_polygon(wrap, Color(1, 1, 1, 0.25 * _hurt_flash))
-
+		Chibi.flat(self, Chibi.ellipse(neck, 9.8, 4.9, 24, lean),
+			Color(1, 1, 1, 0.25 * _hurt_flash))
 
 func _draw_shield() -> void:
 	var shield := Color(0.55, 0.85, 1.0, 0.5)
 	var radius := 46.0 + 2.0 * sin(_phase * 4.0)
-	Draw2D.ring(self, Vector2(0.0, -6.0), radius, shield, 4.0)
-	draw_circle(Vector2(0.0, -6.0), radius, Color(shield.r, shield.g, shield.b, 0.08))
+	Draw2D.ring(self, Vector2(0.0, -12.0), radius, shield, 4.0)
+	draw_circle(Vector2(0.0, -12.0), radius, Color(shield.r, shield.g, shield.b, 0.08))
 	# Hex facets so the bubble reads as a constructed field.
 	for i in 6:
 		var a := _phase * 0.8 + TAU * float(i) / 6.0
-		var p := Vector2(cos(a), sin(a)) * radius + Vector2(0.0, -6.0)
+		var p := Vector2(cos(a), sin(a)) * radius + Vector2(0.0, -12.0)
 		draw_circle(p, 3.0, Color(shield.r, shield.g, shield.b, 0.7))

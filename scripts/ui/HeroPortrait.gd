@@ -1,17 +1,30 @@
 class_name HeroPortrait
 extends RefCounted
-## Chibi bust portraits for the operative roster, drawn procedurally.
+## Chibi bust portraits for the operative roster, drawn procedurally on the
+## Chibi toolkit — soft shaded volumes, no flat fills and no straight edges.
 ##
-## The five operatives share one head-and-shoulders construction so they read as
-## the same squad, and differ only in the things a player actually uses to tell
-## people apart: hair, headgear, expression and the kit on their shoulders. That
-## is deliberate — swapping in five unrelated silhouettes would look like five
-## games, and a plain polygon (which is what this replaced) looks like none.
+## The five share one head-and-shoulders construction so they read as the same
+## squad, and differ only in the things a player actually uses to tell people
+## apart: hair, headgear, expression and the kit on their shoulders. That is
+## deliberate — five unrelated silhouettes would look like five games.
 ##
-## Everything is scaled from `r`, so the same function draws a 40px roster
-## thumbnail and a 200px card portrait without a second set of numbers.
+## Baby is the exception and has her own geometry in BabyPortrait: she has to
+## be a specific person off a specific photograph, and the shared construction
+## averages faces toward a template, which is exactly what destroys a likeness.
+##
+## Everything is scaled from `r`, so one function draws a 40px roster thumbnail
+## and a 200px card portrait.
 
-const SKIN := Color(0.99, 0.87, 0.78)
+const SKIN := Color(0.965, 0.845, 0.755)
+
+## The shared skull: rounded, widest at the cheekbone, closing to a soft chin,
+## with a tall cranium because that is where a chibi puts its volume.
+const FACE := [
+	Vector2(0.00, -1.20), Vector2(0.76, -1.00), Vector2(1.06, -0.34),
+	Vector2(0.99, 0.26), Vector2(0.73, 0.68), Vector2(0.00, 0.90),
+	Vector2(-0.73, 0.68), Vector2(-0.99, 0.26), Vector2(-1.06, -0.34),
+	Vector2(-0.76, -1.00),
+]
 
 
 ## Skin tone per operative. A squad that is six shades of the same beige is a
@@ -20,41 +33,18 @@ const SKIN := Color(0.99, 0.87, 0.78)
 static func _skin_of(variant: int) -> Color:
 	match variant:
 		0:
-			return Color(0.97, 0.80, 0.68)
+			return Color(0.945, 0.760, 0.635)
 		1:
-			return Color(0.86, 0.66, 0.52)
+			return Color(0.830, 0.630, 0.495)
 		3:
-			return Color(0.94, 0.82, 0.70)
+			return Color(0.915, 0.790, 0.670)
 		4:
-			return Color(0.99, 0.89, 0.82)
+			return Color(0.975, 0.870, 0.805)
 		5:
-			# Baby: the warm mid-brown of the reference.
-			return Color(0.80, 0.60, 0.45)
+			# Baby: sampled off the reference photograph.
+			return BabyPortrait.SKIN
 		_:
 			return SKIN
-
-
-## `variant` is HeroData.portrait_shape: 0 Ember, 1 Aegis, 2 Nova, 3 Bramble,
-## 4 Rift, 5 Baby. `phase` drives the small idle motions (blink, sway, glow).
-static func draw_bust(ci: CanvasItem, c: Vector2, r: float, accent: Color,
-		secondary: Color, variant: int, phase: float = 0.0) -> void:
-	var hair := _hair_of(accent, variant)
-	var head := c + Vector2(0.0, -r * 0.16)
-	var head_r := r * 0.62
-
-	# Baby is a likeness of a specific person, not a variation on the shared
-	# chibi. That construction averages faces toward a template, which is
-	# exactly what destroys a likeness, so she has her own geometry entirely.
-	if variant == 5:
-		BabyPortrait.draw_bust(ci, c, r, phase)
-		return
-
-	var skin := _skin_of(variant)
-	_draw_shoulders(ci, c, r, accent, secondary, variant)
-	_draw_hair_back(ci, head, head_r, hair, variant, phase)
-	_draw_head_shape(ci, head, head_r, skin)
-	_draw_face(ci, head, head_r, accent, hair, skin, variant, phase)
-	_draw_headgear(ci, head, head_r, accent, secondary, hair, variant, phase)
 
 
 ## Deep, desaturated cast of the accent, so each operative's hair belongs to
@@ -62,399 +52,384 @@ static func draw_bust(ci: CanvasItem, c: Vector2, r: float, accent: Color,
 static func _hair_of(accent: Color, variant: int) -> Color:
 	match variant:
 		0:
-			return Color(0.28, 0.12, 0.10)          # Ember - dark auburn
+			return Color(0.30, 0.13, 0.10)          # Ember - dark auburn
 		1:
-			return Color(0.20, 0.22, 0.28)          # Aegis - steel grey
+			return Color(0.24, 0.25, 0.31)          # Aegis - steel grey
 		3:
-			return Color(0.13, 0.24, 0.16)          # Bramble - deep moss
+			return Color(0.15, 0.26, 0.18)          # Bramble - deep moss
 		4:
-			return Color(0.20, 0.14, 0.30)          # Rift - dark violet
+			return Color(0.23, 0.16, 0.33)          # Rift - dark violet
 		5:
-			return Color(0.07, 0.06, 0.09)          # Baby - near-black
+			return BabyPortrait.HAIR                # Baby - warm near-black
 		_:
-			return Color(0.15, 0.19, 0.30)          # Nova - navy
+			return Color(0.17, 0.21, 0.33)          # Nova - navy
+
+
+## `variant` is HeroData.portrait_shape: 0 Ember, 1 Aegis, 2 Nova, 3 Bramble,
+## 4 Rift, 5 Baby. `phase` drives the small idle motions (blink, sway, glow).
+static func draw_bust(ci: CanvasItem, c: Vector2, r: float, accent: Color,
+		secondary: Color, variant: int, phase: float = 0.0) -> void:
+	if variant == 5:
+		BabyPortrait.draw_bust(ci, c, r, phase)
+		return
+
+	var hair := _hair_of(accent, variant)
+	var skin := _skin_of(variant)
+	var head := c + Vector2(0.0, -r * 0.12 + sin(phase * 1.15) * r * 0.007)
+	var hr := r * 0.60
+	var fine := hr >= 17.0
+	var sway := sin(phase * 0.85) * hr * 0.022
+
+	_hair_back(ci, head, hr, hair, variant, sway, phase, fine)
+	_neck(ci, head, hr, skin)
+	_shoulders(ci, c, r, accent, secondary, variant)
+	_face(ci, head, hr, skin, fine)
+	_crown(ci, head, hr, hair, variant, sway)
+	_forehead(ci, head, hr, skin, variant, fine)
+	_features(ci, head, hr, hair, accent, variant, phase, fine)
+	_headgear(ci, head, hr, accent, secondary, hair, variant, phase, fine)
+
+
+# --- Helpers ----------------------------------------------------------------
+
+static func _pt(head: Vector2, hr: float, x: float, y: float) -> Vector2:
+	return head + Vector2(x * hr, y * hr)
+
+
+static func _ring(head: Vector2, hr: float, ctrl: Array, per_seg: int = 7) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for v in ctrl:
+		pts.append(_pt(head, hr, (v as Vector2).x, (v as Vector2).y))
+	return Chibi.smooth_closed(pts, per_seg)
 
 
 # --- Body -------------------------------------------------------------------
 
-static func _draw_shoulders(ci: CanvasItem, c: Vector2, r: float, accent: Color,
+static func _neck(ci: CanvasItem, head: Vector2, hr: float, skin: Color) -> void:
+	Chibi.capsule(ci, _pt(head, hr, 0.0, 0.70), _pt(head, hr, 0.0, 1.44),
+		hr * 0.28, hr * 0.36, skin.darkened(0.12))
+	Chibi.soft(ci, _pt(head, hr, 0.0, 0.84), hr * 0.32, hr * 0.20,
+		Color(0.32, 0.20, 0.15, 0.32))
+
+
+## Shoulders and the jacket. Every operative wears the same cut so the squad
+## reads as a squad; the trim and what is strapped to it is theirs.
+static func _shoulders(ci: CanvasItem, c: Vector2, r: float, accent: Color,
 		secondary: Color, variant: int) -> void:
-	var top := c.y + r * 0.50
-	var jacket := PackedVector2Array([
-		Vector2(c.x - r * 0.86, top + r * 0.62),
-		Vector2(c.x - r * 0.74, top + r * 0.04),
-		Vector2(c.x - r * 0.30, top - r * 0.14),
-		Vector2(c.x + r * 0.30, top - r * 0.14),
-		Vector2(c.x + r * 0.74, top + r * 0.04),
-		Vector2(c.x + r * 0.86, top + r * 0.62),
-	])
-	Draw2D.neon_polygon(ci, jacket, accent.darkened(0.62), accent, maxf(1.5, r * 0.045))
-
-	# Collar, then the kit that tells the operatives apart at shoulder height.
-	var collar := PackedVector2Array()
-	for i in 12:
-		var a := TAU * float(i) / 12.0
-		collar.append(Vector2(c.x + cos(a) * r * 0.32, top + r * 0.02 + sin(a) * r * 0.15))
-	ci.draw_colored_polygon(collar, secondary)
-
-	match variant:
-		1:
-			# Aegis - heavy pauldrons.
-			for side in [-1.0, 1.0]:
-				var pad := PackedVector2Array([
-					Vector2(c.x + side * r * 0.52, top + r * 0.00),
-					Vector2(c.x + side * r * 0.96, top + r * 0.16),
-					Vector2(c.x + side * r * 0.92, top + r * 0.56),
-					Vector2(c.x + side * r * 0.50, top + r * 0.42),
-				])
-				Draw2D.neon_polygon(ci, pad, secondary.darkened(0.35), secondary, maxf(1.0, r * 0.04))
-		3:
-			# Bramble - a sprig of leaves over one shoulder.
-			for i in 3:
-				var t := float(i) / 2.0
-				var root := Vector2(c.x - r * 0.58 - t * r * 0.10, top + r * 0.34 - t * r * 0.26)
-				var leaf := PackedVector2Array([
-					root,
-					root + Vector2(-r * 0.20, -r * 0.12),
-					root + Vector2(-r * 0.06, -r * 0.24),
-				])
-				ci.draw_colored_polygon(leaf, Color(0.42, 0.78, 0.40))
-		4:
-			# Rift - a cloak clasp throwing a small glow.
-			var clasp := c + Vector2(0.0, top - c.y + r * 0.30)
-			ci.draw_circle(clasp, r * 0.13, Color(secondary.r, secondary.g, secondary.b, 0.35))
-			ci.draw_circle(clasp, r * 0.07, secondary)
-		0:
-			# Ember - a strap of canisters across the chest.
-			ci.draw_line(Vector2(c.x - r * 0.62, top + r * 0.52),
-				Vector2(c.x + r * 0.54, top + r * 0.10),
-				secondary.darkened(0.25), maxf(1.5, r * 0.09))
-		5:
-			# Baby - an open cream collar and a fine chain with a pendant, which
-			# is what the reference is actually wearing.
-			for side in [-1.0, 1.0]:
-				ci.draw_colored_polygon(PackedVector2Array([
-					Vector2(c.x + side * r * 0.10, top - r * 0.10),
-					Vector2(c.x + side * r * 0.46, top - r * 0.04),
-					Vector2(c.x + side * r * 0.20, top + r * 0.44),
-				]), Color(0.95, 0.92, 0.86))
-			var chain := PackedVector2Array()
-			for i in 9:
-				var u := float(i) / 8.0
-				chain.append(Vector2(c.x + lerpf(-r * 0.30, r * 0.30, u),
-					top + r * 0.16 + sin(u * PI) * r * 0.22))
-			ci.draw_polyline(chain, Color(0.95, 0.80, 0.42), maxf(1.0, r * 0.035), true)
-			ci.draw_circle(Vector2(c.x, top + r * 0.38), r * 0.055, Color(1.0, 0.88, 0.52))
-		_:
-			# Nova - a shoulder tool loop.
-			ci.draw_arc(Vector2(c.x + r * 0.62, top + r * 0.26), r * 0.16,
-				0.0, TAU, 12, secondary, maxf(1.0, r * 0.05))
+	var top := c.y + r * 0.78
+	Chibi.form(ci, Chibi.smooth_closed(PackedVector2Array([
+		Vector2(c.x - r * 1.30, top + r * 0.58),
+		Vector2(c.x - r * 1.12, top - r * 0.08),
+		Vector2(c.x - r * 0.62, top - r * 0.30),
+		Vector2(c.x - r * 0.22, top - r * 0.34),
+		Vector2(c.x + r * 0.22, top - r * 0.34),
+		Vector2(c.x + r * 0.62, top - r * 0.30),
+		Vector2(c.x + r * 1.12, top - r * 0.08),
+		Vector2(c.x + r * 1.30, top + r * 0.58),
+	]), 8), accent.darkened(0.52), 0.22, 0.30, 0.34)
+	# Hair and head drop a shadow onto the shoulders.
+	for sh in [-1.0, 1.0]:
+		Chibi.soft(ci, Vector2(c.x + sh * r * 0.60, top - r * 0.06), r * 0.40,
+			r * 0.34, Color(0.08, 0.07, 0.12, 0.34))
+	# Open collar, with the undershirt showing in the V.
+	Chibi.form(ci, Chibi.smooth_closed(PackedVector2Array([
+		Vector2(c.x - r * 0.28, top - r * 0.40),
+		Vector2(c.x + r * 0.28, top - r * 0.40),
+		Vector2(c.x + r * 0.20, top - r * 0.02),
+		Vector2(c.x, top + r * 0.18),
+		Vector2(c.x - r * 0.20, top - r * 0.02),
+	]), 8), accent.darkened(0.72), 0.16, 0.24, 0.28)
+	for side in [-1.0, 1.0]:
+		Chibi.form(ci, Chibi.smooth_closed(PackedVector2Array([
+			Vector2(c.x + side * r * 0.24, top - r * 0.42),
+			Vector2(c.x + side * r * 0.54, top - r * 0.32),
+			Vector2(c.x + side * r * 0.44, top + r * 0.02),
+			Vector2(c.x + side * r * 0.10, top + r * 0.22),
+			Vector2(c.x + side * r * 0.17, top - r * 0.14),
+		]), 8), accent.darkened(0.40), 0.22, 0.24, 0.30)
+	# A strap and a shoulder plate, which is what makes it kit rather than
+	# clothing. Aegis wears the heaviest of them.
+	var plate: float = 1.06 if variant == 1 else 1.0
+	Chibi.form(ci, Chibi.smooth_closed(PackedVector2Array([
+		Vector2(c.x - r * 1.24 * plate, top + r * 0.04),
+		Vector2(c.x - r * 0.86, top - r * 0.20),
+		Vector2(c.x - r * 0.70, top - r * 0.06),
+		Vector2(c.x - r * 0.80, top + r * 0.14),
+		Vector2(c.x - r * 1.16 * plate, top + r * 0.28),
+	]), 7), secondary.darkened(0.52), 0.18, 0.24, 0.28)
+	Chibi.taper(ci, Chibi.smooth_open(PackedVector2Array([
+		Vector2(c.x - r * 0.52, top - r * 0.18),
+		Vector2(c.x + r * 0.10, top + r * 0.22),
+		Vector2(c.x + r * 0.62, top + r * 0.50),
+	]), 6), secondary.darkened(0.20), maxf(1.4, r * 0.055), 0.7, 1.0)
 
 
 # --- Head -------------------------------------------------------------------
 
-static func _draw_head_shape(ci: CanvasItem, head: Vector2, hr: float, skin: Color) -> void:
-	var face := PackedVector2Array()
-	for i in 18:
-		var a := TAU * float(i) / 18.0
-		var rr := hr * (1.0 - 0.06 * cos(a * 2.0))
-		face.append(head + Vector2(cos(a) * rr, sin(a) * rr * 0.98))
-	ci.draw_colored_polygon(face, skin)
-	# Ears, each with a small stud: the whole squad wears them.
+static func _face(ci: CanvasItem, head: Vector2, hr: float, skin: Color,
+		fine: bool) -> void:
+	Chibi.form(ci, _ring(head, hr, FACE, 9), skin, 0.16, 0.26, 0.30)
+	if not fine:
+		return
 	for side in [-1.0, 1.0]:
-		ci.draw_circle(head + Vector2(side * hr * 0.95, hr * 0.06), hr * 0.15, skin.darkened(0.08))
-		ci.draw_circle(head + Vector2(side * hr * 0.99, hr * 0.16), hr * 0.055,
-			Color(1.0, 0.86, 0.45))
+		Chibi.soft(ci, _pt(head, hr, side * 0.48, 0.34), hr * 0.30, hr * 0.24,
+			Color(0.90, 0.46, 0.40, 0.22))
+	Chibi.soft(ci, _pt(head, hr, 0.50, 0.26), hr * 0.40, hr * 0.54,
+		Color(0.46, 0.28, 0.22, 0.22))
+	Chibi.soft(ci, _pt(head, hr, -0.52, -0.18), hr * 0.30, hr * 0.42,
+		Color(1.0, 0.94, 0.86, 0.24))
+	for side2 in [-1.0, 1.0]:
+		Chibi.ball(ci, _pt(head, hr, side2 * 1.07, 0.20), hr * 0.135,
+			skin.darkened(0.16), Vector2(0.78, 1.15))
 
 
-static func _draw_hair_back(ci: CanvasItem, head: Vector2, hr: float, hair: Color,
-		variant: int, phase: float) -> void:
-	# How far past the jaw the hair falls. Everyone on this squad wears it long;
-	# the differences are in the shape of the fall, not its presence.
-	var drop_by := {0: 1.05, 1: 0.80, 2: 1.20, 3: 0.90, 4: 1.15, 5: 1.45}
-	var fall: float = float(drop_by.get(variant, 1.0))
+## Hair over the skull as one unbroken mass. The hairline is cut by
+## `_forehead`, painted back over this — notching it into the hair shape makes
+## the spline overshoot into a hard widow's peak.
+static func _crown(ci: CanvasItem, head: Vector2, hr: float, hair: Color,
+		variant: int, sway: float) -> void:
+	var h := head + Vector2(sway * 0.6, 0.0)
+	var lift: float = 1.62 if variant == 0 else 1.50
+	Chibi.form(ci, _ring(h, hr, [
+		Vector2(0.04, -lift), Vector2(0.74, -1.38), Vector2(1.16, -0.86),
+		Vector2(1.30, -0.10), Vector2(1.26, 0.52), Vector2(1.04, 0.28),
+		Vector2(0.86, -0.30), Vector2(0.40, -0.60), Vector2(-0.10, -0.66),
+		Vector2(-0.58, -0.56), Vector2(-0.94, -0.26), Vector2(-1.12, 0.30),
+		Vector2(-1.30, 0.44), Vector2(-1.34, -0.18), Vector2(-1.20, -0.90),
+		Vector2(-0.78, -1.40),
+	], 8), hair, 0.24, 0.22, 0.42)
 
-	var shell := PackedVector2Array()
-	for i in 16:
-		var a := PI * 0.92 + PI * 1.16 * float(i) / 15.0
-		shell.append(head + Vector2(cos(a), sin(a)) * hr * 1.14)
-	# The mass is closed with a curve rather than two straight drops, so it
-	# reads as hair with weight instead of a cape.
-	var sway := sin(phase * 1.6) * hr * 0.05
-	for i in 7:
-		var u := float(i) / 6.0
-		var x := lerpf(hr * 1.12, -hr * 1.12, u)
-		var bulge := sin(u * PI) * hr * 0.22
-		shell.append(head + Vector2(x + bulge * signf(x) + sway * (1.0 - u),
-			hr * (0.30 + fall) - sin(u * PI) * hr * 0.12))
-	ci.draw_colored_polygon(shell, hair)
-	# A lighter strand pass over the mass gives it direction.
-	for i in 4:
-		var t := float(i) / 3.0
-		var top := head + Vector2(lerpf(-hr * 0.86, hr * 0.86, t), -hr * 0.52)
-		var tip := head + Vector2(lerpf(-hr * 1.02, hr * 1.02, t) + sway,
-			hr * (0.20 + fall * 0.78))
-		ci.draw_line(top, tip, hair.lerp(Color(1, 1, 1, 1), 0.10), maxf(1.0, hr * 0.07), true)
 
-	# Rift keeps a hood over the back of the head, over the hair.
-	if variant == 4:
-		var hood := PackedVector2Array()
-		for i in 16:
-			var a2 := PI * 0.86 + PI * 1.28 * float(i) / 15.0
-			hood.append(head + Vector2(cos(a2), sin(a2)) * hr * 1.24)
-		hood.append(hood[hood.size() - 1] + Vector2(0.0, hr * 0.5))
-		hood.append(hood[0] + Vector2(0.0, hr * 0.5))
-		ci.draw_colored_polygon(hood, hair.darkened(0.25))
+## The forehead, painted over the crown. Its top edge *is* the hairline: a
+## fringe is simply a hairline that sits lower and is cut straighter.
+static func _forehead(ci: CanvasItem, head: Vector2, hr: float, skin: Color,
+		variant: int, fine: bool) -> void:
+	# Rift wears a heavy fringe over one eye; Nova's is cut straight; the rest
+	# push it back off the brow.
+	var line: float = -0.76
+	var tilt := 0.0
+	match variant:
+		2:
+			line = -0.62
+		3:
+			line = -0.66
+		4:
+			line = -0.58
+			tilt = 0.22
+	Chibi.form(ci, _ring(head, hr, [
+		Vector2(0.00, line), Vector2(0.40, line + tilt * 0.4 + 0.03),
+		Vector2(0.72, line + tilt + 0.14), Vector2(0.90, line + tilt + 0.36),
+		Vector2(1.00, -0.30), Vector2(0.98, 0.16), Vector2(0.52, 0.34),
+		Vector2(0.00, 0.36), Vector2(-0.52, 0.34), Vector2(-0.98, 0.16),
+		Vector2(-1.00, -0.30), Vector2(-0.90, line + 0.36),
+		Vector2(-0.72, line + 0.14), Vector2(-0.40, line + 0.03),
+	], 9), skin, 0.10, 0.24, 0.26)
+	if not fine:
+		return
+	Chibi.soft(ci, _pt(head, hr, 0.0, line), hr * 0.92, hr * 0.30,
+		Color(0.26, 0.16, 0.13, 0.36))
+	for side in [-1.0, 1.0]:
+		Chibi.soft(ci, _pt(head, hr, side * 0.88, -0.30), hr * 0.30, hr * 0.44,
+			Color(0.26, 0.16, 0.13, 0.30))
+	Chibi.soft(ci, _pt(head, hr, -0.44, line + 0.26), hr * 0.30, hr * 0.20,
+		Color(1.0, 0.94, 0.86, 0.24))
+
+
+static func _features(ci: CanvasItem, head: Vector2, hr: float, hair: Color,
+		accent: Color, variant: int, phase: float, fine: bool) -> void:
+	var cycle := fposmod(phase + float(variant) * 0.7, 4.4)
+	var open := 1.0
+	if cycle < 0.16:
+		open = clampf(absf(cycle - 0.08) / 0.08, 0.0, 1.0)
+	var look := Vector2(sin(phase * 0.42 + float(variant)) * 0.5,
+		sin(phase * 0.31) * 0.25)
+	var iris := accent.lerp(Color(0.26, 0.18, 0.14), 0.45)
+	var ink := Color(0.10, 0.09, 0.14)
+
+	for side in [-1.0, 1.0]:
+		Chibi.eye(ci, _pt(head, hr, side * 0.385, 0.135), hr * 0.265, hr * 0.235,
+			iris, Vector2(look.x * side, look.y), open, ink, side)
+
+	# Brows carry the expression, so each operative gets a different set.
+	var brow_y := -0.325
+	var arch := -0.09
+	var tilt_in := 0.0
+	match variant:
+		0:
+			arch = -0.05
+			tilt_in = 0.05                       # Ember - flat and forward
+		1:
+			brow_y = -0.30
+			tilt_in = 0.04                       # Aegis - low and level
+		3:
+			arch = -0.12                         # Bramble - soft and high
+		4:
+			arch = -0.11
+			tilt_in = -0.04                      # Rift - amused
+	for side2 in [-1.0, 1.0]:
+		Chibi.taper(ci, Chibi.smooth_open(PackedVector2Array([
+			_pt(head, hr, side2 * 0.16, brow_y + tilt_in),
+			_pt(head, hr, side2 * 0.38, brow_y + arch),
+			_pt(head, hr, side2 * 0.58, brow_y + arch + 0.01),
+			_pt(head, hr, side2 * 0.72, brow_y + 0.02),
+		]), 8), hair.lightened(0.14), hr * 0.105, 0.45, 1.0)
+
+	Chibi.soft(ci, _pt(head, hr, 0.02, 0.435), hr * 0.150, hr * 0.100,
+		Color(0.42, 0.24, 0.17, 0.60))
+	if fine:
+		Chibi.soft(ci, _pt(head, hr, -0.045, 0.375), hr * 0.075, hr * 0.135,
+			Color(1.0, 0.94, 0.86, 0.30))
+	_mouth(ci, head, hr, variant)
+
+
+static func _mouth(ci: CanvasItem, head: Vector2, hr: float, variant: int) -> void:
+	var m := _pt(head, hr, 0.0, 0.615)
+	var ink := Color(0.28, 0.16, 0.16)
+	match variant:
+		1:
+			# Aegis: a flat, patient line.
+			Chibi.taper(ci, PackedVector2Array([
+				m + Vector2(-hr * 0.13, 0.0), m + Vector2(hr * 0.13, 0.0)]),
+				ink, hr * 0.05, 0.5, 1.0)
+		4:
+			# Rift: a crooked half-smile.
+			Chibi.taper(ci, Chibi.smooth_open(PackedVector2Array([
+				m + Vector2(-hr * 0.14, hr * 0.02), m + Vector2(0.0, hr * 0.07),
+				m + Vector2(hr * 0.15, -hr * 0.05)]), 6), ink, hr * 0.055, 0.4, 1.0)
+		_:
+			Chibi.taper(ci, Chibi.smooth_open(PackedVector2Array([
+				m + Vector2(-hr * 0.14, -hr * 0.02), m + Vector2(0.0, hr * 0.06),
+				m + Vector2(hr * 0.14, -hr * 0.02)]), 6), ink, hr * 0.055, 0.4, 1.0)
+
+
+# --- Hair and headgear ------------------------------------------------------
+
+## The mass behind the head. Everyone on this squad wears it long; the
+## differences are in the shape of the fall, not its presence.
+static func _hair_back(ci: CanvasItem, head: Vector2, hr: float, hair: Color,
+		variant: int, sway: float, phase: float, fine: bool) -> void:
+	var h := head + Vector2(sway, 0.0)
+	var drop_by := {0: 1.55, 1: 1.30, 2: 1.85, 3: 1.50, 4: 1.90}
+	var fall: float = float(drop_by.get(variant, 1.6))
+	var wide := 1.26 if variant != 1 else 1.16
+
+	Chibi.form(ci, _ring(h, hr, [
+		Vector2(0.00, -1.46), Vector2(0.84, -1.24), Vector2(wide, -0.50),
+		Vector2(wide + 0.10, 0.32), Vector2(wide, fall * 0.58),
+		Vector2(wide * 0.70, fall * 0.92), Vector2(0.00, fall),
+		Vector2(-wide * 0.70, fall * 0.92), Vector2(-wide, fall * 0.58),
+		Vector2(-wide - 0.10, 0.32), Vector2(-wide, -0.50), Vector2(-0.84, -1.24),
+	], 8), hair, 0.28, 0.22, 0.44)
+
+	if fine:
+		# Clumps, so the fall breaks into locks instead of one flat sheet.
+		for i in 4:
+			var side := -1.0 if i < 2 else 1.0
+			var y0 := 0.36 + 0.74 * float(i % 2)
+			Chibi.form(ci, _ring(h, hr, [
+				Vector2(side * (wide - 0.28), y0 - 0.44),
+				Vector2(side * (wide - 0.02), y0 + 0.06),
+				Vector2(side * (wide - 0.22), y0 + 0.62),
+				Vector2(side * (wide - 0.62), y0 + 0.12),
+			], 8), hair.lightened(0.06), 0.20, 0.16, 0.40)
 
 	# Nova wears a side tail that sways.
 	if variant == 2:
-		var tail := sin(phase * 2.2) * hr * 0.08
-		var root := head + Vector2(hr * 0.86, -hr * 0.10)
-		ci.draw_line(root, root + Vector2(hr * 0.30 + tail, hr * 1.05), hair,
-			maxf(2.0, hr * 0.24), true)
+		var tail := sin(phase * 2.2) * hr * 0.10
+		Chibi.capsule(ci, _pt(h, hr, 1.02, -0.44),
+			_pt(h, hr, 1.44, 0.44) + Vector2(tail, 0.0), hr * 0.20, hr * 0.22, hair)
+		Chibi.ball(ci, _pt(h, hr, 1.02, -0.42), hr * 0.14, hair.lightened(0.10))
 
 
-static func _draw_face(ci: CanvasItem, head: Vector2, hr: float, accent: Color,
-		hair: Color, skin: Color, variant: int, phase: float) -> void:
-	var ink := Color(0.08, 0.10, 0.17)
-	var eye_y := head.y + hr * 0.08
-	var blink := fposmod(phase + float(variant) * 0.9, 4.2) < 0.13
-
-	# Aegis wears a visor rather than a full mask: the eyes read through it, so
-	# she is a person in armour rather than an empty suit.
-	if variant == 1:
-		var visor := PackedVector2Array([
-			head + Vector2(-hr * 0.94, -hr * 0.30),
-			head + Vector2(hr * 0.94, -hr * 0.30),
-			head + Vector2(hr * 0.80, hr * 0.26),
-			head + Vector2(-hr * 0.80, hr * 0.26),
-		])
-		ci.draw_colored_polygon(visor, Color(0.06, 0.10, 0.16, 0.72))
-		# Eyes behind the glass.
-		for side in [-1.0, 1.0]:
-			var e0 := head + Vector2(side * hr * 0.36, -hr * 0.02)
-			ci.draw_circle(e0, hr * 0.15, Color(0.04, 0.05, 0.09))
-			ci.draw_circle(e0 + Vector2(0.0, hr * 0.03), hr * 0.085,
-				accent.lerp(Color.WHITE, 0.35))
-		# A soft band behind the hard line, so the visor looks lit from the
-		# inside rather than scratched.
-		var glow := 0.55 + 0.45 * absf(sin(phase * 1.6))
-		ci.draw_line(head + Vector2(-hr * 0.78, -hr * 0.02), head + Vector2(hr * 0.78, -hr * 0.02),
-			Color(accent.r, accent.g, accent.b, glow * 0.30), maxf(2.0, hr * 0.30), true)
-		ci.draw_line(head + Vector2(-hr * 0.74, -hr * 0.02), head + Vector2(hr * 0.74, -hr * 0.02),
-			Color(accent.r, accent.g, accent.b, glow), maxf(1.5, hr * 0.12), true)
-		_draw_mouth(ci, head, hr, ink, variant)
-		return
-
-	for side in [-1.0, 1.0]:
-		var e := head + Vector2(side * hr * 0.38, eye_y - head.y)
-		if blink:
-			ci.draw_line(e - Vector2(hr * 0.20, 0.0), e + Vector2(hr * 0.20, 0.0), ink,
-				maxf(1.5, hr * 0.09), true)
-			continue
-		ci.draw_circle(e, hr * 0.20, ink)
-		# Rift's eyes glow; everyone else gets a normal iris.
-		var iris := accent.lerp(Color.WHITE, 0.25) if variant != 4 else accent.lerp(Color.WHITE, 0.55)
-		ci.draw_circle(e + Vector2(0.0, hr * 0.05), hr * 0.11, iris)
-		ci.draw_circle(e + Vector2(-hr * 0.07, -hr * 0.09), hr * 0.06, Color(1, 1, 1, 0.95))
-		# Upper lash line, thicker at the outer corner.
-		ci.draw_line(e + Vector2(-hr * 0.21, -hr * 0.16), e + Vector2(side * hr * 0.26, -hr * 0.22),
-			ink, maxf(1.2, hr * 0.075), true)
-
-	# Brows carry most of the personality.
-	var brow_y := eye_y - hr * 0.34
-	for side in [-1.0, 1.0]:
-		var inner := head + Vector2(side * hr * 0.20, brow_y - head.y)
-		var outer := head + Vector2(side * hr * 0.60, brow_y - head.y)
-		match variant:
-			0:
-				# Ember - angled down at the inside, a permanent scowl.
-				inner += Vector2(0.0, hr * 0.10)
-			3:
-				# Bramble - raised and soft.
-				outer += Vector2(0.0, -hr * 0.06)
-			4:
-				# Rift - one brow higher than the other.
-				inner += Vector2(0.0, hr * 0.06 * side)
-		ci.draw_line(inner, outer, hair, maxf(1.5, hr * 0.10), true)
-
-	# Cheeks and nose.
-	for side in [-1.0, 1.0]:
-		ci.draw_circle(head + Vector2(side * hr * 0.66, eye_y - head.y + hr * 0.26),
-			hr * 0.14, Color(1.0, 0.55, 0.55, 0.22))
-	ci.draw_circle(head + Vector2(0.0, eye_y - head.y + hr * 0.26), hr * 0.05, skin.darkened(0.22))
-	if variant == 5:
-		# Baby's bindi, centred between the brows.
-		ci.draw_circle(head + Vector2(0.0, brow_y - head.y - hr * 0.12), hr * 0.075,
-			Color(0.20, 0.06, 0.10))
-	_draw_mouth(ci, head, hr, ink, variant)
-
-
-static func _draw_mouth(ci: CanvasItem, head: Vector2, hr: float, ink: Color, variant: int) -> void:
-	var mouth := head + Vector2(0.0, hr * 0.50)
+static func _headgear(ci: CanvasItem, head: Vector2, hr: float, accent: Color,
+		secondary: Color, hair: Color, variant: int, phase: float,
+		fine: bool) -> void:
 	match variant:
 		0:
-			# Ember - a hard, flat line.
-			ci.draw_line(mouth - Vector2(hr * 0.18, 0.0), mouth + Vector2(hr * 0.18, 0.0),
-				ink, maxf(1.2, hr * 0.07), true)
-		1:
-			ci.draw_line(mouth - Vector2(hr * 0.14, 0.0), mouth + Vector2(hr * 0.14, 0.0),
-				ink, maxf(1.2, hr * 0.06), true)
-		4:
-			# Rift - a small smirk, higher on one side.
-			ci.draw_line(mouth - Vector2(hr * 0.16, hr * 0.04), mouth + Vector2(hr * 0.16, -hr * 0.06),
-				ink, maxf(1.2, hr * 0.06), true)
-		_:
-			ci.draw_arc(mouth - Vector2(0.0, hr * 0.10), hr * 0.18,
-				PI * 0.15, PI * 0.85, 8, ink, maxf(1.2, hr * 0.06), true)
-
-
-static func _draw_headgear(ci: CanvasItem, head: Vector2, hr: float, accent: Color,
-		secondary: Color, hair: Color, variant: int, phase: float) -> void:
-	match variant:
-		5:
-			# Baby - no headgear; the hair is the silhouette. A centre part with
-			# long waves either side of the face, which is the one thing that has to
-			# survive being shrunk to a roster thumbnail.
-			var crown := PackedVector2Array()
-			for i in 16:
-				var ca := PI * 0.98 + PI * 1.04 * float(i) / 15.0
-				crown.append(head + Vector2(cos(ca), sin(ca)) * hr * 1.10)
-			crown.append(head + Vector2(hr * 0.94, -hr * 0.16))
-			crown.append(head + Vector2(hr * 0.32, -hr * 0.66))
-			crown.append(head + Vector2(0.0, -hr * 0.56))
-			crown.append(head + Vector2(-hr * 0.36, -hr * 0.64))
-			crown.append(head + Vector2(-hr * 0.94, -hr * 0.16))
-			ci.draw_colored_polygon(crown, hair)
-			# Waves falling past the jaw, offset so the two sides do not mirror.
+			# Ember - goggles pushed up onto the forehead, lenses catching light.
+			var strap := Chibi.smooth_open(PackedVector2Array([
+				_pt(head, hr, -1.02, -0.52), _pt(head, hr, 0.0, -0.70),
+				_pt(head, hr, 1.02, -0.54),
+			]), 7)
+			Chibi.taper(ci, strap, Color(0.16, 0.14, 0.16), hr * 0.20, 0.8, 1.0)
 			for side in [-1.0, 1.0]:
-				var wave := PackedVector2Array()
-				for i in 7:
-					var u := float(i) / 6.0
-					var bow := sin(u * PI) * hr * (0.30 if side > 0.0 else 0.23)
-					wave.append(head + Vector2(
-						side * (hr * 1.00 + bow) + sin(phase * 1.4 + u * 2.0) * hr * 0.03,
-						-hr * 0.34 + u * hr * 1.70))
-				for i in range(6, -1, -1):
-					var u2 := float(i) / 6.0
-					wave.append(head + Vector2(
-						side * hr * (0.54 + 0.16 * sin(u2 * PI)),
-						-hr * 0.34 + u2 * hr * 1.58))
-				ci.draw_colored_polygon(wave, hair)
-				ci.draw_polyline(wave, hair.lerp(Color(1, 1, 1, 1), 0.14),
-					maxf(1.0, hr * 0.045), true)
-		0:
-			# Ember - swept-back flame-lick hair and goggles pushed up.
+				Chibi.ball(ci, _pt(head, hr, side * 0.44, -0.66), hr * 0.24,
+					Color(0.20, 0.18, 0.20))
+				Chibi.ball(ci, _pt(head, hr, side * 0.44, -0.66), hr * 0.185,
+					Color(0.42, 0.66, 0.80))
+				if fine:
+					Chibi.soft(ci, _pt(head, hr, side * 0.38, -0.72), hr * 0.09,
+						hr * 0.07, Color(1, 1, 1, 0.75), 14)
+			# Swept-back licks over the crown.
 			for i in 4:
 				var t := float(i) / 3.0
-				var root := head + Vector2(lerpf(-0.80, 0.62, t) * hr, -hr * 0.66)
-				var tip := root + Vector2(hr * (0.24 + 0.16 * t), -hr * (0.34 + 0.26 * t))
-				ci.draw_line(root, tip, hair, maxf(1.5, hr * 0.20), true)
-			ci.draw_line(head + Vector2(-hr * 0.92, -hr * 0.52), head + Vector2(hr * 0.92, -hr * 0.56),
-				secondary.darkened(0.15), maxf(1.5, hr * 0.16), true)
-			for side in [-1.0, 1.0]:
-				ci.draw_circle(head + Vector2(side * hr * 0.42, -hr * 0.56), hr * 0.19,
-					Color(0.35, 0.55, 0.70, 0.95))
+				var root := _pt(head, hr, lerpf(-0.72, 0.56, t), -1.10)
+				Chibi.taper(ci, Chibi.smooth_open(PackedVector2Array([
+					root, root + Vector2(hr * (0.20 + 0.14 * t), -hr * 0.22),
+					root + Vector2(hr * (0.34 + 0.26 * t), -hr * (0.30 + 0.22 * t)),
+				]), 6), hair.lightened(0.06), hr * 0.24, 1.0, 0.08)
 		1:
-			# Aegis - a full helmet dome with a crest.
-			# The dome stops at the visor line. Its arc is cut there rather than
-			# closed with extra points below the ends: that shape overlaps itself
-			# and Godot refuses to fill it, leaving a bare outline over skin.
-			var cut := asin(0.30 / 1.14)
-			var dome := PackedVector2Array()
-			for i in 16:
-				var a := PI + cut + (PI - 2.0 * cut) * float(i) / 15.0
-				dome.append(head + Vector2(cos(a), sin(a)) * hr * 1.14)
-			Draw2D.neon_polygon(ci, dome, secondary.darkened(0.45), secondary, maxf(1.2, hr * 0.07))
-			# Hair escaping below the helmet line on both sides.
-			for side in [-1.0, 1.0]:
-				ci.draw_colored_polygon(PackedVector2Array([
-					head + Vector2(side * hr * 1.02, -hr * 0.26),
-					head + Vector2(side * hr * 1.24, hr * 0.46),
-					head + Vector2(side * hr * 0.96, hr * 1.02),
-					head + Vector2(side * hr * 0.74, hr * 0.30),
-				]), hair)
-			ci.draw_line(head + Vector2(0.0, -hr * 1.20), head + Vector2(0.0, -hr * 0.62),
-				accent, maxf(1.5, hr * 0.14), true)
-			# Cheek guards down either side of the visor, so the helmet closes
-			# around the face instead of sitting on it like a hat.
-			for side in [-1.0, 1.0]:
-				Draw2D.neon_polygon(ci, PackedVector2Array([
-					head + Vector2(side * hr * 1.10, -hr * 0.34),
-					head + Vector2(side * hr * 0.78, -hr * 0.34),
-					head + Vector2(side * hr * 0.66, hr * 0.72),
-					head + Vector2(side * hr * 0.98, hr * 0.52),
-				]), secondary.darkened(0.55), secondary, maxf(1.0, hr * 0.05))
+			# Aegis - a helmet dome over everything, with a crest.
+			Chibi.form(ci, _ring(head, hr, [
+				Vector2(0.00, -1.58), Vector2(0.86, -1.40), Vector2(1.30, -0.78),
+				Vector2(1.38, -0.10), Vector2(1.10, -0.30), Vector2(0.60, -0.48),
+				Vector2(0.00, -0.54), Vector2(-0.60, -0.48), Vector2(-1.10, -0.30),
+				Vector2(-1.38, -0.10), Vector2(-1.30, -0.78), Vector2(-0.86, -1.40),
+			], 8), secondary.darkened(0.38), 0.26, 0.32, 0.40)
+			# Brow ridge: the band that turns a dome into a helmet.
+			Chibi.form(ci, _ring(head, hr, [
+				Vector2(0.00, -0.70), Vector2(0.86, -0.50), Vector2(1.34, -0.10),
+				Vector2(1.30, 0.10), Vector2(0.82, -0.28), Vector2(0.00, -0.46),
+				Vector2(-0.82, -0.28), Vector2(-1.30, 0.10), Vector2(-1.34, -0.10),
+				Vector2(-0.86, -0.50),
+			], 8), secondary.darkened(0.18), 0.24, 0.26, 0.30)
+			Chibi.form(ci, _ring(head, hr, [
+				Vector2(0.00, -1.94), Vector2(0.24, -1.66), Vector2(0.22, -1.02),
+				Vector2(0.00, -1.14), Vector2(-0.22, -1.02), Vector2(-0.24, -1.66),
+			], 7), accent, 0.26, 0.28, 0.34)
+			if fine:
+				Chibi.rim_light(ci, head, hr * 1.16, hr * 1.18, PI * 1.10, PI * 1.62,
+					Color(1, 1, 1, 0.34), hr * 0.12)
+		2:
+			# Nova - a visor band across the brow with a live readout on it.
+			var band := _ring(head, hr, [
+				Vector2(-1.06, -0.54), Vector2(0.0, -0.72), Vector2(1.06, -0.56),
+				Vector2(1.04, -0.30), Vector2(0.0, -0.46), Vector2(-1.04, -0.28),
+			], 7)
+			Chibi.form(ci, band, secondary.darkened(0.22), 0.24, 0.26, 0.32)
+			if fine:
+				var blip := 0.5 + 0.5 * sin(phase * 3.1)
+				Chibi.ball(ci, _pt(head, hr, 0.42, -0.54), hr * 0.07,
+					Color(0.5, 0.95, 1.0, 0.5 + 0.5 * blip))
 		3:
-			# Bramble - a leafy hood with a single bud.
-			var hood := PackedVector2Array()
-			for i in 16:
-				var a := PI * 0.98 + PI * 1.04 * float(i) / 15.0
-				hood.append(head + Vector2(cos(a), sin(a)) * hr * 1.18)
-			hood.append(head + Vector2(hr * 1.05, hr * 0.22))
-			hood.append(head + Vector2(-hr * 1.05, hr * 0.22))
-			Draw2D.neon_polygon(ci, hood, Color(0.18, 0.36, 0.22), Color(0.42, 0.78, 0.40),
-				maxf(1.2, hr * 0.06))
-			# A plait falling out of the hood on one side.
-			var plait := PackedVector2Array([
-				head + Vector2(-hr * 1.00, -hr * 0.10),
-				head + Vector2(-hr * 1.22, hr * 0.54),
-				head + Vector2(-hr * 0.98, hr * 1.16),
-				head + Vector2(-hr * 0.76, hr * 0.40),
-			])
-			ci.draw_colored_polygon(plait, hair)
-			# Hood sides falling past the jaw. The dome on its own read as a bowl
-			# balanced on her head rather than something she is inside.
-			for side in [-1.0, 1.0]:
-				Draw2D.neon_polygon(ci, PackedVector2Array([
-					head + Vector2(side * hr * 1.16, -hr * 0.12),
-					head + Vector2(side * hr * 0.84, -hr * 0.16),
-					head + Vector2(side * hr * 0.78, hr * 0.78),
-					head + Vector2(side * hr * 1.08, hr * 0.60),
-				]), Color(0.15, 0.31, 0.19), Color(0.42, 0.78, 0.40), maxf(1.0, hr * 0.05))
-			# Leaf points along the brim, which is what makes it a leafy hood and
-			# not a hoodie.
-			for i in 5:
-				var t := float(i) / 4.0
-				var la := PI * 1.06 + PI * 0.88 * t
-				var dir := Vector2(cos(la), sin(la))
-				var side_v := Vector2(-dir.y, dir.x)
-				ci.draw_colored_polygon(PackedVector2Array([
-					head + dir * hr * 1.14 + side_v * hr * 0.17,
-					head + dir * hr * 1.42,
-					head + dir * hr * 1.14 - side_v * hr * 0.17,
-				]), Color(0.34, 0.64, 0.33))
-			var bud := head + Vector2(hr * 0.16, -hr * 1.28)
-			ci.draw_line(head + Vector2(hr * 0.10, -hr * 1.05), bud,
-				Color(0.42, 0.78, 0.40), maxf(1.2, hr * 0.07), true)
-			ci.draw_circle(bud, hr * 0.15, Color(0.95, 0.82, 0.35))
+			# Bramble - a hood up over the hair, and a plait escaping it.
+			Chibi.form(ci, _ring(head, hr, [
+				Vector2(0.00, -1.66), Vector2(0.92, -1.44), Vector2(1.38, -0.70),
+				Vector2(1.46, 0.30), Vector2(1.20, 0.20), Vector2(1.06, -0.52),
+				Vector2(0.56, -0.86), Vector2(0.00, -0.94), Vector2(-0.56, -0.86),
+				Vector2(-1.06, -0.52), Vector2(-1.20, 0.20), Vector2(-1.46, 0.30),
+				Vector2(-1.38, -0.70), Vector2(-0.92, -1.44),
+			], 8), accent.darkened(0.58), 0.24, 0.26, 0.38)
+			var plait := Chibi.smooth_open(PackedVector2Array([
+				_pt(head, hr, -1.14, 0.10), _pt(head, hr, -1.28, 0.56),
+				_pt(head, hr, -1.18, 1.06),
+			]), 7)
+			Chibi.taper(ci, plait, hair, hr * 0.24, 0.9, 0.35)
+			if fine:
+				for i in 3:
+					Chibi.ball(ci, _pt(head, hr, -1.20 - 0.03 * float(i % 2),
+						0.26 + 0.30 * float(i)), hr * 0.065, accent.lightened(0.20))
 		4:
-			# Rift - hood brim plus a drifting mote.
-			var brim_cut := asin(0.26 / 1.22)
-			var brim := PackedVector2Array()
-			for i in 14:
-				var a := PI + brim_cut + (PI - 2.0 * brim_cut) * float(i) / 13.0
-				brim.append(head + Vector2(cos(a), sin(a)) * hr * 1.22)
-			ci.draw_colored_polygon(brim, hair.darkened(0.15))
-			# A lit rim along the brim edge, so the hood has a shape of its own
-			# against hair of nearly the same colour.
-			ci.draw_polyline(brim, Color(secondary.r, secondary.g, secondary.b, 0.55),
-				maxf(1.0, hr * 0.05), true)
-			var mote := head + Vector2(hr * (0.95 + 0.10 * sin(phase * 1.7)), -hr * 0.95)
-			ci.draw_circle(mote, hr * 0.16, Color(secondary.r, secondary.g, secondary.b, 0.30))
-			ci.draw_circle(mote, hr * 0.08, secondary)
+			# Rift - a hood thrown back, and a long fringe over one eye.
+			Chibi.form(ci, _ring(head, hr, [
+				Vector2(0.00, -1.10), Vector2(1.10, -0.80), Vector2(1.54, 0.10),
+				Vector2(1.62, 0.94), Vector2(1.26, 0.72), Vector2(1.20, 0.02),
+				Vector2(0.00, -0.52), Vector2(-1.20, 0.02), Vector2(-1.26, 0.72),
+				Vector2(-1.62, 0.94), Vector2(-1.54, 0.10), Vector2(-1.10, -0.80),
+			], 8), accent.darkened(0.62), 0.22, 0.26, 0.36)
+			Chibi.form(ci, _ring(head, hr, [
+				Vector2(0.10, -0.86), Vector2(0.86, -0.62), Vector2(1.04, 0.10),
+				Vector2(0.80, 0.44), Vector2(0.46, 0.10), Vector2(0.18, -0.36),
+			], 8), hair, 0.22, 0.20, 0.40)
 		_:
-			# Nova - bangs plus the headband the player character wears in-run,
-			# so the roster portrait and the operative on the field match.
-			var widths := [0.92, 0.50, 0.08, -0.34, -0.78]
-			for i in widths.size():
-				var x: float = float(widths[i]) * hr
-				var fall := hr * (0.34 + 0.16 * float((i * 3) % 4) / 3.0)
-				ci.draw_colored_polygon(PackedVector2Array([
-					head + Vector2(x - hr * 0.30, -hr * 0.74),
-					head + Vector2(x + hr * 0.34, -hr * 0.80),
-					head + Vector2(x + hr * 0.16, -hr * 0.74 + fall),
-				]), hair)
-			ci.draw_line(head + Vector2(-hr * 0.96, -hr * 0.44), head + Vector2(hr * 0.96, -hr * 0.48),
-				secondary, maxf(1.5, hr * 0.18), true)
-			ci.draw_circle(head + Vector2(hr * 0.30, -hr * 0.46), hr * 0.13, Color(1, 1, 1, 0.85))
+			pass

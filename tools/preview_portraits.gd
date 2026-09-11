@@ -23,6 +23,8 @@ var _canvas: Node2D
 
 func _initialize() -> void:
 	RenderingServer.set_default_clear_color(Color(0.05, 0.06, 0.10))
+	# Content scaling off, so the radii below are the pixel sizes a device draws.
+	root.content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
 	_canvas = Node2D.new()
 	_canvas.draw.connect(_draw_all)
 	root.add_child(_canvas)
@@ -31,7 +33,7 @@ func _initialize() -> void:
 func _draw_all() -> void:
 	for i in PALETTES.size():
 		var pair: Array = PALETTES[i]
-		HeroPortrait.draw_bust(_canvas, Vector2(72.0 + float(i % 3) * 144.0, 96.0 + float(i / 3) * 190.0), 54.0,
+		HeroPortrait.draw_bust(_canvas, Vector2(72.0 + float(i % 3) * 144.0, 130.0 + float(i / 3) * 260.0), 62.0,
 			pair[0], pair[1], i, 1.7)
 
 
