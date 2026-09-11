@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_mk3ck"]
+[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_w5m2a"]
 
 [resource]
-script = ExtResource("1_mk3ck")
+script = ExtResource("1_w5m2a")
 id = &"meta_fortune"
 display_name = "Salvage Doctrine"
 description = "upgrade luck"

@@ -101,7 +101,8 @@ static func _weapons() -> Array[PowerData]:
 		"+24 damage, a second round per shot",
 		"+24 damage, faster reload",
 	])
-	revolver.color = Color(1.00, 0.74, 0.32)
+	revolver.color = Color(1.00, 0.72, 0.25)
+	revolver.projectile_spin = 0.0
 	revolver.color_secondary = Color(1.00, 0.95, 0.80)
 	revolver.rarity = 2
 	revolver.weight = 1.0
@@ -127,7 +128,9 @@ static func _weapons() -> Array[PowerData]:
 		"+5 damage, +1 round",
 		"+5 damage, faster fire",
 	])
-	pistol.color = Color(0.62, 0.92, 1.00)
+	# Lime: the only green-yellow in the air, and nothing like the revolver.
+	pistol.color = Color(0.70, 1.00, 0.45)
+	pistol.projectile_spin = 0.0
 	pistol.color_secondary = Color(1.00, 1.00, 0.90)
 	pistol.rarity = 1
 	pistol.weight = 1.0
@@ -150,7 +153,7 @@ static func _weapons() -> Array[PowerData]:
 		"+16 damage, pierces one more",
 		"+16 damage, and a second arrow",
 	])
-	bow.color = Color(0.66, 1.00, 0.72)
+	bow.color = Color(0.34, 0.96, 0.56)
 	bow.color_secondary = Color(1.00, 0.96, 0.66)
 	bow.rarity = 2
 	bow.weight = 1.0
@@ -201,7 +204,9 @@ static func _weapons() -> Array[PowerData]:
 		"+11 damage, faster throws",
 		"+11 damage, +1 ring",
 	])
-	chakram.color = Color(0.75, 0.85, 1.00)
+	# Teal, and spinning hard: a thrown ring should read as a thrown ring.
+	chakram.color = Color(0.28, 0.94, 0.88)
+	chakram.projectile_spin = 15.0
 	chakram.color_secondary = Color(1.00, 0.80, 0.45)
 	chakram.rarity = 2
 	chakram.weight = 1.0
@@ -305,7 +310,7 @@ static func _powers() -> Array[PowerData]:
 		"+3.4 damage, +15% radius",
 		"+3.4 damage, +15% radius",
 	])
-	domain.color = Color(0.55, 0.70, 1.00)
+	domain.color = Color(0.40, 0.50, 1.00)
 	domain.color_secondary = Color(0.90, 0.95, 1.00)
 	domain.rarity = 1
 	out.append(domain)
@@ -331,7 +336,7 @@ static func _powers() -> Array[PowerData]:
 		"5 bottles, fires burn longer",
 		"6 bottles, +2.6 damage",
 	])
-	molotov.color = Color(1.00, 0.52, 0.18)
+	molotov.color = Color(0.95, 0.24, 0.10)
 	molotov.color_secondary = Color(1.00, 0.85, 0.35)
 	molotov.rarity = 1
 	out.append(molotov)
@@ -356,7 +361,7 @@ static func _powers() -> Array[PowerData]:
 		"+1 drill, +7 damage",
 		"+1 drill, +7 damage",
 	])
-	drill.color = Color(1.00, 0.78, 0.30)
+	drill.color = Color(1.00, 0.48, 0.14)
 	drill.color_secondary = Color(0.95, 0.97, 1.00)
 	drill.rarity = 1
 	out.append(drill)
@@ -404,7 +409,7 @@ static func _powers() -> Array[PowerData]:
 		"+20 damage, wider blast",
 		"+1 beam, +20 damage",
 	])
-	laser.color = Color(0.60, 0.80, 1.00)
+	laser.color = Color(1.00, 0.90, 0.58)
 	laser.color_secondary = Color(1.00, 1.00, 1.00)
 	laser.rarity = 2
 	out.append(laser)
@@ -428,7 +433,7 @@ static func _powers() -> Array[PowerData]:
 		"5 blades, longer cutting window",
 		"6 blades, and they never stop spinning",
 	])
-	spinners.color = Color(0.85, 0.90, 1.00)
+	spinners.color = Color(1.00, 0.34, 0.34)
 	spinners.color_secondary = Color(1.00, 0.55, 0.30)
 	spinners.rarity = 1
 	out.append(spinners)
@@ -461,7 +466,11 @@ static func _powers() -> Array[PowerData]:
 		"+7 damage, faster arcs",
 		"+7 damage, longer chains",
 	])
-	coil.color = Color(0.55, 0.90, 1.00)
+	# Electric yellow-white, on a jagged bolt: nothing else in the game looks
+	# remotely like it.
+	coil.projectile_shape = 11
+	coil.color = Color(1.00, 0.94, 0.42)
+	coil.projectile_spin = 0.0
 	coil.color_secondary = Color(1.00, 1.00, 0.72)
 	coil.rarity = 2
 	out.append(coil)
@@ -489,7 +498,8 @@ static func _powers() -> Array[PowerData]:
 		"+8 damage, faster launches",
 		"+8 damage, +1 missile",
 	])
-	swarm.color = Color(1.00, 0.66, 0.42)
+	swarm.color = Color(1.00, 0.56, 0.26)
+	swarm.projectile_spin = 0.0
 	swarm.color_secondary = Color(1.00, 0.92, 0.60)
 	swarm.rarity = 2
 	out.append(swarm)
@@ -517,7 +527,9 @@ static func _powers() -> Array[PowerData]:
 		"+11 damage, bigger blast",
 		"+11 damage, +1 charge",
 	])
-	grenades.color = Color(0.92, 0.74, 0.36)
+	# Khaki, tumbling end over end the way a thrown charge does.
+	grenades.color = Color(0.84, 0.80, 0.34)
+	grenades.projectile_spin = 5.0
 	grenades.color_secondary = Color(1.00, 0.50, 0.28)
 	grenades.rarity = 1
 	out.append(grenades)
@@ -546,7 +558,10 @@ static func _powers() -> Array[PowerData]:
 		"+8 damage, faster throws",
 		"+8 damage, +1 blade",
 	])
-	fang.color = Color(0.80, 0.88, 1.00)
+	# Magenta fangs, whirling: the fastest-spinning thing on the field.
+	fang.projectile_shape = 12
+	fang.color = Color(1.00, 0.42, 0.86)
+	fang.projectile_spin = 18.0
 	fang.color_secondary = Color(1.00, 0.72, 0.86)
 	fang.rarity = 1
 	out.append(fang)
@@ -575,7 +590,9 @@ static func _powers() -> Array[PowerData]:
 		"+9 damage, lasts longer",
 		"+9 damage, +1 orb",
 	])
-	ricochet.color = Color(0.70, 0.60, 1.00)
+	# Violet, and barely turning - it reads as a heavy ball, not a blade.
+	ricochet.color = Color(0.60, 0.42, 1.00)
+	ricochet.projectile_spin = 1.6
 	ricochet.color_secondary = Color(0.95, 0.90, 1.00)
 	ricochet.rarity = 1
 	out.append(ricochet)
@@ -599,7 +616,8 @@ static func _powers() -> Array[PowerData]:
 		"+22 damage",
 		"+22 damage, faster charge",
 	])
-	lance.color = Color(0.50, 0.98, 1.00)
+	lance.color = Color(0.72, 1.00, 1.00)
+	lance.projectile_spin = 0.0
 	lance.color_secondary = Color(1.00, 1.00, 1.00)
 	lance.rarity = 2
 	out.append(lance)
@@ -625,7 +643,7 @@ static func _powers() -> Array[PowerData]:
 		"+8 damage, wider ring",
 		"+8 damage, the slow lasts longer",
 	])
-	frost.color = Color(0.60, 0.88, 1.00)
+	frost.color = Color(0.58, 0.90, 1.00)
 	frost.color_secondary = Color(0.90, 0.98, 1.00)
 	frost.rarity = 1
 	out.append(frost)
@@ -724,7 +742,7 @@ static func _powers() -> Array[PowerData]:
 		"+6 damage, and it fires an extra round",
 		"+6 damage, the turret lasts longer",
 	])
-	turret.color = Color(0.60, 0.82, 1.00)
+	turret.color = Color(0.26, 0.58, 1.00)
 	turret.color_secondary = Color(1.00, 0.90, 0.55)
 	turret.rarity = 2
 	out.append(turret)

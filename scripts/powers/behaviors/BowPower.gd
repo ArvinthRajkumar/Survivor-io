@@ -26,6 +26,7 @@ func _fire() -> void:
 		cfg["position"] = player.global_position
 		cfg["direction"] = dir
 		cfg["shape"] = 8
+		cfg["spin"] = 0.0
 		# Pierce is what makes it a line weapon; without it the arrow is just a
 		# slow bullet.
 		cfg["pierce"] = data.pierce + level

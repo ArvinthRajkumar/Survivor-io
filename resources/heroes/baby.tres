@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_26wn1"]
+
+[resource]
+script = ExtResource("1_26wn1")
+id = &"baby"
+display_name = "Baby"
+role = "Field Commander"
+description = "Reads a fight two moves ahead and is usually already standing where it ends up. Steady in everything, exceptional at nothing."
+max_health = 120.0
+move_speed = 318.0
+armor = 1.0
+damage_mult = 1.0
+cooldown_mult = 1.0
+area_mult = 1.0
+pickup_radius = 70.0
+crit_chance = 0.07
+crit_damage = 1.7
+luck = 0.0
+starting_power_id = &"katana"
+passive_id = &"read_the_room"
+passive_name = "Read the Room"
+passive_description = "Picks up shards from further away and turns them into levels faster."
+ultimate_id = &"standstill"
+ultimate_name = "Standstill"
+ultimate_description = "Everything on the field slows to a crawl while she keeps moving."
+ultimate_cooldown = 42.0
+ultimate_duration = 8.0
+accent = Color(0.95, 0.55, 0.45, 1)
+accent_secondary = Color(1, 0.86, 0.52, 1)
+portrait_shape = 5
+unlocked_by_default = false
+unlock_credit_cost = 1600
+unlock_research_cost = 20
+max_rank = 5
+rank_cost_credits = 700
+rank_cost_research = 6
+rank_cost_growth = 1.8
+rank_health_bonus = 0.06
+rank_damage_bonus = 0.05

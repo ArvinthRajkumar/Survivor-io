@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_sctds"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_r6hj8"]
 
 [resource]
-script = ExtResource("1_sctds")
+script = ExtResource("1_r6hj8")
 id = &"fv_mid_husk"
 display_name = "Drowned Husk"
 ai = 0

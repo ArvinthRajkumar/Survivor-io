@@ -109,6 +109,7 @@ func _projectile_config() -> Dictionary:
 	cfg["motion"] = data.motion
 	cfg["on_hit"] = data.on_hit
 	cfg["shape"] = data.projectile_shape
+	cfg["spin"] = data.projectile_spin
 	# A returning projectile needs to know what to return to, and an exploding
 	# one how big the blast is. Both are harmless to set for motions that ignore
 	# them, which keeps this free of a switch per field.

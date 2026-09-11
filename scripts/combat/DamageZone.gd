@@ -7,7 +7,7 @@ extends Node2D
 ## of being physics areas - with several zones alive at once that is noticeably
 ## cheaper, and it gives exact control over tick rate.
 
-enum Style { AURA, FIELD, FLAME, THORNS, RIFT, BEACON, SHOCK, FIRE_PATCH, HEAL_CIRCLE, DOMAIN }
+enum Style { AURA, FIELD, FLAME, THORNS, RIFT, BEACON, SHOCK, FIRE_PATCH, HEAL_CIRCLE, DOMAIN, FLAME_JET }
 
 var damage: float = 8.0
 var tick_interval: float = 0.4
@@ -28,6 +28,12 @@ var source_id: int = 0
 var crit_chance: float = 0.0
 var crit_damage: float = 1.6
 var max_targets: int = 40
+## A zone with `cone_arc` above zero only damages what lies inside a wedge of
+## that width centred on `cone_facing`. Without it a jet of flame would burn
+## everything in a circle around the operative, including whatever is behind
+## them, which is the opposite of what the player can see.
+var cone_facing: float = 0.0
+var cone_arc: float = 0.0
 ## Health per second restored to the player while they stand inside. Used by the
 ## Healing Drone; zero for every offensive zone.
 var heal_rate: float = 0.0
@@ -77,6 +83,8 @@ func configure(cfg: Dictionary) -> void:
 	crit_chance = float(cfg.get("crit_chance", 0.0))
 	crit_damage = float(cfg.get("crit_damage", 1.6))
 	max_targets = int(cfg.get("max_targets", 40))
+	cone_facing = float(cfg.get("cone_facing", 0.0))
+	cone_arc = float(cfg.get("cone_arc", 0.0))
 	heal_rate = float(cfg.get("heal_rate", 0.0))
 	_tick = 0.0
 	queue_redraw()
@@ -118,6 +126,12 @@ func _apply() -> void:
 	var targets := EnemyDirector.instance.get_in_radius(global_position, radius, max_targets)
 	for enemy in targets:
 		var offset := enemy.global_position - global_position
+		if cone_arc > 0.0 and offset.length_squared() > 1.0:
+			# Widened by the enemy's own angular size, so something clipping the
+			# edge of the jet still burns.
+			var slack := clampf(enemy.radius / maxf(1.0, offset.length()), 0.0, 0.6)
+			if absf(angle_difference(cone_facing, offset.angle())) > cone_arc * 0.5 + slack:
+				continue
 		var is_crit := crit_chance > 0.0 and RunManager.rng.randf() < crit_chance
 		var amount := damage * (crit_damage if is_crit else 1.0)
 		var kb := Vector2.ZERO
@@ -187,6 +201,11 @@ func _draw() -> void:
 			_draw_heal_circle(base, fade)
 		Style.DOMAIN:
 			_draw_domain(base, fade)
+		Style.FLAME_JET:
+			# Lives in PowerArt so the preview harness can draw it too: this node
+			# reaches for autoloads and cannot be instantiated outside a run.
+			PowerArt.draw_flame_jet(self, Vector2.ZERO, radius, cone_facing,
+				cone_arc if cone_arc > 0.0 else 0.7, base, color2, _pulse, fade)
 		_:
 			_draw_aura(base, fade)
 

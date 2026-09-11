@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_w5f54"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_ibtbw"]
 
 [resource]
-script = ExtResource("1_w5f54")
+script = ExtResource("1_ibtbw")
 id = &"grenade_volley"
 display_name = "Grenade Volley"
 category = 0
@@ -28,6 +28,7 @@ motion = 0
 on_hit = 1
 projectile_shape = 4
 spread = 0.55
+projectile_spin = 5.0
 effect_radius = 150.0
 effect_value = 0.55
 damage_per_level = 11.0
@@ -37,7 +38,7 @@ duration_per_level = 0.0
 count_at_levels = PackedInt32Array(3, 5)
 stat_multipliers = {}
 stat_flats = {}
-color = Color(0.92, 0.74, 0.36, 1)
+color = Color(0.84, 0.8, 0.34, 1)
 color_secondary = Color(1, 0.5, 0.28, 1)
 art = &"grenade_volley"
 rarity = 1

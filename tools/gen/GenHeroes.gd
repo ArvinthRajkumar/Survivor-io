@@ -14,6 +14,7 @@ static func run() -> void:
 	_save(_rift())
 	_save(_aegis())
 	_save(_ember())
+	_save(_baby())
 
 
 static func _save(hero: HeroData) -> void:
@@ -42,6 +43,37 @@ static func _base() -> HeroData:
 	hero.crit_damage = 1.6
 	hero.ultimate_cooldown = 42.0
 	hero.ultimate_duration = 8.0
+	return hero
+
+
+## Baby - the operative built from the reference photo: long dark hair worn
+## loose, warm skin, a bindi, gold studs and a fine chain. She is the squad's
+## all-rounder, so nothing in her stat line is remarkable in either direction;
+## what distinguishes her is the ultimate, which buys time rather than damage.
+static func _baby() -> HeroData:
+	var hero := _base()
+	hero.id = &"baby"
+	hero.display_name = "Baby"
+	hero.role = "Field Commander"
+	hero.description = "Reads a fight two moves ahead and is usually already standing where it ends up. Steady in everything, exceptional at nothing."
+	hero.max_health = 120.0
+	hero.move_speed = 318.0
+	hero.armor = 1.0
+	hero.crit_chance = 0.07
+	hero.crit_damage = 1.7
+	hero.starting_power_id = &"katana"
+	hero.passive_id = &"read_the_room"
+	hero.passive_name = "Read the Room"
+	hero.passive_description = "Picks up shards from further away and turns them into levels faster."
+	hero.ultimate_id = &"standstill"
+	hero.ultimate_name = "Standstill"
+	hero.ultimate_description = "Everything on the field slows to a crawl while she keeps moving."
+	hero.accent = Color(0.95, 0.55, 0.45)
+	hero.accent_secondary = Color(1.00, 0.86, 0.52)
+	hero.portrait_shape = 5
+	hero.unlocked_by_default = false
+	hero.unlock_credit_cost = 1600
+	hero.unlock_research_cost = 20
 	return hero
 
 

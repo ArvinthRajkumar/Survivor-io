@@ -6,6 +6,12 @@ extends Node2D
 ## reuse the same pooled projectiles and damage zones, so the differences are
 ## small enough to read side by side.
 
+## Baby's Standstill. A hard slow over most of the screen, refreshed often
+## enough that enemies arriving mid-ultimate are caught by it too.
+const STANDSTILL_FACTOR := 0.22
+const STANDSTILL_RANGE := 900.0
+const STANDSTILL_REFRESH := 0.35
+
 signal charge_changed(ratio: float)
 signal activated(hero_id: StringName)
 signal ended
@@ -17,6 +23,7 @@ var duration: float = 8.0
 
 var _charge: float = 0.0
 var _active_time: float = 0.0
+var _standstill_timer: float = 0.0
 var _active: bool = false
 var _reflect: bool = false
 var _drones: Array[Projectile] = []
@@ -96,6 +103,8 @@ func activate() -> bool:
 			_start_aegis()
 		&"flame_wall":
 			_start_flame_wall()
+		&"standstill":
+			_start_standstill()
 		_:
 			_start_plasma_drones()
 	activated.emit(hero.ultimate_id)
@@ -106,8 +115,39 @@ func _tick_active(delta: float) -> void:
 	match hero.ultimate_id:
 		&"rift_walk":
 			_tick_rift_walk(delta)
+		&"standstill":
+			_tick_standstill(delta)
 		_:
 			pass
+
+
+## Baby's Standstill: everything on the field crawls while she keeps moving.
+##
+## Re-applied on a timer rather than once, because enemies that spawn during the
+## ultimate have to be caught too - otherwise the wave arriving halfway through
+## walks straight past it.
+func _start_standstill() -> void:
+	_standstill_timer = 0.0
+	_apply_standstill()
+
+
+func _tick_standstill(delta: float) -> void:
+	_standstill_timer -= delta
+	if _standstill_timer > 0.0:
+		return
+	_apply_standstill()
+
+
+func _apply_standstill() -> void:
+	_standstill_timer = STANDSTILL_REFRESH
+	if EnemyDirector.instance == null or player == null:
+		return
+	for enemy in EnemyDirector.instance.get_in_radius(player.global_position,
+			STANDSTILL_RANGE, 200):
+		enemy.apply_slow(STANDSTILL_FACTOR, STANDSTILL_REFRESH * 2.0)
+	if EffectSpawner.instance != null:
+		EffectSpawner.instance.spawn_death_burst(player.global_position,
+			hero.accent_secondary, 150.0)
 
 
 func _end() -> void:

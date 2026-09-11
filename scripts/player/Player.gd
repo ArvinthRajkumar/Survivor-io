@@ -35,6 +35,10 @@ const BRAKING := 6400.0
 const TURN_GRIP := 1.6
 ## Below this input magnitude the stick counts as released.
 const INPUT_EPSILON := 0.06
+## Radians per second the weapon heading may sweep. A full about-face takes a
+## little under half a second, which is slow enough to see and fast enough that
+## the weapon still ends up where the player pointed it.
+const AIM_TURN_RATE := 7.5
 
 @onready var health: HealthComponent = $Health
 @onready var hurtbox: Area2D = $Hurtbox
@@ -51,6 +55,11 @@ var move_input: Vector2 = Vector2.ZERO
 ## The smoothed heading actually used to drive movement and the animation.
 var move_dir: Vector2 = Vector2.ZERO
 var facing: Vector2 = Vector2.DOWN
+## Heading for weapons that aim along the way you are moving. Unlike `facing` it
+## turns at a hard-limited rate, because a *continuous* weapon - the
+## flamethrower above all - that changes direction in one frame reads as the jet
+## teleporting rather than sweeping across.
+var weapon_aim: Vector2 = Vector2.RIGHT
 var is_dead: bool = false
 var invulnerable_timer: float = 0.0
 
@@ -210,6 +219,11 @@ func _step_movement(delta: float) -> void:
 	if move_dir.length_squared() > 0.02:
 		var want := move_dir.normalized()
 		facing = facing.slerp(want, clampf(delta * 26.0, 0.0, 1.0)).normalized()
+	var want_aim := move_dir.normalized() if move_dir.length_squared() > 0.02 else facing
+	if want_aim.length_squared() > 0.001:
+		var sweep := clampf(weapon_aim.angle_to(want_aim),
+			-AIM_TURN_RATE * delta, AIM_TURN_RATE * delta)
+		weapon_aim = weapon_aim.rotated(sweep).normalized()
 	move_and_slide()
 	visual.call("set_motion", move_dir, travel, delta)
 

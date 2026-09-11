@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_55dqa"]
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_quvfy"]
 
 [resource]
-script = ExtResource("1_55dqa")
+script = ExtResource("1_quvfy")
 id = &"aegis"
 display_name = "Aegis"
 role = "Shield Soldier"

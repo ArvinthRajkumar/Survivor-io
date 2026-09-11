@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_c08ub"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_ndrcx"]
 
 [resource]
-script = ExtResource("1_c08ub")
+script = ExtResource("1_ndrcx")
 id = &"arc_coil"
 display_name = "Arc Coil"
 category = 0
@@ -26,8 +26,9 @@ hit_interval = 0.25
 aim = 0
 motion = 0
 on_hit = 2
-projectile_shape = 1
+projectile_shape = 11
 spread = 0.0
+projectile_spin = 0.0
 effect_radius = 260.0
 effect_value = 3.0
 damage_per_level = 7.0
@@ -37,7 +38,7 @@ duration_per_level = 0.0
 count_at_levels = PackedInt32Array()
 stat_multipliers = {}
 stat_flats = {}
-color = Color(0.55, 0.9, 1, 1)
+color = Color(1, 0.94, 0.42, 1)
 color_secondary = Color(1, 1, 0.72, 1)
 art = &"arc_coil"
 rarity = 2

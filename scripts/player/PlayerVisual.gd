@@ -107,6 +107,11 @@ func configure(hero: HeroData) -> void:
 		# Hair takes a deep, desaturated cast of the accent so each operative
 		# reads as a different person without needing a separate palette.
 		_hair = Color(accent.r * 0.30 + 0.06, accent.g * 0.26 + 0.07, accent.b * 0.34 + 0.12)
+		_skin = HeroPortrait._skin_of(hero_shape)
+		if hero_shape == 5:
+			# Baby's hair is near-black rather than a cast of her accent, which
+			# is the whole point of her silhouette.
+			_hair = Color(0.07, 0.06, 0.09)
 	queue_redraw()
 
 
@@ -817,12 +822,17 @@ func _draw_head(origin: Vector2, lean: float, tint: Color) -> void:
 	_draw_hair_front(head, tilt)
 
 	# Headband in the secondary accent — the readable "operative" cue, and what
-	# keeps the silhouette distinct from the enemy shapes.
+	# keeps the silhouette distinct from the enemy shapes. Baby wears a thinner
+	# one and a bindi instead, which is what identifies her at this size.
+	var band := 2.4 if hero_shape == 5 else 4.2
 	draw_line(head + Vector2(-HEAD_RADIUS * 0.95, -HEAD_RADIUS * 0.42),
 		head + Vector2(HEAD_RADIUS * 0.95, -HEAD_RADIUS * 0.46),
-		accent_secondary, 4.2, true)
-	draw_circle(head + Vector2(HEAD_RADIUS * 0.30 * _facing, -HEAD_RADIUS * 0.44), 3.0,
-		Color(1, 1, 1, 0.85))
+		accent_secondary, band, true)
+	if hero_shape == 5:
+		draw_circle(head + Vector2(0.0, -HEAD_RADIUS * 0.18), 2.2, Color(0.24, 0.06, 0.12))
+	else:
+		draw_circle(head + Vector2(HEAD_RADIUS * 0.30 * _facing, -HEAD_RADIUS * 0.44), 3.0,
+			Color(1, 1, 1, 0.85))
 
 
 func _draw_hair_back(head: Vector2, tilt: float) -> void:

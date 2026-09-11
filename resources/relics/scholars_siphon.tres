@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="RelicData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_n4sme"]
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_nusjp"]
 
 [resource]
-script = ExtResource("1_n4sme")
+script = ExtResource("1_nusjp")
 id = &"scholars_siphon"
 display_name = "Scholar's Siphon"
 description = "+30% experience, but upgrades cost you 10% attack rate."

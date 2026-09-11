@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_otiw3"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_fq7ua"]
 
 [resource]
-script = ExtResource("1_otiw3")
+script = ExtResource("1_fq7ua")
 id = &"revolver"
 display_name = "Heavy Revolver"
 category = 0
@@ -28,6 +28,7 @@ motion = 0
 on_hit = 0
 projectile_shape = 10
 spread = 0.0
+projectile_spin = 0.0
 effect_radius = 120.0
 effect_value = 0.55
 damage_per_level = 24.0
@@ -37,7 +38,7 @@ duration_per_level = 0.0
 count_at_levels = PackedInt32Array(4)
 stat_multipliers = {}
 stat_flats = {}
-color = Color(1, 0.74, 0.32, 1)
+color = Color(1, 0.72, 0.25, 1)
 color_secondary = Color(1, 0.95, 0.8, 1)
 art = &"revolver"
 rarity = 2

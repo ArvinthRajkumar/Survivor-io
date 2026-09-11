@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="LevelData" load_steps=19 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_3rix0"]
-[ext_resource type="Resource" path="res://resources/enemies/mr_mote.tres" id="2_eixae"]
-[ext_resource type="Resource" path="res://resources/enemies/mr_swarmling.tres" id="3_fm6vu"]
-[ext_resource type="Resource" path="res://resources/enemies/mr_stalker.tres" id="4_dqd0h"]
-[ext_resource type="Resource" path="res://resources/enemies/mr_seer.tres" id="5_8tl5d"]
-[ext_resource type="Resource" path="res://resources/enemies/mr_colossus.tres" id="6_b21iw"]
-[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_ojsi2"]
-[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_6s28b"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_w8b4f"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_mote.tres" id="2_fyr1f"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_swarmling.tres" id="3_53bu8"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_stalker.tres" id="4_ntaue"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_seer.tres" id="5_cf4vv"]
+[ext_resource type="Resource" path="res://resources/enemies/mr_colossus.tres" id="6_0h8ck"]
+[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_jp6xh"]
+[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_0cfhn"]
 
-[sub_resource type="Resource" id="Resource_jojx0"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_dxpdm"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_mote"
 start_time = 0.0
 end_time = 260.0
@@ -21,8 +21,8 @@ formation = 0
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_3alts"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_jdu2w"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_swarmling"
 start_time = 45.0
 end_time = 440.0
@@ -33,8 +33,8 @@ formation = 3
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_qt07f"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_p1qbh"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_stalker"
 start_time = 120.0
 end_time = 560.0
@@ -45,8 +45,8 @@ formation = 2
 elite_chance = 0.06
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_nsmq4"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_a2364"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_mote"
 start_time = 160.0
 end_time = 780.0
@@ -57,8 +57,8 @@ formation = 0
 elite_chance = 0.05
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_idu5u"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_bfnnm"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_seer"
 start_time = 220.0
 end_time = 780.0
@@ -69,8 +69,8 @@ formation = 0
 elite_chance = 0.09
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_ax5k3"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_mm6xl"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_swarmling"
 start_time = 280.0
 end_time = 780.0
@@ -81,8 +81,8 @@ formation = 1
 elite_chance = 0.08
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_eotnx"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_dhlbn"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_colossus"
 start_time = 340.0
 end_time = 780.0
@@ -93,8 +93,8 @@ formation = 0
 elite_chance = 0.16
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_8n72y"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_f6qqj"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_stalker"
 start_time = 420.0
 end_time = 780.0
@@ -105,8 +105,8 @@ formation = 1
 elite_chance = 0.14
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_0fibe"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_qdavl"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_seer"
 start_time = 500.0
 end_time = 780.0
@@ -117,8 +117,8 @@ formation = 1
 elite_chance = 0.16
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_3m31b"]
-script = ExtResource("8_6s28b")
+[sub_resource type="Resource" id="Resource_wg56n"]
+script = ExtResource("8_0cfhn")
 enemy_id = &"mr_colossus"
 start_time = 660.0
 end_time = 660.0
@@ -130,7 +130,7 @@ elite_chance = 0.4
 one_shot = true
 
 [resource]
-script = ExtResource("7_ojsi2")
+script = ExtResource("7_jp6xh")
 id = &"moonfall_ridge"
 display_name = "Moonfall Ridge"
 description = "Cliffs of alien glass where gravity forgets itself. The last place the light reached."
@@ -146,8 +146,8 @@ damage_growth_per_minute = 0.1
 endless_interval = 1.4
 endless_batch = 7
 endless_elite_chance = 0.08
-enemy_pool = Array[ExtResource("1_3rix0")]([ExtResource("2_eixae"), ExtResource("3_fm6vu"), ExtResource("4_dqd0h"), ExtResource("5_8tl5d"), ExtResource("6_b21iw")])
-waves = Array[ExtResource("8_6s28b")]([SubResource("Resource_jojx0"), SubResource("Resource_3alts"), SubResource("Resource_qt07f"), SubResource("Resource_nsmq4"), SubResource("Resource_idu5u"), SubResource("Resource_ax5k3"), SubResource("Resource_eotnx"), SubResource("Resource_8n72y"), SubResource("Resource_0fibe"), SubResource("Resource_3m31b")])
+enemy_pool = Array[ExtResource("1_w8b4f")]([ExtResource("2_fyr1f"), ExtResource("3_53bu8"), ExtResource("4_ntaue"), ExtResource("5_cf4vv"), ExtResource("6_0h8ck")])
+waves = Array[ExtResource("8_0cfhn")]([SubResource("Resource_dxpdm"), SubResource("Resource_jdu2w"), SubResource("Resource_p1qbh"), SubResource("Resource_a2364"), SubResource("Resource_bfnnm"), SubResource("Resource_mm6xl"), SubResource("Resource_dhlbn"), SubResource("Resource_f6qqj"), SubResource("Resource_qdavl"), SubResource("Resource_wg56n")])
 boss_id = &"mr_boss_parasite"
 mid_boss_id = &"mr_mid_grasper"
 elite_tint = Color(1, 0.85, 0.35, 1)

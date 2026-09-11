@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_obukb"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_3t7xf"]
 
 [resource]
-script = ExtResource("1_obukb")
+script = ExtResource("1_3t7xf")
 id = &"mr_mote"
 display_name = "Gravity Mote"
 ai = 1

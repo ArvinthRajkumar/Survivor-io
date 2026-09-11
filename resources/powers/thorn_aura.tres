@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_3q0bp"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_fqrd2"]
 
 [resource]
-script = ExtResource("1_3q0bp")
+script = ExtResource("1_fqrd2")
 id = &"thorn_aura"
 display_name = "Thorn Aura"
 category = 0
@@ -28,6 +28,7 @@ motion = 0
 on_hit = 0
 projectile_shape = 3
 spread = 0.0
+projectile_spin = 0.0
 effect_radius = 120.0
 effect_value = 1.0
 damage_per_level = 3.2

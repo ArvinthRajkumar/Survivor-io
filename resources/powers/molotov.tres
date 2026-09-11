@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_7p0c5"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_trs8h"]
 
 [resource]
-script = ExtResource("1_7p0c5")
+script = ExtResource("1_trs8h")
 id = &"molotov"
 display_name = "Molotov Cocktail"
 category = 0
@@ -28,6 +28,7 @@ motion = 0
 on_hit = 0
 projectile_shape = 0
 spread = 0.0
+projectile_spin = 0.0
 effect_radius = 120.0
 effect_value = 0.55
 damage_per_level = 2.6
@@ -37,7 +38,7 @@ duration_per_level = 0.35
 count_at_levels = PackedInt32Array(2, 3, 4, 5)
 stat_multipliers = {}
 stat_flats = {}
-color = Color(1, 0.52, 0.18, 1)
+color = Color(0.95, 0.24, 0.1, 1)
 color_secondary = Color(1, 0.85, 0.35, 1)
 art = &"molotov"
 rarity = 1

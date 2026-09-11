@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="RelicData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_m2c6k"]
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_j4v5m"]
 
 [resource]
-script = ExtResource("1_m2c6k")
+script = ExtResource("1_j4v5m")
 id = &"branching_matrix"
 display_name = "Branching Matrix"
 description = "Level-ups offer a fourth option."

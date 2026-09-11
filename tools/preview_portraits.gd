@@ -14,6 +14,7 @@ const PALETTES: Array = [
 	[Color(0.30, 0.85, 1.0), Color(0.45, 1.0, 0.70)],
 	[Color(0.45, 0.90, 0.45), Color(0.95, 0.82, 0.35)],
 	[Color(0.70, 0.45, 1.0), Color(1.0, 0.55, 0.90)],
+	[Color(0.95, 0.55, 0.45), Color(1.0, 0.86, 0.52)],
 ]
 
 var _frames: int = 0
@@ -30,7 +31,7 @@ func _initialize() -> void:
 func _draw_all() -> void:
 	for i in PALETTES.size():
 		var pair: Array = PALETTES[i]
-		HeroPortrait.draw_bust(_canvas, Vector2(70.0 + float(i) * 60.0, 68.0), 30.0,
+		HeroPortrait.draw_bust(_canvas, Vector2(72.0 + float(i % 3) * 144.0, 96.0 + float(i / 3) * 190.0), 54.0,
 			pair[0], pair[1], i, 1.7)
 
 

@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="RelicData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_kjyk5"]
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_2duix"]
 
 [resource]
-script = ExtResource("1_kjyk5")
+script = ExtResource("1_2duix")
 id = &"forecast_module"
 display_name = "Forecast Module"
 description = "Two rerolls per level-up choice."

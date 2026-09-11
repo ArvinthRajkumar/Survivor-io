@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_x5wca"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_s7guc"]
 
 [resource]
-script = ExtResource("1_x5wca")
+script = ExtResource("1_s7guc")
 id = &"alloy_plating"
 display_name = "Alloy Plating"
 category = 1
@@ -28,6 +28,7 @@ motion = 0
 on_hit = 0
 projectile_shape = 0
 spread = 0.0
+projectile_spin = 0.0
 effect_radius = 120.0
 effect_value = 0.55
 damage_per_level = 5.0

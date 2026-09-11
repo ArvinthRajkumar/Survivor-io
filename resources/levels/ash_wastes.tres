@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="LevelData" load_steps=19 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_qjgnp"]
-[ext_resource type="Resource" path="res://resources/enemies/aw_scuttler.tres" id="2_yesbp"]
-[ext_resource type="Resource" path="res://resources/enemies/aw_hound.tres" id="3_myfdc"]
-[ext_resource type="Resource" path="res://resources/enemies/aw_spitter.tres" id="4_o34xj"]
-[ext_resource type="Resource" path="res://resources/enemies/aw_brood.tres" id="5_at4pq"]
-[ext_resource type="Resource" path="res://resources/enemies/aw_behemoth.tres" id="6_e3o28"]
-[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_2vc2e"]
-[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_6hm2t"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_5e06p"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_scuttler.tres" id="2_pi4og"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_hound.tres" id="3_ugl3g"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_spitter.tres" id="4_rj6p5"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_brood.tres" id="5_kh2c6"]
+[ext_resource type="Resource" path="res://resources/enemies/aw_behemoth.tres" id="6_432qd"]
+[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_etb4m"]
+[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_yqokp"]
 
-[sub_resource type="Resource" id="Resource_u6mtv"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_6dws4"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_scuttler"
 start_time = 0.0
 end_time = 220.0
@@ -21,8 +21,8 @@ formation = 0
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_onls2"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_joak4"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_hound"
 start_time = 50.0
 end_time = 360.0
@@ -33,8 +33,8 @@ formation = 3
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_3fu82"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_go5ba"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_spitter"
 start_time = 120.0
 end_time = 480.0
@@ -45,8 +45,8 @@ formation = 2
 elite_chance = 0.04
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_nsyn7"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_xxgpf"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_scuttler"
 start_time = 160.0
 end_time = 660.0
@@ -57,8 +57,8 @@ formation = 0
 elite_chance = 0.03
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_donqy"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_dd2in"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_brood"
 start_time = 210.0
 end_time = 660.0
@@ -69,8 +69,8 @@ formation = 0
 elite_chance = 0.08
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_mkhgc"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_xuhed"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_hound"
 start_time = 280.0
 end_time = 660.0
@@ -81,8 +81,8 @@ formation = 1
 elite_chance = 0.07
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_bqbhs"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_xr3ry"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_behemoth"
 start_time = 330.0
 end_time = 660.0
@@ -93,8 +93,8 @@ formation = 0
 elite_chance = 0.14
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_hwelj"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_iydqk"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_spitter"
 start_time = 400.0
 end_time = 660.0
@@ -105,8 +105,8 @@ formation = 1
 elite_chance = 0.1
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_20emu"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_rg2rd"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_brood"
 start_time = 470.0
 end_time = 660.0
@@ -117,8 +117,8 @@ formation = 4
 elite_chance = 0.12
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_k7njr"]
-script = ExtResource("8_6hm2t")
+[sub_resource type="Resource" id="Resource_5n37b"]
+script = ExtResource("8_yqokp")
 enemy_id = &"aw_behemoth"
 start_time = 540.0
 end_time = 540.0
@@ -130,7 +130,7 @@ elite_chance = 0.3
 one_shot = true
 
 [resource]
-script = ExtResource("7_2vc2e")
+script = ExtResource("7_etb4m")
 id = &"ash_wastes"
 display_name = "Ash Wastes"
 description = "Volcanic flats under permanent fallout. Vents open without warning."
@@ -146,8 +146,8 @@ damage_growth_per_minute = 0.08
 endless_interval = 1.5
 endless_batch = 6
 endless_elite_chance = 0.08
-enemy_pool = Array[ExtResource("1_qjgnp")]([ExtResource("2_yesbp"), ExtResource("3_myfdc"), ExtResource("4_o34xj"), ExtResource("5_at4pq"), ExtResource("6_e3o28")])
-waves = Array[ExtResource("8_6hm2t")]([SubResource("Resource_u6mtv"), SubResource("Resource_onls2"), SubResource("Resource_3fu82"), SubResource("Resource_nsyn7"), SubResource("Resource_donqy"), SubResource("Resource_mkhgc"), SubResource("Resource_bqbhs"), SubResource("Resource_hwelj"), SubResource("Resource_20emu"), SubResource("Resource_k7njr")])
+enemy_pool = Array[ExtResource("1_5e06p")]([ExtResource("2_pi4og"), ExtResource("3_ugl3g"), ExtResource("4_rj6p5"), ExtResource("5_kh2c6"), ExtResource("6_432qd")])
+waves = Array[ExtResource("8_yqokp")]([SubResource("Resource_6dws4"), SubResource("Resource_joak4"), SubResource("Resource_go5ba"), SubResource("Resource_xxgpf"), SubResource("Resource_dd2in"), SubResource("Resource_xuhed"), SubResource("Resource_xr3ry"), SubResource("Resource_iydqk"), SubResource("Resource_rg2rd"), SubResource("Resource_5n37b")])
 boss_id = &"aw_boss_ashbrand"
 mid_boss_id = &"aw_mid_maw"
 elite_tint = Color(1, 0.85, 0.35, 1)

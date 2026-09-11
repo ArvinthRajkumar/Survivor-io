@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_3qt85"]
+[ext_resource type="Script" path="res://scripts/data/UpgradeData.gd" id="1_n3rjx"]
 
 [resource]
-script = ExtResource("1_3qt85")
+script = ExtResource("1_n3rjx")
 id = &"meta_armor"
 display_name = "Composite Plating"
 description = "base armour"

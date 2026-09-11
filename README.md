@@ -253,6 +253,15 @@ godot --headless --path . --script res://tools/generate_content.gd
 You can also edit the generated `.tres` files directly in the Godot inspector; just be
 aware that re-running the generator overwrites them.
 
+### Operatives
+
+Six of them, all women, each with her own skin tone, hair and silhouette — a
+squad that is six shades of the same beige is a squad of one person in six hats.
+**Baby** is drawn from a photograph the project owner supplied: long dark hair
+worn loose, warm skin, a bindi, gold studs and a fine chain. She is the
+all-rounder, so nothing in her stat line is remarkable either way; what sets her
+apart is **Standstill**, the only ultimate that buys time rather than damage.
+
 ### Heroes
 
 | Hero | Role | Passive | Ultimate |
@@ -408,6 +417,12 @@ Drawn live rather than baked: there is only ever one of them, so the per-frame c
 made the swarm untenable is irrelevant here, and live drawing is what lets the character
 respond continuously to speed, acceleration and the direction of a swing.
 
+Weapons that aim along the direction of travel read `Player.weapon_aim` rather
+than the raw movement heading. It turns at a hard-limited rate, because a
+*continuous* weapon — the flamethrower above all — that changed direction in one
+frame read as the jet teleporting rather than sweeping, and was most of why
+nobody could tell what the weapon was.
+
 Each of the eight starting weapons has its own attack — a katana swings, a spear thrusts,
 a revolver kicks and flashes, a bow draws and looses, a chakram goes over the shoulder, a
 hammer comes down overhead, a flamethrower is held forward and shakes. A player who has
@@ -421,6 +436,26 @@ hip height, Vital Weave lifts motes off the operative as it heals, Long Fuse gut
 embers at their feet, Omen Dice throws an occasional gold glint, and Split Barrel adds a
 second muzzle flash to every shot. A passive that only exists in a stat sheet may as well
 not have been picked.
+
+### Reading the field
+
+Three rules the art follows, all of them learned by getting them wrong first:
+
+- **An enemy bullet is the one thing the player must see.** It competes with a
+  hundred creatures, the operative's own effects and a lit floor, so it is drawn
+  bigger than its own hitbox, with a white-hot core, a dark contour that survives
+  bright backgrounds as well as dark ones, and a trail that makes its heading
+  readable before it arrives. The hitbox is unchanged, so it reads as slightly
+  larger than it is — which errs in the player's favour.
+- **No two things in flight share a hue.** Fourteen powers were once the same
+  blue-white, which made a bolt, a bullet, a blade and a bouncing orb
+  indistinguishable mid-screen. Every projectile-bearing power now owns a hue,
+  and spin is authored per power too: a chakram whirls, a grenade tumbles, a
+  bullet holds its line.
+- **A shape beats a tint.** The flamethrower used to be three wobbly circles,
+  which is exactly as legible as it sounds. It is now a cone with a direction —
+  white-hot at the muzzle, cooling and widening to the tip — and it damages the
+  wedge it appears to damage rather than a circle around the operative.
 
 ### Sectors
 

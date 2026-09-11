@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_tmikx"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_lh15c"]
 
 [resource]
-script = ExtResource("1_tmikx")
+script = ExtResource("1_lh15c")
 id = &"aw_scuttler"
 display_name = "Cinder Scuttler"
 ai = 0

@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_27lc2"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_s5gyn"]
 
 [resource]
-script = ExtResource("1_27lc2")
+script = ExtResource("1_s5gyn")
 id = &"nr_boss_warden"
 display_name = "Sentinel Warden"
 ai = 0

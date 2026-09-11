@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="LevelData" load_steps=19 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_ng4xn"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_leech.tres" id="2_sm0by"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_drifter.tres" id="3_3frjv"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_lurker.tres" id="4_5woc2"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_sporeling.tres" id="5_yel88"]
-[ext_resource type="Resource" path="res://resources/enemies/fv_warden.tres" id="6_leqva"]
-[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_wek2l"]
-[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_24ap6"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_rpeq1"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_leech.tres" id="2_77y78"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_drifter.tres" id="3_drcei"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_lurker.tres" id="4_se5yt"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_sporeling.tres" id="5_ctcgb"]
+[ext_resource type="Resource" path="res://resources/enemies/fv_warden.tres" id="6_mumsw"]
+[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_3krdb"]
+[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_w52px"]
 
-[sub_resource type="Resource" id="Resource_1fksg"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_jojua"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_leech"
 start_time = 0.0
 end_time = 240.0
@@ -21,8 +21,8 @@ formation = 0
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_eqpgd"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_6goet"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_drifter"
 start_time = 40.0
 end_time = 400.0
@@ -33,8 +33,8 @@ formation = 2
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_2jib8"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_tsfp2"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_lurker"
 start_time = 110.0
 end_time = 520.0
@@ -45,8 +45,8 @@ formation = 1
 elite_chance = 0.05
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_2gkns"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_aui4a"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_leech"
 start_time = 150.0
 end_time = 720.0
@@ -57,8 +57,8 @@ formation = 0
 elite_chance = 0.04
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_wfa41"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_264sb"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_sporeling"
 start_time = 200.0
 end_time = 720.0
@@ -69,8 +69,8 @@ formation = 0
 elite_chance = 0.09
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_ml50o"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_y41ra"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_warden"
 start_time = 260.0
 end_time = 720.0
@@ -81,8 +81,8 @@ formation = 2
 elite_chance = 0.08
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_0y2xk"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_pddey"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_drifter"
 start_time = 320.0
 end_time = 720.0
@@ -93,8 +93,8 @@ formation = 1
 elite_chance = 0.07
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_2lk6p"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_jggut"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_lurker"
 start_time = 400.0
 end_time = 720.0
@@ -105,8 +105,8 @@ formation = 1
 elite_chance = 0.12
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_8lg6x"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_v08f8"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_sporeling"
 start_time = 480.0
 end_time = 720.0
@@ -117,8 +117,8 @@ formation = 4
 elite_chance = 0.15
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_6y5vy"]
-script = ExtResource("8_24ap6")
+[sub_resource type="Resource" id="Resource_ycbhm"]
+script = ExtResource("8_w52px")
 enemy_id = &"fv_warden"
 start_time = 600.0
 end_time = 600.0
@@ -130,7 +130,7 @@ elite_chance = 0.35
 one_shot = true
 
 [resource]
-script = ExtResource("7_wek2l")
+script = ExtResource("7_3krdb")
 id = &"flooded_vault"
 display_name = "Flooded Vault"
 description = "A research vault two hundred metres under. Whatever was contained here is loose."
@@ -146,8 +146,8 @@ damage_growth_per_minute = 0.09
 endless_interval = 1.45
 endless_batch = 6
 endless_elite_chance = 0.08
-enemy_pool = Array[ExtResource("1_ng4xn")]([ExtResource("2_sm0by"), ExtResource("3_3frjv"), ExtResource("4_5woc2"), ExtResource("5_yel88"), ExtResource("6_leqva")])
-waves = Array[ExtResource("8_24ap6")]([SubResource("Resource_1fksg"), SubResource("Resource_eqpgd"), SubResource("Resource_2jib8"), SubResource("Resource_2gkns"), SubResource("Resource_wfa41"), SubResource("Resource_ml50o"), SubResource("Resource_0y2xk"), SubResource("Resource_2lk6p"), SubResource("Resource_8lg6x"), SubResource("Resource_6y5vy")])
+enemy_pool = Array[ExtResource("1_rpeq1")]([ExtResource("2_77y78"), ExtResource("3_drcei"), ExtResource("4_se5yt"), ExtResource("5_ctcgb"), ExtResource("6_mumsw")])
+waves = Array[ExtResource("8_w52px")]([SubResource("Resource_jojua"), SubResource("Resource_6goet"), SubResource("Resource_tsfp2"), SubResource("Resource_aui4a"), SubResource("Resource_264sb"), SubResource("Resource_y41ra"), SubResource("Resource_pddey"), SubResource("Resource_jggut"), SubResource("Resource_v08f8"), SubResource("Resource_ycbhm")])
 boss_id = &"fv_boss_sentinel"
 mid_boss_id = &"fv_mid_husk"
 elite_tint = Color(1, 0.85, 0.35, 1)

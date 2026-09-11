@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_t842o"]
+[ext_resource type="Script" path="res://scripts/data/HeroData.gd" id="1_qxbhu"]
 
 [resource]
-script = ExtResource("1_t842o")
+script = ExtResource("1_qxbhu")
 id = &"nova"
 display_name = "Nova"
 role = "Plasma Engineer"

@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="RelicData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_njtir"]
+[ext_resource type="Script" path="res://scripts/data/RelicData.gd" id="1_fk3yi"]
 
 [resource]
-script = ExtResource("1_njtir")
+script = ExtResource("1_fk3yi")
 id = &"harvest_coil"
 display_name = "Harvest Coil"
 description = "+55% pickup radius and a little regeneration."

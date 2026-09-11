@@ -27,6 +27,12 @@ static func apply(hero: HeroData, stats: PlayerStats) -> void:
 			stats.add_flat(&"armor", 6.0)
 			stats.add_flat(&"max_health", 40.0)
 			stats.add_mult(&"move_speed_mult", -0.06)
+		&"read_the_room":
+			# Baby: reaches further for shards and turns them into levels faster.
+			# Deliberately the only passive that buys tempo rather than power.
+			stats.add_mult(&"pickup_radius_mult", 0.45)
+			stats.add_mult(&"xp_gain_mult", 0.15)
+			stats.add_flat(&"luck", 0.05)
 		&"kindling":
 			# Ember: big, hard-hitting areas.
 			stats.add_mult(&"area_mult", 0.18)

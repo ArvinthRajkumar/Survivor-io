@@ -379,6 +379,29 @@ func _draw() -> void:
 					base * 1.34 + Vector2(-sin(a), cos(a)) * radius * 0.22,
 					base * 1.34 - Vector2(-sin(a), cos(a)) * radius * 0.10,
 				]), color2, color, 2.0)
+		11:
+			# Arc bolt: a jagged fork, unmistakably electrical and unlike any
+			# other projectile in the game.
+			var bolt := PackedVector2Array([
+				Vector2(radius * 1.5, 0.0),
+				Vector2(radius * 0.1, radius * 0.45),
+				Vector2(radius * 0.45, radius * 0.10),
+				Vector2(-radius * 1.4, radius * 0.30),
+				Vector2(-radius * 0.35, -radius * 0.12),
+				Vector2(-radius * 0.75, -radius * 0.50),
+			])
+			Draw2D.neon_polygon(self, bolt, color2, color, 2.0)
+			Draw2D.glow_circle(self, Vector2.ZERO, radius * 0.7, color, 2)
+		12:
+			# Fang: a curved tooth, thrown and returning.
+			var fang := PackedVector2Array([
+				Vector2(radius * 1.45, -radius * 0.10),
+				Vector2(radius * 0.10, radius * 0.60),
+				Vector2(-radius * 0.95, radius * 0.20),
+				Vector2(-radius * 0.20, -radius * 0.25),
+			])
+			Draw2D.neon_polygon(self, fang, color2, color, 2.5)
+			draw_circle(Vector2(-radius * 0.30, 0.0), radius * 0.22, Color(1, 1, 1, 0.7))
 		10:
 			# Slug: short, fat and bright - a heavy round rather than a dart.
 			draw_circle(Vector2.ZERO, radius * 0.9, color2)

@@ -1,16 +1,16 @@
 [gd_resource type="Resource" script_class="LevelData" load_steps=19 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_svpo0"]
-[ext_resource type="Resource" path="res://resources/enemies/nr_drone.tres" id="2_22rhb"]
-[ext_resource type="Resource" path="res://resources/enemies/nr_crawler.tres" id="3_r77hn"]
-[ext_resource type="Resource" path="res://resources/enemies/nr_spark.tres" id="4_h6ms0"]
-[ext_resource type="Resource" path="res://resources/enemies/nr_turret.tres" id="5_eyufu"]
-[ext_resource type="Resource" path="res://resources/enemies/nr_hulk.tres" id="6_1kx47"]
-[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_i40bq"]
-[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_pjus7"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_j3d6c"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_drone.tres" id="2_2thv2"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_crawler.tres" id="3_ygh8c"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_spark.tres" id="4_rcruv"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_turret.tres" id="5_tw4tp"]
+[ext_resource type="Resource" path="res://resources/enemies/nr_hulk.tres" id="6_kywnj"]
+[ext_resource type="Script" path="res://scripts/data/LevelData.gd" id="7_lpx0s"]
+[ext_resource type="Script" path="res://scripts/data/WaveData.gd" id="8_s14n6"]
 
-[sub_resource type="Resource" id="Resource_ckggo"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_d3k51"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_drone"
 start_time = 0.0
 end_time = 180.0
@@ -21,8 +21,8 @@ formation = 0
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_gxgdb"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_cryqp"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_crawler"
 start_time = 45.0
 end_time = 300.0
@@ -33,8 +33,8 @@ formation = 2
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_02qjp"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_o7qo8"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_spark"
 start_time = 110.0
 end_time = 420.0
@@ -45,8 +45,8 @@ formation = 3
 elite_chance = 0.0
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_hv635"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_wslx1"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_drone"
 start_time = 150.0
 end_time = 540.0
@@ -57,8 +57,8 @@ formation = 0
 elite_chance = 0.02
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_gn8dg"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_r635p"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_turret"
 start_time = 190.0
 end_time = 540.0
@@ -69,8 +69,8 @@ formation = 0
 elite_chance = 0.04
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_mbmvl"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_nfq5r"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_crawler"
 start_time = 240.0
 end_time = 600.0
@@ -81,8 +81,8 @@ formation = 1
 elite_chance = 0.05
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_0p2ii"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_nllfu"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_hulk"
 start_time = 300.0
 end_time = 600.0
@@ -93,8 +93,8 @@ formation = 0
 elite_chance = 0.12
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_uywvp"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_5xms0"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_drone"
 start_time = 360.0
 end_time = 600.0
@@ -105,8 +105,8 @@ formation = 1
 elite_chance = 0.03
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_8sld3"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_x856r"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_spark"
 start_time = 420.0
 end_time = 600.0
@@ -117,8 +117,8 @@ formation = 4
 elite_chance = 0.1
 one_shot = false
 
-[sub_resource type="Resource" id="Resource_1ldcg"]
-script = ExtResource("8_pjus7")
+[sub_resource type="Resource" id="Resource_1vgn7"]
+script = ExtResource("8_s14n6")
 enemy_id = &"nr_hulk"
 start_time = 480.0
 end_time = 480.0
@@ -130,7 +130,7 @@ elite_chance = 0.25
 one_shot = true
 
 [resource]
-script = ExtResource("7_i40bq")
+script = ExtResource("7_lpx0s")
 id = &"neon_ruins"
 display_name = "Neon Ruins"
 description = "A collapsed sign-district still drawing power. The floor arcs where the grid broke."
@@ -146,8 +146,8 @@ damage_growth_per_minute = 0.07
 endless_interval = 1.6
 endless_batch = 5
 endless_elite_chance = 0.08
-enemy_pool = Array[ExtResource("1_svpo0")]([ExtResource("2_22rhb"), ExtResource("3_r77hn"), ExtResource("4_h6ms0"), ExtResource("5_eyufu"), ExtResource("6_1kx47")])
-waves = Array[ExtResource("8_pjus7")]([SubResource("Resource_ckggo"), SubResource("Resource_gxgdb"), SubResource("Resource_02qjp"), SubResource("Resource_hv635"), SubResource("Resource_gn8dg"), SubResource("Resource_mbmvl"), SubResource("Resource_0p2ii"), SubResource("Resource_uywvp"), SubResource("Resource_8sld3"), SubResource("Resource_1ldcg")])
+enemy_pool = Array[ExtResource("1_j3d6c")]([ExtResource("2_2thv2"), ExtResource("3_ygh8c"), ExtResource("4_rcruv"), ExtResource("5_tw4tp"), ExtResource("6_kywnj")])
+waves = Array[ExtResource("8_s14n6")]([SubResource("Resource_d3k51"), SubResource("Resource_cryqp"), SubResource("Resource_o7qo8"), SubResource("Resource_wslx1"), SubResource("Resource_r635p"), SubResource("Resource_nfq5r"), SubResource("Resource_nllfu"), SubResource("Resource_5xms0"), SubResource("Resource_x856r"), SubResource("Resource_1vgn7")])
 boss_id = &"nr_boss_warden"
 mid_boss_id = &"nr_mid_bulwark"
 elite_tint = Color(1, 0.85, 0.35, 1)

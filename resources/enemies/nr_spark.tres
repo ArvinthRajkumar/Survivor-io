@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_t7ywp"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_q2hya"]
 
 [resource]
-script = ExtResource("1_t7ywp")
+script = ExtResource("1_q2hya")
 id = &"nr_spark"
 display_name = "Arc Sprinter"
 ai = 2

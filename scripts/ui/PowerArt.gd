@@ -1148,3 +1148,45 @@ static func draw_dice(ci: CanvasItem, c: Vector2, r: float, color: Color,
 		for row in 3:
 			var p := Vector2((float(col) - 0.5) * r * 0.42, (float(row) - 1.0) * r * 0.34)
 			ci.draw_circle(origin + p.rotated(0.18 + tumble), r * 0.08, Color(1, 1, 1, 0.92))
+
+
+## A jet of fire leaving a nozzle: narrow and white-hot at the muzzle, widening
+## and cooling at the far end, with tongues licking along the edges.
+##
+## What the flamethrower used to draw was a wobbly circle, which is why nobody
+## could tell it from any other aura. A cone with a direction is the entire
+## read - so this is shaped, not tinted.
+static func draw_flame_jet(ci: CanvasItem, c: Vector2, radius: float, facing: float,
+		arc: float, color: Color, secondary: Color, pulse: float, fade: float) -> void:
+	var steps := 14
+	# Three nested cones, each shorter, narrower and hotter than the last, so
+	# the jet has a temperature gradient instead of one flat colour.
+	var layers := [
+		[1.00, 1.00, Color(color.r, color.g, color.b, 0.72 * fade)],
+		[0.74, 0.66, Color(secondary.r, secondary.g, secondary.b, 0.85 * fade)],
+		[0.42, 0.40, Color(1.0, 0.97, 0.84, 0.90 * fade)],
+	]
+	for layer in layers:
+		var reach: float = radius * float(layer[0])
+		var spread: float = arc * float(layer[1])
+		var cone := PackedVector2Array()
+		cone.append(c)
+		for i in steps + 1:
+			var u := float(i) / float(steps)
+			var a := facing - spread * 0.5 + spread * u
+			# Flicker rides along the rim rather than scaling the whole cone, so
+			# the jet boils at its edges the way fire does.
+			var lick := 1.0 + 0.06 * sin(u * 9.0 + pulse * 22.0) + 0.04 * sin(pulse * 31.0)
+			cone.append(c + Vector2(cos(a), sin(a)) * reach * lick)
+		ci.draw_colored_polygon(cone, layer[2])
+	# Tongues breaking off the leading edge and burning out.
+	for i in 5:
+		var drift := fposmod(pulse * 1.6 + float(i) * 0.21, 1.0)
+		var a2 := facing + sin(float(i) * 5.3 + pulse * 4.0) * arc * 0.42
+		var at := c + Vector2(cos(a2), sin(a2)) * radius * (0.55 + 0.55 * drift)
+		var heat := 1.0 - drift
+		ci.draw_circle(at, radius * 0.11 * heat,
+			Color(1.0, 0.72 + 0.2 * heat, 0.25, 0.6 * heat * fade))
+	# The muzzle: a white core where the fuel ignites.
+	ci.draw_circle(c + Vector2(cos(facing), sin(facing)) * radius * 0.10,
+		radius * 0.12, Color(1.0, 0.97, 0.88, 0.9 * fade))

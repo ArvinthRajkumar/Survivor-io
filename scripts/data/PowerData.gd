@@ -90,6 +90,11 @@ enum Aim {
 @export var projectile_shape: int = 0
 ## Radians of spread between the outermost projectiles of one volley.
 @export var spread: float = 0.0
+## Radians per second the projectile spins. A blade that whirls, a grenade that
+## tumbles and a bullet that holds its line are three different objects even
+## before colour is considered, so this is authored per power rather than left
+## at one shared default.
+@export var projectile_spin: float = 0.0
 ## Extra tuning for on_hit, read only by the effect it belongs to.
 @export var effect_radius: float = 120.0
 @export var effect_value: float = 0.55

@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_j5n4q"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_nl82j"]
 
 [resource]
-script = ExtResource("1_j5n4q")
+script = ExtResource("1_nl82j")
 id = &"mr_stalker"
 display_name = "Chasm Stalker"
 ai = 2

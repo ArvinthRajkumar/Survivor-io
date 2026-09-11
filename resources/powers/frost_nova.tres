@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_3ny3b"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_ro1kc"]
 
 [resource]
-script = ExtResource("1_3ny3b")
+script = ExtResource("1_ro1kc")
 id = &"frost_nova"
 display_name = "Frost Nova"
 category = 0
@@ -28,6 +28,7 @@ motion = 0
 on_hit = 0
 projectile_shape = 4
 spread = 0.0
+projectile_spin = 0.0
 effect_radius = 120.0
 effect_value = 0.45
 damage_per_level = 8.0
@@ -37,7 +38,7 @@ duration_per_level = 0.2
 count_at_levels = PackedInt32Array()
 stat_multipliers = {}
 stat_flats = {}
-color = Color(0.6, 0.88, 1, 1)
+color = Color(0.58, 0.9, 1, 1)
 color_secondary = Color(0.9, 0.98, 1, 1)
 art = &"frost_nova"
 rarity = 1

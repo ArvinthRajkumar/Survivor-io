@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_suaqa"]
+[ext_resource type="Script" path="res://scripts/data/EnemyData.gd" id="1_5kdqc"]
 
 [resource]
-script = ExtResource("1_suaqa")
+script = ExtResource("1_5kdqc")
 id = &"nr_drone"
 display_name = "Scrap Drone"
 ai = 0

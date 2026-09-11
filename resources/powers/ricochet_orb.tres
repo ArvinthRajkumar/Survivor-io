@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="PowerData" load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_xpu31"]
+[ext_resource type="Script" path="res://scripts/data/PowerData.gd" id="1_p1rdr"]
 
 [resource]
-script = ExtResource("1_xpu31")
+script = ExtResource("1_p1rdr")
 id = &"ricochet_orb"
 display_name = "Ricochet Orb"
 category = 0
@@ -28,6 +28,7 @@ motion = 4
 on_hit = 0
 projectile_shape = 5
 spread = 0.0
+projectile_spin = 1.6
 effect_radius = 120.0
 effect_value = 0.55
 damage_per_level = 9.0
@@ -37,7 +38,7 @@ duration_per_level = 0.6
 count_at_levels = PackedInt32Array(3, 5)
 stat_multipliers = {}
 stat_flats = {}
-color = Color(0.7, 0.6, 1, 1)
+color = Color(0.6, 0.42, 1, 1)
 color_secondary = Color(0.95, 0.9, 1, 1)
 art = &"ricochet_orb"
 rarity = 1
